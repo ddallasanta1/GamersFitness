@@ -258,6 +258,16 @@
   .mini-btn.add:active{ background:rgba(0,255,242,0.08); }
   .mini-btn.remove{ border:1px solid rgba(255,56,96,0.4); color:var(--red); padding:7px 11px; flex:0 0 auto; }
   .season-input{ width:100%; margin-bottom:6px; }
+  .fav-search-wrap{ position:relative; margin-bottom:12px; }
+  .fav-search{ width:100%; margin-bottom:0!important; padding-right:40px; }
+  .fav-clear{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
+              background:transparent; border:0; color:var(--muted); font-size:16px;
+              padding:8px 10px; cursor:pointer; }
+  .fav-chosen{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .fav-chosen:empty{ display:none; }
+  .fav-chosen .chip{ border-color:var(--green); color:var(--green); background:rgba(57,255,136,0.10); }
+  .dislike-chosen .chip{ border-color:var(--red)!important; color:var(--red)!important; background:rgba(255,56,96,0.10)!important; }
+  .fav-nores{ font-size:11px; color:var(--muted); padding:10px 2px; line-height:1.6; }
   .fav-cat{ margin-bottom:10px; border:1px solid rgba(95,118,144,0.25); border-radius:8px; overflow:hidden; }
   .fav-head{ width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
              background:rgba(0,255,242,0.04); border:0; padding:12px; cursor:pointer;
@@ -514,9 +524,25 @@
     </div>
 
     <div class="panel">
-      <label class="field-label">YOUR FAVORITES — UP TO 3 PER CATEGORY</label>
+      <label class="field-label">YOUR FAVORITES — UP TO 6 PER CATEGORY</label>
+      <div class="fav-search-wrap">
+        <input type="text" id="favSearch" class="fav-search" placeholder="🔍  Search foods — e.g. salmon, oats, sriracha" autocomplete="off">
+        <button class="fav-clear" id="favClear" style="display:none;">✕</button>
+      </div>
+      <div id="favChosen" class="fav-chosen"></div>
       <div id="favPicker"></div>
       <p class="subtitle" style="font-size:10px; margin:12px 0 0;">Leave a category empty and the whole inventory stays in play for it.</p>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">🚫 FOODS YOU CAN'T STAND</label>
+      <div class="fav-search-wrap">
+        <input type="text" id="dislikeSearch" class="fav-search" placeholder="🔍  Search to block — e.g. mayo, blue cheese, olives" autocomplete="off">
+        <button class="fav-clear" id="dislikeClear" style="display:none;">✕</button>
+      </div>
+      <div id="dislikeChosen" class="fav-chosen dislike-chosen"></div>
+      <div id="dislikeResults"></div>
+      <p class="subtitle" style="font-size:10px; margin:12px 0 0;">Blocked foods never appear in a suggestion. If a dish depends on one, a sensible stand-in is used instead — mayo becomes 0% Greek yogurt, sour cream becomes tzatziki, and so on.</p>
     </div>
 
     <div class="panel">
@@ -660,7 +686,18 @@
     gain:         "Muscle Gain (+300/day)",
   };
   /* Protein grams per lb of bodyweight, by goal (higher in a deficit) */
-  const PROTEIN_PER_LB = { extreme_loss:1.15, loss:1.10, maintain:1.00, gain:0.95 };
+  const PROTEIN_PER_LB = { extreme_loss:1.10, loss:1.05, maintain:0.90, gain:0.85 };
+  /* Guard rails on the split. Without a ceiling on fat and a floor under
+     carbs, a shrinking calorie budget pushes protein and fat up while carbs
+     collapse — you end up training hard on 20% carbs. */
+  const MACRO_LIMITS = {
+    proteinMaxPct: 0.40,   // protein never more than this share of calories
+    fatTargetPct:  0.25,
+    fatMinPerLb:   0.30,   // hormonal-health floor in a normal deficit
+    fatMaxPct:     0.30,   // ...but fat never dominates the plate
+    fatFloorPerLb: 0.25,   // absolute floor when carbs need the room
+    carbMinPct:    0.30,   // carbs always get a real share
+  };
   /* Safety floors so an aggressive deficit can't drive intake too low */
   const KCAL_FLOOR = { male:1500, female:1200 };
 
@@ -724,7 +761,7 @@
       {key:"scallops",  name:"Scallops (raw)",             kcal:69,  protein:12.1,carbs:3.2, fat:0.5, tags:["fish","shellfish"], crave:["fresh","light","grilled"]},
       {key:"crab",      name:"Crab Meat (cooked)",         kcal:97,  protein:19.4,carbs:0,   fat:1.5, tags:["fish","shellfish"], crave:["fresh","light"]},
       {key:"mussels",   name:"Mussels (raw)",              kcal:86,  protein:11.9,carbs:3.7, fat:2.2, tags:["fish","shellfish"], crave:["savory","warmbowl"]},
-      {key:"wholeegg",  name:"Whole Eggs (raw)",           kcal:143, protein:12.6,carbs:0.7, fat:9.5, tags:["egg"], crave:["savory","comfort"]},
+      {key:"wholeegg", unit:{whole:true, g:50,one:"egg",many:"eggs"},  name:"Whole Eggs (raw)",           kcal:143, protein:12.6,carbs:0.7, fat:9.5, tags:["egg"], crave:["savory","comfort"]},
       {key:"eggwhites", name:"Egg Whites (raw)",           kcal:52,  protein:10.9,carbs:0.7, fat:0.2, tags:["egg"], crave:["light","nocook"]},
       {key:"yogurt0",   name:"Greek Yogurt, 0%",           kcal:59,  protein:10.2,carbs:3.6, fat:0.4, tags:["dairy"], crave:["sweet","creamy","nocook"]},
       {key:"yogurt2",   name:"Greek Yogurt, 2%",           kcal:73,  protein:9.9, carbs:3.9, fat:1.9, tags:["dairy"], crave:["sweet","creamy","nocook"]},
@@ -737,9 +774,32 @@
       {key:"cheddar",   name:"Cheddar Cheese",             kcal:403, protein:24.9,carbs:1.3, fat:33.1,tags:["dairy"], crave:["savory","comfort","creamy"]},
       {key:"feta",      name:"Feta Cheese",                kcal:264, protein:14.2,carbs:4.1, fat:21.3,tags:["dairy"], crave:["savory","fresh"]},
       {key:"parmesan",  name:"Parmesan",                   kcal:431, protein:38.5,carbs:4.1, fat:28.6,tags:["dairy"], crave:["savory","comfort"]},
-      {key:"whey",      name:"Whey Protein Powder",        kcal:380, protein:80,  carbs:8,   fat:5,   tags:["dairy","supplement"], crave:["sweet","nocook"]},
-      {key:"casein",    name:"Casein Protein Powder",      kcal:370, protein:75,  carbs:8,   fat:3,   tags:["dairy","supplement"], crave:["sweet","creamy","nocook"]},
-      {key:"plantpro",  name:"Plant Protein Powder",       kcal:375, protein:75,  carbs:10,  fat:5,   tags:["supplement"], crave:["sweet","nocook"]},
+      {key:"cheddarred",name:"Reduced-Fat Cheddar",       kcal:282, protein:27,  carbs:3,   fat:18,  tags:["dairy"], crave:["savory","comfort"]},
+      {key:"cheddarff", name:"Fat-Free Cheddar",           kcal:158, protein:31,  carbs:6,   fat:0,   tags:["dairy"], crave:["savory","comfort"]},
+      {key:"mozzff",    name:"Fat-Free Mozzarella",        kcal:141, protein:31,  carbs:3,   fat:0,   tags:["dairy"], crave:["savory","comfort"]},
+      {key:"mozzfresh", name:"Fresh Mozzarella",           kcal:280, protein:18,  carbs:2.2, fat:22,  tags:["dairy"], crave:["creamy","fresh"]},
+      {key:"swissred",  name:"Reduced-Fat Swiss",          kcal:250, protein:29,  carbs:4,   fat:13,  tags:["dairy"], crave:["savory"]},
+      {key:"jack",      name:"Monterey Jack",              kcal:373, protein:24.5,carbs:0.7, fat:30,  tags:["dairy"], crave:["savory","comfort","creamy"]},
+      {key:"pepperjack",name:"Pepper Jack",                kcal:365, protein:24,  carbs:1.5, fat:29,  tags:["dairy","nightshade"], crave:["spicy","savory","creamy"]},
+      {key:"colby",     name:"Colby Jack",                 kcal:394, protein:24,  carbs:2.6, fat:32,  tags:["dairy"], crave:["savory","comfort"]},
+      {key:"gouda",     name:"Gouda",                      kcal:356, protein:25,  carbs:2.2, fat:27,  tags:["dairy"], crave:["savory","creamy"]},
+      {key:"brie",      name:"Brie",                       kcal:334, protein:21,  carbs:0.5, fat:28,  tags:["dairy"], crave:["creamy","savory"]},
+      {key:"havarti",   name:"Havarti",                    kcal:371, protein:24,  carbs:1,   fat:30,  tags:["dairy"], crave:["creamy","savory"]},
+      {key:"manchego",  name:"Manchego",                   kcal:389, protein:25,  carbs:1,   fat:32,  tags:["dairy"], crave:["savory"]},
+      {key:"asiago",    name:"Asiago",                     kcal:390, protein:25,  carbs:2,   fat:31,  tags:["dairy"], crave:["savory"]},
+      {key:"romano",    name:"Pecorino Romano",            kcal:387, protein:32,  carbs:3.6, fat:27,  tags:["dairy"], crave:["savory"]},
+      {key:"gruyere",   name:"Gruyère",                    kcal:413, protein:30,  carbs:0.4, fat:32,  tags:["dairy"], crave:["savory","comfort"]},
+      {key:"bluecheese",name:"Blue Cheese",                kcal:353, protein:21,  carbs:2.3, fat:29,  tags:["dairy"], crave:["savory","creamy"]},
+      {key:"gorgonzola",name:"Gorgonzola",                 kcal:350, protein:21,  carbs:2,   fat:29,  tags:["dairy"], crave:["savory","creamy"]},
+      {key:"halloumi",  name:"Halloumi",                   kcal:321, protein:22,  carbs:2.6, fat:25,  tags:["dairy"], crave:["savory","grilled"]},
+      {key:"paneer",    name:"Paneer",                     kcal:296, protein:21,  carbs:3.6, fat:22,  tags:["dairy"], crave:["savory","warmbowl"]},
+      {key:"queijo",    name:"Fat-Free Cottage (dry curd)",kcal:72,  protein:14,  carbs:3.4, fat:0.3, tags:["dairy"], crave:["creamy","light","nocook"]},
+      {key:"laughingcow",name:"Light Spreadable Wedge",    kcal:120, protein:8,   carbs:12,  fat:5,   tags:["dairy"], crave:["creamy","nocook"]},
+      {key:"nutyeast",  name:"Nutritional Yeast",          kcal:325, protein:50,  carbs:36,  fat:5,   tags:[], crave:["savory"]},
+      {key:"veganched", name:"Vegan Cheddar Shreds",       kcal:280, protein:1,   carbs:25,  fat:20,  tags:[], crave:["savory","comfort"]},
+      {key:"whey", powder:true,      name:"Whey Protein Powder",        kcal:380, protein:80,  carbs:8,   fat:5,   tags:["dairy","supplement"], crave:["sweet","nocook"]},
+      {key:"casein", powder:true,    name:"Casein Protein Powder",      kcal:370, protein:75,  carbs:8,   fat:3,   tags:["dairy","supplement"], crave:["sweet","creamy","nocook"]},
+      {key:"plantpro", powder:true,  name:"Plant Protein Powder",       kcal:375, protein:75,  carbs:10,  fat:5,   tags:["supplement"], crave:["sweet","nocook"]},
       {key:"tofu",      name:"Firm Tofu",                  kcal:76,  protein:8.1, carbs:1.9, fat:4.8, tags:["soy"], crave:["spicy","savory"]},
       {key:"tempeh",    name:"Tempeh",                     kcal:192, protein:20.3,carbs:7.6, fat:10.8,tags:["soy"], crave:["savory","grilled"]},
       {key:"edamame",   name:"Edamame, shelled",           kcal:121, protein:11.9,carbs:8.9, fat:5.2, tags:["soy","legume"], crave:["fresh","light"]},
@@ -752,6 +812,46 @@
       {key:"pintobeans",name:"Pinto Beans (dry)",          kcal:347, protein:21.4,carbs:62.6,fat:1.2, tags:["legume"], crave:["spicy","comfort","warmbowl"]},
       {key:"whitebeans",name:"Cannellini Beans (dry)",     kcal:333, protein:23.4,carbs:60.3,fat:0.9, tags:["legume"], crave:["warmbowl","comfort"]},
       {key:"splitpeas", name:"Split Peas (dry)",           kcal:341, protein:24.6,carbs:60,  fat:1.2, tags:["legume"], crave:["warmbowl"]},
+      {key:"chickwing", name:"Chicken Wings (raw)",       kcal:203, protein:18.3,carbs:0,   fat:14.1,tags:["meat","poultry"], crave:["savory","spicy","comfort"]},
+      {key:"chickdrum",  name:"Chicken Drumstick (raw)",    kcal:161, protein:18.4,carbs:0,   fat:9.2, tags:["meat","poultry"], crave:["savory","comfort","grilled"]},
+      {key:"rotisserie", name:"Rotisserie Chicken",         kcal:190, protein:26,  carbs:0,   fat:9,   tags:["meat","poultry"], crave:["savory","nocook","comfort"]},
+      {key:"chicksaus",  name:"Chicken Sausage",            kcal:172, protein:16,  carbs:2,   fat:11,  tags:["meat","poultry"], crave:["savory","grilled"]},
+      {key:"turkeydeli", name:"Deli Turkey, lean",          kcal:104, protein:17.1,carbs:2.9, fat:2.6, tags:["meat","poultry"], crave:["savory","nocook","light"]},
+      {key:"duck",       name:"Duck Breast, skinless (raw)",kcal:123, protein:19.9,carbs:0,   fat:4.2, tags:["meat","poultry"], crave:["savory","grilled"]},
+      {key:"flanksteak", name:"Flank Steak (raw)",          kcal:147, protein:21.2,carbs:0,   fat:6.3, tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"chuckroast", name:"Chuck Roast (raw)",          kcal:212, protein:18.7,carbs:0,   fat:15,  tags:["meat","redmeat"], crave:["savory","comfort","warmbowl"]},
+      {key:"brisket",    name:"Beef Brisket (raw)",         kcal:155, protein:20.9,carbs:0,   fat:7.4, tags:["meat","redmeat"], crave:["savory","grilled","comfort"]},
+      {key:"venison",    name:"Venison (raw)",              kcal:120, protein:22.5,carbs:0,   fat:2.4, tags:["meat","redmeat"], crave:["savory","grilled","light"]},
+      {key:"corned",     name:"Corned Beef",                kcal:251, protein:18.2,carbs:0.5, fat:19,  tags:["meat","redmeat"], crave:["savory","comfort"]},
+      {key:"meatball",   name:"Turkey Meatballs",           kcal:170, protein:17,  carbs:6,   fat:9,   tags:["meat","poultry"], crave:["savory","comfort","warmbowl"]},
+      {key:"porkloinroast",name:"Pork Sirloin Roast (raw)", kcal:130, protein:21.4,carbs:0,   fat:4.4, tags:["meat","pork","redmeat"], crave:["savory","comfort"]},
+      {key:"bacon",      name:"Pork Bacon (raw)",           kcal:393, protein:12.6,carbs:1.3, fat:37,  tags:["meat","pork","redmeat"], crave:["savory","comfort"]},
+      {key:"canadian",   name:"Canadian Bacon",             kcal:107, protein:15.5,carbs:1.4, fat:4.2, tags:["meat","pork"], crave:["savory","comfort"]},
+      {key:"prosciutto", name:"Prosciutto",                 kcal:195, protein:26,  carbs:0.5, fat:10,  tags:["meat","pork"], crave:["savory","nocook"]},
+      {key:"halibut",    name:"Halibut (raw)",              kcal:111, protein:22.5,carbs:0,   fat:1.6, tags:["fish"], crave:["light","grilled","fresh"]},
+      {key:"mahi",       name:"Mahi Mahi (raw)",            kcal:85,  protein:18.5,carbs:0,   fat:0.7, tags:["fish"], crave:["light","grilled","fresh"]},
+      {key:"trout",      name:"Rainbow Trout (raw)",        kcal:141, protein:20.5,carbs:0,   fat:6.2, tags:["fish"], crave:["savory","grilled"]},
+      {key:"seabass",    name:"Sea Bass (raw)",             kcal:97,  protein:18.4,carbs:0,   fat:2,   tags:["fish"], crave:["light","fresh","grilled"]},
+      {key:"snapper",    name:"Red Snapper (raw)",          kcal:100, protein:20.5,carbs:0,   fat:1.3, tags:["fish"], crave:["light","fresh","grilled"]},
+      {key:"catfish",    name:"Catfish (raw)",              kcal:105, protein:18,  carbs:0,   fat:2.9, tags:["fish"], crave:["comfort","savory"]},
+      {key:"anchovy",    name:"Anchovies",                  kcal:210, protein:29,  carbs:0,   fat:9.7, tags:["fish"], crave:["savory","nocook"]},
+      {key:"smokedsalmon",name:"Smoked Salmon",             kcal:117, protein:18.3,carbs:0,   fat:4.3, tags:["fish"], crave:["savory","nocook","fresh"]},
+      {key:"calamari",   name:"Calamari (raw)",             kcal:92,  protein:15.6,carbs:3.1, fat:1.4, tags:["fish","shellfish"], crave:["savory","light"]},
+      {key:"lobster",    name:"Lobster (raw)",              kcal:77,  protein:16.5,carbs:0,   fat:0.8, tags:["fish","shellfish"], crave:["fresh","light"]},
+      {key:"oysters",    name:"Oysters",                    kcal:81,  protein:9.5, carbs:4.7, fat:2.3, tags:["fish","shellfish"], crave:["fresh","savory"]},
+      {key:"clams",      name:"Clams (raw)",                kcal:86,  protein:14.7,carbs:3,   fat:1,   tags:["fish","shellfish"], crave:["savory","warmbowl"]},
+      {key:"eggliquid",  name:"Liquid Egg Substitute",      kcal:48,  protein:10,  carbs:1,   fat:0,   tags:["egg"], crave:["light","nocook"]},
+      {key:"swisscheese",name:"Swiss Cheese",               kcal:380, protein:27,  carbs:5.4, fat:28,  tags:["dairy"], crave:["savory","comfort"]},
+      {key:"provolone",  name:"Provolone",                  kcal:351, protein:26,  carbs:2.1, fat:27,  tags:["dairy"], crave:["savory","comfort"]},
+      {key:"goatcheese", name:"Goat Cheese",                kcal:364, protein:22,  carbs:2.5, fat:30,  tags:["dairy"], crave:["creamy","savory","fresh"]},
+      {key:"stringcheese", unit:{whole:true, g:28,one:"stick",many:"sticks"},name:"String Cheese",             kcal:300, protein:24,  carbs:2,   fat:22,  tags:["dairy"], crave:["savory","nocook"]},
+      {key:"kefir",      name:"Kefir, plain",               kcal:41,  protein:3.3, carbs:4.5, fat:1,   tags:["dairy"], crave:["creamy","nocook"]},
+      {key:"milk",       name:"Skim Milk",                  kcal:34,  protein:3.4, carbs:5,   fat:0.2, tags:["dairy"], crave:["creamy","nocook"]},
+      {key:"protshake",  name:"RTD Protein Shake",          kcal:67,  protein:10,  carbs:3,   fat:1.5, powder:true, tags:["dairy"], crave:["sweet","nocook"]},
+      {key:"favabeans",  name:"Fava Beans (dry)",           kcal:341, protein:26,  carbs:58,  fat:1.5, tags:["legume"], crave:["warmbowl","savory"]},
+      {key:"navybeans",  name:"Navy Beans (dry)",           kcal:337, protein:22.3,carbs:60.8,fat:1.5, tags:["legume"], crave:["comfort","warmbowl"]},
+      {key:"blackeyed",  name:"Black-Eyed Peas (dry)",      kcal:336, protein:23.5,carbs:60,  fat:1.3, tags:["legume"], crave:["comfort","warmbowl"]},
+      {key:"soycurls",   name:"Soy Curls (dry)",            kcal:320, protein:50,  carbs:29,  fat:5,   tags:["soy"], crave:["savory"]},
       {key:"chickpasta",name:"Chickpea Pasta (dry)",       kcal:337, protein:20,  carbs:57,  fat:5,   tags:["legume"], crave:["comfort","carbheavy"]},
     ],
     /* CARBS — grains, pasta and legumes are DRY weights; potatoes and fruit
@@ -771,14 +871,18 @@
       {key:"whitepot", name:"White Potato (raw)",        kcal:77,  protein:2,   carbs:17.5,fat:0.1, tags:["nightshade"], crave:["comfort","carbheavy"]},
       {key:"plantain", name:"Plantain (raw)",            kcal:122, protein:1.3, carbs:31.9,fat:0.4, tags:[], crave:["comfort","sweet","carbheavy"]},
       {key:"cassava",  name:"Cassava (raw)",             kcal:160, protein:1.4, carbs:38.1,fat:0.3, tags:[], crave:["comfort","carbheavy"]},
-      {key:"bread",    name:"Whole Wheat Bread",         kcal:247, protein:13,  carbs:41,  fat:3.4, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"sourdough",name:"Sourdough Bread",           kcal:289, protein:11.7,carbs:56.3,fat:1.8, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"ezekiel",  name:"Ezekiel Bread",             kcal:250, protein:10,  carbs:42,  fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"bagel",    name:"Bagel",                     kcal:250, protein:9.8, carbs:49,  fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"engmuffin",name:"English Muffin",            kcal:227, protein:8.9, carbs:44.4,fat:1.7, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"pita",     name:"Pita Bread",                kcal:275, protein:9.1, carbs:55.7,fat:1.2, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"flourtort",name:"Flour Tortilla",            kcal:306, protein:8.2, carbs:51.2,fat:7.1, tags:["gluten"], crave:["comfort","carbheavy"]},
-      {key:"corntort", name:"Corn Tortillas",            kcal:218, protein:5.7, carbs:44.6,fat:2.8, tags:[], crave:["spicy","carbheavy"]},
+      {key:"bread", unit:{g:28,one:"slice",many:"slices"},    name:"Whole Wheat Bread",         kcal:247, protein:13,  carbs:41,  fat:3.4, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"sourdough", unit:{whole:true, g:50,one:"slice",many:"slices"},name:"Sourdough Bread",           kcal:289, protein:11.7,carbs:56.3,fat:1.8, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"ezekiel", unit:{g:34,one:"slice",many:"slices"},  name:"Ezekiel Bread",             kcal:250, protein:10,  carbs:42,  fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"bagel", unit:{g:95,one:"bagel",many:"bagels"},    name:"Bagel",                     kcal:250, protein:9.8, carbs:49,  fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"engmuffin", unit:{g:57,one:"muffin",many:"muffins"},name:"English Muffin",            kcal:227, protein:8.9, carbs:44.4,fat:1.7, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"pita", unit:{g:60,one:"pita",many:"pitas"},     name:"Pita Bread",                kcal:275, protein:9.1, carbs:55.7,fat:1.2, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"flourtort10",unit:{whole:true, g:71,one:"tortilla",many:"tortillas"}, name:"Flour Tortilla, 10\" burrito", kcal:306, protein:8.2, carbs:51.2,fat:7.1, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"flourtort6", unit:{whole:true, g:30,one:"tortilla",many:"tortillas"}, name:"Flour Tortilla, 6\" fajita", kcal:306, protein:8.2, carbs:51.2,fat:7.1, tags:["gluten"], crave:["comfort"]},
+      {key:"lowcarbtort10",unit:{whole:true, g:57,one:"tortilla",many:"tortillas"}, name:"Low-Carb Tortilla, 10\"", kcal:190, protein:17, carbs:43, fat:6, macroFriendly:true, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"carbbalance",unit:{g:42,one:"tortilla",many:"tortillas"}, name:"Carb Balance Tortilla, 8\"", kcal:190, protein:12, carbs:45, fat:7, macroFriendly:true, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"corntort8",  unit:{whole:true, g:40,one:"tortilla",many:"tortillas"}, name:"Corn Tortilla, 8\"", kcal:218, protein:5.7, carbs:44.6,fat:2.8, tags:[], crave:["spicy","carbheavy"]},
+      {key:"srirachatort",unit:{whole:true, g:35,one:"tortilla",many:"tortillas"}, name:"Almond Flour Tortilla, 6\"", kcal:250, protein:9, carbs:36, fat:12, tags:["nuts"], crave:["comfort","nocook"]},
       {key:"oats",     name:"Rolled Oats (dry)",         kcal:389, protein:16.9,carbs:66.3,fat:6.9, tags:[], crave:["sweet","creamy","comfort","warmbowl"]},
       {key:"creamrice",name:"Cream of Rice (dry)",       kcal:370, protein:6,   carbs:82,  fat:0.5, tags:[], crave:["creamy","comfort","warmbowl","carbheavy"]},
       {key:"grits",    name:"Grits (dry)",               kcal:371, protein:8.8, carbs:79.2,fat:1.2, tags:[], crave:["creamy","comfort","warmbowl"]},
@@ -793,13 +897,58 @@
       {key:"bulgur",   name:"Bulgur (dry)",              kcal:342, protein:12.3,carbs:75.9,fat:1.3, tags:["gluten"], crave:["light","warmbowl"]},
       {key:"couscous", name:"Couscous (dry)",            kcal:376, protein:12.8,carbs:77.4,fat:0.6, tags:["gluten"], crave:["comfort","carbheavy"]},
       {key:"chickpeas",name:"Chickpeas (dry)",           kcal:378, protein:20.5,carbs:63,  fat:6,   tags:["legume"], crave:["warmbowl"]},
-      {key:"ricecakes",name:"Rice Cakes",                kcal:387, protein:8.2, carbs:81.5,fat:2.8, tags:[], crave:["crunchy","nocook","carbheavy"]},
-      {key:"banana",   name:"Banana (raw)",              kcal:89,  protein:1.1, carbs:22.8,fat:0.3, tags:[], crave:["sweet","nocook"]},
-      {key:"honey",    name:"Honey",                     kcal:304, protein:0.3, carbs:82.4,fat:0,   tags:[], crave:["sweet","nocook"]},
-      {key:"maple",    name:"Maple Syrup",               kcal:260, protein:0,   carbs:67.2,fat:0.1, tags:[], crave:["sweet","nocook"]},
+      {key:"ricecakes", unit:{whole:true, g:9,one:"cake",many:"cakes"},name:"Rice Cakes",                kcal:387, protein:8.2, carbs:81.5,fat:2.8, tags:[], crave:["crunchy","nocook","carbheavy"]},
+      {key:"banana", unit:{soft:true, g:118,one:"banana",many:"bananas"},   name:"Banana (raw)",              kcal:89,  protein:1.1, carbs:22.8,fat:0.3, tags:[], crave:["sweet","nocook"]},
+      {key:"honey", topping:true,    name:"Honey",                     kcal:304, protein:0.3, carbs:82.4,fat:0,   tags:[], crave:["sweet","nocook"]},
+      {key:"corntort6",  name:"Corn Tortilla, 6\"",              unit:{whole:true, g:26,one:"tortilla",many:"tortillas"}, kcal:218, protein:5.7, carbs:44.6,fat:2.8, tags:[], crave:["spicy","carbheavy"]},
+      {key:"flourtort8", name:"Flour Tortilla, 8\" (soft taco)",  unit:{whole:true, g:45,one:"tortilla",many:"tortillas"}, kcal:306, protein:8.2, carbs:51.2,fat:7.1, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"flourtort12",name:"Flour Tortilla, 12\" (burrito XL)",unit:{whole:true, g:99,one:"tortilla",many:"tortillas"}, kcal:306, protein:8.2, carbs:51.2,fat:7.1, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"lowcarbtort6",name:"Low-Carb Tortilla, 6\"",  macroFriendly:true, unit:{whole:true, g:28,one:"tortilla",many:"tortillas"}, kcal:190, protein:17, carbs:43, fat:6, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"lowcarbtort8",name:"Low-Carb Tortilla, 8\"",  macroFriendly:true, unit:{whole:true, g:42,one:"tortilla",many:"tortillas"}, kcal:190, protein:17, carbs:43, fat:6, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"whitecorn",  name:"White Corn Tortilla, 6\"",         unit:{whole:true, g:24,one:"tortilla",many:"tortillas"}, kcal:212, protein:5.4, carbs:43, fat:2.5, tags:[], crave:["spicy","carbheavy"]},
+      {key:"protwrap",   name:"High-Protein Wrap, 10\"",  macroFriendly:true, unit:{whole:true, g:50,one:"wrap",many:"wraps"}, kcal:200, protein:20, carbs:38, fat:5, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"spinachwrap",name:"Spinach Wrap, 10\"",              unit:{whole:true, g:71,one:"wrap",many:"wraps"}, kcal:290, protein:8,  carbs:49, fat:6.5, tags:["gluten"], crave:["comfort","fresh"]},
+      {key:"wwtort8",    name:"Whole Wheat Tortilla, 8\"",        unit:{whole:true, g:45,one:"tortilla",many:"tortillas"}, kcal:290, protein:9,  carbs:47, fat:7,  tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"basmati",   name:"Basmati Rice (dry)",        kcal:356, protein:8.5, carbs:78,  fat:0.9, tags:[], crave:["comfort","warmbowl","carbheavy"]},
+      {key:"sushirice", name:"Sushi Rice (dry)",           kcal:358, protein:6.5, carbs:79,  fat:0.6, tags:[], crave:["comfort","light"]},
+      {key:"arborio",   name:"Arborio Rice (dry)",         kcal:349, protein:7,   carbs:77,  fat:0.6, tags:[], crave:["creamy","comfort","warmbowl"]},
+      {key:"udon",      name:"Udon Noodles (dry)",         kcal:337, protein:9.4, carbs:70,  fat:1.2, tags:["gluten"], crave:["comfort","warmbowl"]},
+      {key:"ramen",     name:"Ramen Noodles (dry)",        kcal:365, protein:11,  carbs:71,  fat:3.5, tags:["gluten"], crave:["comfort","warmbowl","carbheavy"]},
+      {key:"eggnoodle", name:"Egg Noodles (dry)",          kcal:384, protein:14,  carbs:71,  fat:4.4, tags:["gluten","egg"], crave:["comfort","warmbowl"]},
+      {key:"macaroni",  name:"Macaroni (dry)",             kcal:371, protein:13,  carbs:74.7,fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"tortellini",name:"Cheese Tortellini",          kcal:280, protein:12,  carbs:44,  fat:6,   tags:["gluten","dairy","egg"], crave:["comfort","creamy"]},
+      {key:"naan", unit:{g:90,one:"naan",many:"naans"},      name:"Naan",                       kcal:290, protein:9,   carbs:50,  fat:5.5, tags:["gluten"], crave:["comfort","warmbowl"]},
+      {key:"brioche", unit:{g:60,one:"bun",many:"buns"},   name:"Brioche Bun",                kcal:300, protein:9,   carbs:48,  fat:8,   tags:["gluten","egg"], crave:["comfort","sweet"]},
+      {key:"pretzel", unit:{g:60,one:"pretzel",many:"pretzels"},   name:"Soft Pretzel",               kcal:338, protein:8.2, carbs:70,  fat:3.1, tags:["gluten"], crave:["crunchy","comfort"]},
+      {key:"crackers",  name:"Whole Grain Crackers",       kcal:418, protein:9,   carbs:70,  fat:12,  tags:["gluten"], crave:["crunchy","nocook"]},
+      {key:"popcorn",   name:"Air-Popped Popcorn",         kcal:387, protein:13,  carbs:78,  fat:4.5, tags:[], crave:["crunchy","nocook"]},
+      {key:"tortchips", name:"Tortilla Chips",             kcal:497, protein:7,   carbs:64,  fat:24,  tags:[], crave:["crunchy","spicy"]},
+      {key:"pitachips", name:"Pita Chips",                 kcal:450, protein:10,  carbs:66,  fat:16,  tags:["gluten"], crave:["crunchy","nocook"]},
+      {key:"sweetpotfries",name:"Sweet Potato Fries (frozen)",kcal:150,protein:1.8,carbs:24, fat:5,   tags:[], crave:["comfort","crunchy"]},
+      {key:"hashbrown", name:"Hash Browns (frozen)",       kcal:130, protein:2.3, carbs:19,  fat:5,   tags:["nightshade"], crave:["comfort","crunchy"]},
+      {key:"yuca",      name:"Yuca Fries (frozen)",        kcal:190, protein:1.5, carbs:35,  fat:5,   tags:[], crave:["comfort","crunchy"]},
+      {key:"amaranth",  name:"Amaranth (dry)",             kcal:371, protein:13.6,carbs:65,  fat:7,   tags:[], crave:["warmbowl"]},
+      {key:"teff",      name:"Teff (dry)",                 kcal:367, protein:13.3,carbs:73,  fat:2.4, tags:[], crave:["warmbowl"]},
+      {key:"freekeh",   name:"Freekeh (dry)",              kcal:352, protein:12.5,carbs:72,  fat:2.5, tags:["gluten"], crave:["warmbowl","savory"]},
+      {key:"steelcut",  name:"Steel-Cut Oats (dry)",       kcal:379, protein:13,  carbs:68,  fat:6.5, tags:[], crave:["warmbowl","comfort","creamy"]},
+      {key:"muesli",    name:"Muesli",                     kcal:340, protein:10,  carbs:66,  fat:6,   tags:[], crave:["crunchy","sweet","nocook"]},
+      {key:"protgranola",name:"High-Protein Granola",      kcal:400, protein:20,  carbs:50,  fat:13,  macroFriendly:true, tags:[], crave:["crunchy","sweet","nocook"]},
+      {key:"protcereal",name:"High-Protein Cereal",        kcal:375, protein:30,  carbs:50,  fat:6,   macroFriendly:true, tags:[], crave:["crunchy","sweet","nocook"]},
+      {key:"protbagel", unit:{g:85,one:"bagel",many:"bagels"}, name:"High-Protein Bagel",         kcal:230, protein:26,  carbs:30,  fat:3,   macroFriendly:true, tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"blackbeanpasta",name:"Black Bean Pasta (dry)", kcal:340, protein:41,  carbs:35,  fat:4,   macroFriendly:true, tags:["legume"], crave:["comfort","carbheavy"]},
+      {key:"palmini",   name:"Hearts of Palm Pasta",       kcal:20,  protein:1,   carbs:4,   fat:0,   tags:[], crave:["light","fresh"]},
+      {key:"propasta", macroFriendly:true,  name:"Protein Pasta (dry)",       kcal:340, protein:25,  carbs:53,  fat:2.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"edamamepasta", macroFriendly:true,name:"Edamame Pasta (dry)",      kcal:350, protein:42,  carbs:33,  fat:5,   tags:["soy","legume"], crave:["comfort","carbheavy"]},
+      {key:"lentilpasta", macroFriendly:true,name:"Red Lentil Pasta (dry)",    kcal:345, protein:24,  carbs:56,  fat:2,   tags:["legume"], crave:["comfort","carbheavy"]},
+      {key:"protbread", unit:{whole:true, g:40,one:"slice",many:"slices"}, macroFriendly:true, name:"High-Protein Bread",         kcal:220, protein:20,  carbs:32,  fat:4,   tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"sandthin", unit:{whole:true, g:43,one:"thin",many:"thins"}, macroFriendly:true,  name:"Sandwich Thins",             kcal:220, protein:8,   carbs:44,  fat:2,   tags:["gluten"], crave:["comfort","nocook"]},
+      {key:"lavash", unit:{whole:true, g:60,one:"flatbread",many:"flatbreads"},    name:"Lavash Flatbread",           kcal:270, protein:9,   carbs:53,  fat:2,   tags:["gluten"], crave:["comfort"]},
+      {key:"shirataki", name:"Shirataki Noodles",          kcal:9,   protein:0.2, carbs:3,   fat:0,   tags:[], crave:["light","warmbowl"]},
+      {key:"caulirice", name:"Cauliflower Rice",           kcal:25,  protein:1.9, carbs:5,   fat:0.3, tags:[], crave:["light","warmbowl"]},
+      {key:"maple", topping:true,    name:"Maple Syrup",               kcal:260, protein:0,   carbs:67.2,fat:0.1, tags:[], crave:["sweet","nocook"]},
     ],
     fat: [
-      {key:"avocado",  name:"Avocado",                   kcal:160, protein:2,  carbs:9,  fat:15,  tags:[], crave:["creamy","fresh"]},
+      {key:"avocado", unit:{soft:true, g:200,one:"avocado",many:"avocados"},  name:"Avocado",                   kcal:160, protein:2,  carbs:9,  fat:15,  tags:[], crave:["creamy","fresh"]},
       {key:"guac",     name:"Guacamole",                 kcal:155, protein:2,  carbs:9,  fat:14,  tags:[], crave:["creamy","spicy","fresh"]},
       {key:"oil",      name:"Extra Virgin Olive Oil",    kcal:884, protein:0,  carbs:0,  fat:100, tags:[], crave:[]},
       {key:"avocadooil",name:"Avocado Oil",              kcal:884, protein:0,  carbs:0,  fat:100, tags:[], crave:[]},
@@ -829,79 +978,378 @@
       {key:"hemphearts",name:"Hemp Hearts",              kcal:553, protein:32, carbs:9,  fat:49,  tags:[], crave:["nocook"]},
       {key:"chia",     name:"Chia Seeds",                kcal:486, protein:17, carbs:42, fat:31,  tags:[], crave:["nocook"]},
       {key:"flaxseed", name:"Ground Flaxseed",           kcal:534, protein:18, carbs:29, fat:42,  tags:[], crave:["nocook"]},
-      {key:"yolks",    name:"Egg Yolks",                 kcal:322, protein:16, carbs:3.6,fat:27,  tags:["egg"], crave:["comfort"]},
+      {key:"yolks", unit:{whole:true, g:17,one:"yolk",many:"yolks"},    name:"Egg Yolks",                 kcal:322, protein:16, carbs:3.6,fat:27,  tags:["egg"], crave:["comfort"]},
+      {key:"brazilnuts",name:"Brazil Nuts",                kcal:659, protein:14, carbs:12, fat:67,  tags:["nuts"], crave:["crunchy"]},
+      {key:"pinenuts",  name:"Pine Nuts",                   kcal:673, protein:14, carbs:13, fat:68,  tags:["nuts"], crave:["savory","crunchy"]},
+      {key:"sesameseeds",name:"Sesame Seeds",               kcal:573, protein:18, carbs:23, fat:50,  tags:[], crave:["crunchy","savory"]},
+      {key:"pepitas",   name:"Roasted Pepitas",             kcal:574, protein:30, carbs:15, fat:49,  tags:[], crave:["crunchy","savory","nocook"]},
+      {key:"coconutflake",name:"Unsweetened Coconut Flakes",kcal:660, protein:6.9,carbs:24, fat:65,  tags:[], crave:["sweet","crunchy"]},
+      {key:"cacaonibs", name:"Cacao Nibs",                  kcal:654, protein:14, carbs:36, fat:52,  tags:[], crave:["crunchy","sweet"]},
+      {key:"nutella",   name:"Chocolate Hazelnut Spread",   kcal:539, protein:6,  carbs:58, fat:31,  tags:["nuts","dairy"], crave:["sweet","creamy"]},
+      {key:"pbpowder",  name:"Powdered Peanut Butter",      kcal:400, protein:50, carbs:30, fat:10,  tags:["nuts","legume"], crave:["sweet","nocook"]},
+      {key:"mayo",      name:"Mayonnaise",                  kcal:680, protein:1,  carbs:0.6,fat:75,  tags:["egg"], crave:["creamy"]},
+      {key:"mayolight", name:"Avocado Oil Mayo, light",     kcal:360, protein:0,  carbs:1,  fat:40,  tags:["egg"], crave:["creamy"]},
+      {key:"halfhalf",  name:"Half & Half",                 kcal:130, protein:3,  carbs:4.3,fat:11,  tags:["dairy"], crave:["creamy"]},
+      {key:"creamcheeselight",name:"Light Cream Cheese",    kcal:200, protein:8,  carbs:8,  fat:15,  tags:["dairy"], crave:["creamy"]},
+      {key:"burrata",   name:"Burrata",                     kcal:330, protein:14, carbs:2,  fat:30,  tags:["dairy"], crave:["creamy","fresh"]},
+      {key:"queso",     name:"Cotija / Queso Fresco",       kcal:299, protein:19, carbs:3,  fat:24,  tags:["dairy"], crave:["savory","creamy"]},
+      {key:"duckfat",   name:"Duck Fat",                    kcal:900, protein:0,  carbs:0,  fat:100, tags:["meat"], crave:["savory","comfort"]},
       {key:"darkchoc", name:"Dark Chocolate (85%)",      kcal:598, protein:8,  carbs:46, fat:43,  tags:[], crave:["sweet","nocook"]},
     ],
     /* Produce: every vegetable and fruit is available at every Tier.
        The portion size is what scales — it's pegged to a slice of each
        meal's calorie target. */
-    produce: [
-      {key:"broccoli",  name:"Broccoli",           kcal:35,  protein:2.4, carbs:7,  fat:0.4, kind:"veg",   tags:[], crave:["warmbowl","savory"]},
-      {key:"spinach",   name:"Spinach",            kcal:23,  protein:2.9, carbs:3.6,fat:0.4, kind:"veg",   tags:[], crave:["fresh","light"]},
-      {key:"greens",    name:"Mixed Greens",       kcal:20,  protein:1.6, carbs:3.5,fat:0.2, kind:"veg",   tags:[], crave:["fresh","light","nocook"]},
-      {key:"arugula",   name:"Arugula",            kcal:25,  protein:2.6, carbs:3.7,fat:0.7, kind:"veg",   tags:[], crave:["fresh","light","nocook"]},
-      {key:"romaine",   name:"Romaine Lettuce",    kcal:17,  protein:1.2, carbs:3.3,fat:0.3, kind:"veg",   tags:[], crave:["fresh","light","crunchy","nocook"]},
-      {key:"chard",     name:"Swiss Chard",        kcal:19,  protein:1.8, carbs:3.7,fat:0.2, kind:"veg",   tags:[], crave:["warmbowl","light"]},
-      {key:"kale",      name:"Kale",               kcal:49,  protein:4.3, carbs:9,  fat:0.9, kind:"veg",   tags:[], crave:["warmbowl"]},
-      {key:"bokchoy",   name:"Bok Choy",           kcal:13,  protein:1.5, carbs:2.2,fat:0.2, kind:"veg",   tags:[], crave:["light","warmbowl","fresh"]},
-      {key:"cabbage",   name:"Cabbage",            kcal:25,  protein:1.3, carbs:6,  fat:0.1, kind:"veg",   tags:[], crave:["crunchy","fresh"]},
-      {key:"zucchini",  name:"Zucchini",           kcal:17,  protein:1.2, carbs:3.1,fat:0.3, kind:"veg",   tags:[], crave:["grilled","light"]},
-      {key:"squash",    name:"Yellow Squash",      kcal:16,  protein:1.2, carbs:3.4,fat:0.2, kind:"veg",   tags:[], crave:["grilled","light"]},
-      {key:"butternut", name:"Butternut Squash",   kcal:45,  protein:1,   carbs:12, fat:0.1, kind:"veg",   tags:[], crave:["comfort","warmbowl"]},
-      {key:"asparagus", name:"Asparagus",          kcal:20,  protein:2.2, carbs:3.9,fat:0.1, kind:"veg",   tags:[], crave:["grilled","light"]},
-      {key:"greenbeans",name:"Green Beans",        kcal:31,  protein:1.8, carbs:7,  fat:0.2, kind:"veg",   tags:[], crave:["crunchy"]},
-      {key:"snappeas",  name:"Snap Peas",          kcal:42,  protein:2.8, carbs:7.5,fat:0.2, kind:"veg",   tags:[], crave:["crunchy","fresh"]},
-      {key:"peas",      name:"Green Peas",         kcal:81,  protein:5.4, carbs:14, fat:0.4, kind:"veg",   tags:[], crave:["comfort","warmbowl"]},
-      {key:"corn",      name:"Sweet Corn",         kcal:86,  protein:3.2, carbs:19, fat:1.2, kind:"veg",   tags:[], crave:["sweet","comfort","grilled"]},
-      {key:"carrots",   name:"Carrots",            kcal:41,  protein:0.9, carbs:10, fat:0.2, kind:"veg",   tags:[], crave:["fresh","crunchy","nocook"]},
-      {key:"beets",     name:"Beets",              kcal:43,  protein:1.6, carbs:10, fat:0.2, kind:"veg",   tags:[], crave:["fresh","warmbowl"]},
-      {key:"cauliflower",name:"Cauliflower",       kcal:25,  protein:1.9, carbs:5,  fat:0.3, kind:"veg",   tags:[], crave:["light","warmbowl"]},
-      {key:"brussels",  name:"Brussels Sprouts",   kcal:43,  protein:3.4, carbs:9,  fat:0.3, kind:"veg",   tags:[], crave:["crunchy","grilled"]},
-      {key:"mushrooms", name:"Mushrooms",          kcal:22,  protein:3.1, carbs:3.3,fat:0.3, kind:"veg",   tags:[], crave:["savory","grilled","warmbowl"]},
-      {key:"onion",     name:"Onion",              kcal:40,  protein:1.1, carbs:9,  fat:0.1, kind:"veg",   tags:[], crave:["savory","comfort"]},
-      {key:"scallion",  name:"Green Onions",       kcal:32,  protein:1.8, carbs:7,  fat:0.2, kind:"veg",   tags:[], crave:["fresh","savory"]},
-      {key:"leek",      name:"Leeks",              kcal:61,  protein:1.5, carbs:14, fat:0.3, kind:"veg",   tags:[], crave:["savory","warmbowl"]},
-      {key:"garlic",    name:"Garlic",             kcal:149, protein:6.4, carbs:33, fat:0.5, kind:"veg",   tags:[], crave:["savory"]},
-      {key:"celery",    name:"Celery",             kcal:16,  protein:0.7, carbs:3,  fat:0.2, kind:"veg",   tags:[], crave:["crunchy","fresh","nocook"]},
-      {key:"cucumber",  name:"Cucumber",           kcal:15,  protein:0.7, carbs:3.6,fat:0.1, kind:"veg",   tags:[], crave:["fresh","light","crunchy","nocook"]},
-      {key:"radish",    name:"Radishes",           kcal:16,  protein:0.7, carbs:3.4,fat:0.1, kind:"veg",   tags:[], crave:["crunchy","fresh","nocook"]},
-      {key:"peppers",   name:"Bell Peppers",       kcal:31,  protein:1,   carbs:6,  fat:0.3, kind:"veg",   tags:["nightshade"], crave:["spicy","fresh","grilled","crunchy"]},
-      {key:"jalapeno",  name:"Jalapeño",           kcal:29,  protein:0.9, carbs:6.5,fat:0.4, kind:"veg",   tags:["nightshade"], crave:["spicy"]},
-      {key:"tomatoes",  name:"Tomatoes",           kcal:18,  protein:0.9, carbs:3.9,fat:0.2, kind:"veg",   tags:["nightshade"], crave:["spicy","fresh"]},
-      {key:"eggplant",  name:"Eggplant",           kcal:25,  protein:1,   carbs:6,  fat:0.2, kind:"veg",   tags:["nightshade"], crave:["grilled","warmbowl"]},
-      {key:"okra",      name:"Okra",               kcal:33,  protein:1.9, carbs:7,  fat:0.2, kind:"veg",   tags:[], crave:["warmbowl","spicy"]},
-      {key:"artichoke", name:"Artichoke",          kcal:47,  protein:3.3, carbs:11, fat:0.2, kind:"veg",   tags:[], crave:["savory"]},
-      {key:"sprouts",   name:"Bean Sprouts",       kcal:30,  protein:3,   carbs:6,  fat:0.2, kind:"veg",   tags:[], crave:["fresh","crunchy"]},
-      {key:"kimchi",    name:"Kimchi",             kcal:15,  protein:1.1, carbs:2.4,fat:0.5, kind:"veg",   tags:[], crave:["spicy","savory","nocook"]},
-      {key:"sauerkraut",name:"Sauerkraut",         kcal:19,  protein:0.9, carbs:4.3,fat:0.1, kind:"veg",   tags:[], crave:["savory","nocook"]},
-      {key:"pickles",   name:"Pickles",            kcal:11,  protein:0.3, carbs:2.3,fat:0.2, kind:"veg",   tags:[], crave:["crunchy","nocook"]},
-      {key:"berries",   name:"Blueberries",        kcal:57,  protein:0.7, carbs:14, fat:0.3, kind:"fruit", tags:[], crave:["sweet","nocook"]},
-      {key:"strawberry",name:"Strawberries",       kcal:32,  protein:0.7, carbs:8,  fat:0.3, kind:"fruit", tags:[], crave:["sweet","fresh","light"]},
-      {key:"raspberry", name:"Raspberries",        kcal:52,  protein:1.2, carbs:12, fat:0.7, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"blackberry",name:"Blackberries",       kcal:43,  protein:1.4, carbs:10, fat:0.5, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"cherries",  name:"Cherries",           kcal:63,  protein:1.1, carbs:16, fat:0.2, kind:"fruit", tags:[], crave:["sweet","nocook"]},
-      {key:"apple",     name:"Apple",              kcal:52,  protein:0.3, carbs:14, fat:0.2, kind:"fruit", tags:[], crave:["sweet","crunchy","nocook"]},
-      {key:"pear",      name:"Pear",               kcal:57,  protein:0.4, carbs:15, fat:0.1, kind:"fruit", tags:[], crave:["sweet","fresh","nocook"]},
-      {key:"plum",      name:"Plum",               kcal:46,  protein:0.7, carbs:11, fat:0.3, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"peach",     name:"Peach",              kcal:39,  protein:0.9, carbs:10, fat:0.3, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"apricot",   name:"Apricot",            kcal:48,  protein:1.4, carbs:11, fat:0.4, kind:"fruit", tags:[], crave:["sweet"]},
-      {key:"orange",    name:"Orange",             kcal:47,  protein:0.9, carbs:12, fat:0.1, kind:"fruit", tags:[], crave:["sweet","fresh","nocook"]},
-      {key:"grapefruit",name:"Grapefruit",         kcal:42,  protein:0.8, carbs:11, fat:0.1, kind:"fruit", tags:[], crave:["fresh","light","nocook"]},
-      {key:"kiwi",      name:"Kiwi",               kcal:61,  protein:1.1, carbs:15, fat:0.5, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"mango",     name:"Mango",              kcal:60,  protein:0.8, carbs:15, fat:0.4, kind:"fruit", tags:[], crave:["sweet"]},
-      {key:"pineapple", name:"Pineapple",          kcal:50,  protein:0.5, carbs:13, fat:0.1, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"papaya",    name:"Papaya",             kcal:43,  protein:0.5, carbs:11, fat:0.3, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"cantaloupe",name:"Cantaloupe",         kcal:34,  protein:0.8, carbs:8,  fat:0.2, kind:"fruit", tags:[], crave:["fresh","light","nocook"]},
-      {key:"watermelon",name:"Watermelon",         kcal:30,  protein:0.6, carbs:8,  fat:0.2, kind:"fruit", tags:[], crave:["fresh","light","nocook"]},
-      {key:"grapes",    name:"Grapes",             kcal:69,  protein:0.7, carbs:18, fat:0.2, kind:"fruit", tags:[], crave:["sweet","nocook"]},
-      {key:"pomegranate",name:"Pomegranate",       kcal:83,  protein:1.7, carbs:19, fat:1.2, kind:"fruit", tags:[], crave:["sweet","fresh"]},
-      {key:"fig",       name:"Figs",               kcal:74,  protein:0.8, carbs:19, fat:0.3, kind:"fruit", tags:[], crave:["sweet"]},
-      {key:"dates",     name:"Dates",              kcal:277, protein:1.8, carbs:75, fat:0.2, kind:"fruit", tags:[], crave:["sweet","carbheavy","nocook"]},
-      {key:"raisins",   name:"Raisins",            kcal:299, protein:3.1, carbs:79, fat:0.5, kind:"fruit", tags:[], crave:["sweet","carbheavy","nocook"]},
+    /* VEGETABLES — raw weights. Sized as a side portion, never as the meal's
+       carb or fat source, so nobody is forced to hit a carb target on kale. */
+    veg: [
+      {key:"broccoli",  name:"Broccoli",           kcal:35,  protein:2.4, carbs:7,  fat:0.4,  tags:[], crave:["warmbowl","savory"]},
+      {key:"spinach",   name:"Spinach",            kcal:23,  protein:2.9, carbs:3.6,fat:0.4,  tags:[], crave:["fresh","light"]},
+      {key:"greens",    name:"Mixed Greens",       kcal:20,  protein:1.6, carbs:3.5,fat:0.2,  tags:[], crave:["fresh","light","nocook"]},
+      {key:"arugula",   name:"Arugula",            kcal:25,  protein:2.6, carbs:3.7,fat:0.7,  tags:[], crave:["fresh","light","nocook"]},
+      {key:"romaine",   name:"Romaine Lettuce",    kcal:17,  protein:1.2, carbs:3.3,fat:0.3,  tags:[], crave:["fresh","light","crunchy","nocook"]},
+      {key:"chard",     name:"Swiss Chard",        kcal:19,  protein:1.8, carbs:3.7,fat:0.2,  tags:[], crave:["warmbowl","light"]},
+      {key:"kale",      name:"Kale",               kcal:49,  protein:4.3, carbs:9,  fat:0.9,  tags:[], crave:["warmbowl"]},
+      {key:"bokchoy",   name:"Bok Choy",           kcal:13,  protein:1.5, carbs:2.2,fat:0.2,  tags:[], crave:["light","warmbowl","fresh"]},
+      {key:"cabbage",   name:"Cabbage",            kcal:25,  protein:1.3, carbs:6,  fat:0.1,  tags:[], crave:["crunchy","fresh"]},
+      {key:"zucchini",  name:"Zucchini",           kcal:17,  protein:1.2, carbs:3.1,fat:0.3,  tags:[], crave:["grilled","light"]},
+      {key:"squash",    name:"Yellow Squash",      kcal:16,  protein:1.2, carbs:3.4,fat:0.2,  tags:[], crave:["grilled","light"]},
+      {key:"butternut", name:"Butternut Squash",   kcal:45,  protein:1,   carbs:12, fat:0.1,  tags:[], crave:["comfort","warmbowl"]},
+      {key:"asparagus", name:"Asparagus",          kcal:20,  protein:2.2, carbs:3.9,fat:0.1,  tags:[], crave:["grilled","light"]},
+      {key:"greenbeans",name:"Green Beans",        kcal:31,  protein:1.8, carbs:7,  fat:0.2,  tags:[], crave:["crunchy"]},
+      {key:"snappeas",  name:"Snap Peas",          kcal:42,  protein:2.8, carbs:7.5,fat:0.2,  tags:[], crave:["crunchy","fresh"]},
+      {key:"peas",      name:"Green Peas",         kcal:81,  protein:5.4, carbs:14, fat:0.4,  tags:[], crave:["comfort","warmbowl"]},
+      {key:"corn",      name:"Sweet Corn",         kcal:86,  protein:3.2, carbs:19, fat:1.2,  tags:[], crave:["sweet","comfort","grilled"]},
+      {key:"carrots",   name:"Carrots",            kcal:41,  protein:0.9, carbs:10, fat:0.2,  tags:[], crave:["fresh","crunchy","nocook"]},
+      {key:"beets",     name:"Beets",              kcal:43,  protein:1.6, carbs:10, fat:0.2,  tags:[], crave:["fresh","warmbowl"]},
+      {key:"cauliflower",name:"Cauliflower",       kcal:25,  protein:1.9, carbs:5,  fat:0.3,  tags:[], crave:["light","warmbowl"]},
+      {key:"brussels",  name:"Brussels Sprouts",   kcal:43,  protein:3.4, carbs:9,  fat:0.3,  tags:[], crave:["crunchy","grilled"]},
+      {key:"mushrooms", name:"Mushrooms",          kcal:22,  protein:3.1, carbs:3.3,fat:0.3,  tags:[], crave:["savory","grilled","warmbowl"]},
+      {key:"onion", aromatic:true,     name:"Onion",              kcal:40,  protein:1.1, carbs:9,  fat:0.1,  tags:[], crave:["savory","comfort"]},
+      {key:"scallion", aromatic:true,  name:"Green Onions",       kcal:32,  protein:1.8, carbs:7,  fat:0.2,  tags:[], crave:["fresh","savory"]},
+      {key:"leek", aromatic:true,      name:"Leeks",              kcal:61,  protein:1.5, carbs:14, fat:0.3,  tags:[], crave:["savory","warmbowl"]},
+      {key:"garlic", aromatic:true,    name:"Garlic",             kcal:149, protein:6.4, carbs:33, fat:0.5,  tags:[], crave:["savory"]},
+      {key:"celery",    name:"Celery",             kcal:16,  protein:0.7, carbs:3,  fat:0.2,  tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"cucumber",  name:"Cucumber",           kcal:15,  protein:0.7, carbs:3.6,fat:0.1,  tags:[], crave:["fresh","light","crunchy","nocook"]},
+      {key:"radish",    name:"Radishes",           kcal:16,  protein:0.7, carbs:3.4,fat:0.1,  tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"peppers",   name:"Bell Peppers",       kcal:31,  protein:1,   carbs:6,  fat:0.3,  tags:["nightshade"], crave:["spicy","fresh","grilled","crunchy"]},
+      {key:"jalapeno", aromatic:true,  name:"Jalapeño",           kcal:29,  protein:0.9, carbs:6.5,fat:0.4,  tags:["nightshade"], crave:["spicy"]},
+      {key:"tomatoes",  name:"Tomatoes",           kcal:18,  protein:0.9, carbs:3.9,fat:0.2,  tags:["nightshade"], crave:["spicy","fresh"]},
+      {key:"eggplant",  name:"Eggplant",           kcal:25,  protein:1,   carbs:6,  fat:0.2,  tags:["nightshade"], crave:["grilled","warmbowl"]},
+      {key:"okra",      name:"Okra",               kcal:33,  protein:1.9, carbs:7,  fat:0.2,  tags:[], crave:["warmbowl","spicy"]},
+      {key:"artichoke", name:"Artichoke",          kcal:47,  protein:3.3, carbs:11, fat:0.2,  tags:[], crave:["savory"]},
+      {key:"sprouts",   name:"Bean Sprouts",       kcal:30,  protein:3,   carbs:6,  fat:0.2,  tags:[], crave:["fresh","crunchy"]},
+      {key:"kimchi",    name:"Kimchi",             kcal:15,  protein:1.1, carbs:2.4,fat:0.5,  tags:[], crave:["spicy","savory","nocook"]},
+      {key:"sauerkraut",name:"Sauerkraut",         kcal:19,  protein:0.9, carbs:4.3,fat:0.1,  tags:[], crave:["savory","nocook"]},
+      {key:"babyspinach",name:"Baby Spinach",     kcal:23,  protein:2.9, carbs:3.6,fat:0.4, tags:[], crave:["fresh","light","nocook"]},
+      {key:"butterlettuce",name:"Butter Lettuce",  kcal:13,  protein:1.4, carbs:2.2,fat:0.2, tags:[], crave:["fresh","light","nocook"]},
+      {key:"iceberg",   name:"Iceberg Lettuce",    kcal:14,  protein:0.9, carbs:3,  fat:0.1, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"redcabbage",name:"Red Cabbage",        kcal:31,  protein:1.4, carbs:7.4,fat:0.2, tags:[], crave:["crunchy","fresh"]},
+      {key:"broccolislaw",name:"Broccoli Slaw",    kcal:33,  protein:2.6, carbs:6,  fat:0.4, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"shishito",  name:"Shishito Peppers",   kcal:26,  protein:1.3, carbs:5,  fat:0.3, tags:["nightshade"], crave:["grilled","spicy"]},
+      {key:"serrano",   name:"Serrano Pepper",     kcal:32,  protein:1.7, carbs:6.7,fat:0.4, tags:["nightshade"], crave:["spicy"]},
+      {key:"habanero",  name:"Habanero",           kcal:40,  protein:1.9, carbs:9,  fat:0.4, tags:["nightshade"], crave:["spicy"]},
+      {key:"chayote",   name:"Chayote Squash",     kcal:19,  protein:0.8, carbs:4.5,fat:0.1, tags:[], crave:["light","warmbowl"]},
+      {key:"delicata",  name:"Delicata Squash",    kcal:40,  protein:0.9, carbs:10, fat:0.1, tags:[], crave:["comfort","warmbowl"]},
+      {key:"kabocha",   name:"Kabocha Squash",     kcal:49,  protein:1.1, carbs:12, fat:0.1, tags:[], crave:["comfort","warmbowl","sweet"]},
+      {key:"jicama",    name:"Jicama",             kcal:38,  protein:0.7, carbs:9,  fat:0.1, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"kohlrabi",  name:"Kohlrabi",           kcal:27,  protein:1.7, carbs:6.2,fat:0.1, tags:[], crave:["crunchy","fresh"]},
+      {key:"babycorn",  name:"Baby Corn",          kcal:26,  protein:2,   carbs:5,  fat:0.4, tags:[], crave:["crunchy","warmbowl"]},
+      {key:"waterchest",name:"Water Chestnuts",    kcal:97,  protein:1.4, carbs:24, fat:0.1, tags:[], crave:["crunchy","warmbowl"]},
+      {key:"bambooshoot",name:"Bamboo Shoots",     kcal:27,  protein:2.6, carbs:5.2,fat:0.3, tags:[], crave:["warmbowl","crunchy"]},
+      {key:"seaweed",   name:"Seaweed / Nori",     kcal:35,  protein:5.8, carbs:5,  fat:0.3, tags:[], crave:["savory","light","nocook"]},
+      {key:"shiitake",  name:"Shiitake Mushrooms", kcal:34,  protein:2.2, carbs:6.8,fat:0.5, tags:[], crave:["savory","warmbowl","grilled"]},
+      {key:"portobello",name:"Portobello Mushroom",kcal:22,  protein:2.1, carbs:3.9,fat:0.4, tags:[], crave:["savory","grilled"]},
+      {key:"pearlonion",name:"Pearl Onions",       kcal:40,  protein:1.1, carbs:9,  fat:0.1, tags:[], crave:["savory","warmbowl"]},
+      {key:"shallot",   name:"Shallot", aromatic:true, kcal:72, protein:2.5,carbs:17,fat:0.1,tags:[], crave:["savory"]},
+      {key:"ginger",    name:"Ginger", aromatic:true, kcal:80,  protein:1.8, carbs:18, fat:0.8, tags:[], crave:["spicy","savory"]},
+      {key:"snowpeas",  name:"Snow Peas",          kcal:42,  protein:2.8, carbs:7.5,fat:0.2, tags:[], crave:["crunchy","fresh"]},
+      {key:"broccolini",name:"Broccolini",         kcal:35,  protein:3.1, carbs:6,  fat:0.4, tags:[], crave:["grilled","warmbowl"]},
+      {key:"spaghettisq",name:"Spaghetti Squash",  kcal:31,  protein:0.6, carbs:7,  fat:0.6, tags:[], crave:["comfort","warmbowl","light"]},
+      {key:"acornsq",   name:"Acorn Squash",       kcal:40,  protein:0.8, carbs:10, fat:0.1, tags:[], crave:["comfort","warmbowl"]},
+      {key:"fennel",    name:"Fennel",             kcal:31,  protein:1.2, carbs:7,  fat:0.2, tags:[], crave:["fresh","light"]},
+      {key:"endive",    name:"Endive",             kcal:17,  protein:1.3, carbs:3.4,fat:0.2, tags:[], crave:["fresh","light","nocook"]},
+      {key:"watercress",name:"Watercress",         kcal:11,  protein:2.3, carbs:1.3,fat:0.1, tags:[], crave:["fresh","light"]},
+      {key:"collards",  name:"Collard Greens",     kcal:32,  protein:3,   carbs:5.4,fat:0.6, tags:[], crave:["warmbowl","comfort"]},
+      {key:"turnip",    name:"Turnip",             kcal:28,  protein:0.9, carbs:6.4,fat:0.1, tags:[], crave:["warmbowl"]},
+      {key:"parsnip",   name:"Parsnip",            kcal:75,  protein:1.2, carbs:18, fat:0.3, tags:[], crave:["comfort","warmbowl"]},
+      {key:"rutabaga",  name:"Rutabaga",           kcal:37,  protein:1.1, carbs:8.6,fat:0.2, tags:[], crave:["warmbowl"]},
+      {key:"daikon",    name:"Daikon Radish",      kcal:18,  protein:0.6, carbs:4.1,fat:0.1, tags:[], crave:["fresh","crunchy"]},
+      {key:"napa",      name:"Napa Cabbage",       kcal:16,  protein:1.2, carbs:3.2,fat:0.2, tags:[], crave:["fresh","warmbowl","crunchy"]},
+      {key:"artichokehearts",name:"Artichoke Hearts",kcal:47,protein:2.9, carbs:10, fat:0.3, tags:[], crave:["savory","nocook"]},
+      {key:"heartsofpalm",name:"Hearts of Palm",   kcal:28,  protein:2.7, carbs:4.6,fat:0.6, tags:[], crave:["fresh","light","nocook"]},
+      {key:"roastedpeppers",name:"Roasted Red Peppers",kcal:24,protein:0.9,carbs:5, fat:0.2, tags:["nightshade"], crave:["savory","grilled","nocook"]},
+      {key:"sundried",  name:"Sun-Dried Tomatoes", kcal:78,  protein:4.1, carbs:17, fat:0.9, tags:["nightshade"], crave:["savory","fresh"]},
+      {key:"poblano",   name:"Poblano Pepper",     kcal:20,  protein:0.9, carbs:4.6,fat:0.2, tags:["nightshade"], crave:["spicy","grilled"]},
+      {key:"squashzoodle",name:"Zucchini Noodles", kcal:17,  protein:1.2, carbs:3.1,fat:0.3, tags:[], crave:["light","fresh"]},
+      {key:"edamamepod",name:"Edamame in Pod",     kcal:121, protein:11.9,carbs:8.9,fat:5.2, tags:["soy","legume"], crave:["fresh","light","nocook"]},
+      {key:"pickles",   name:"Pickles",            kcal:11,  protein:0.3, carbs:2.3,fat:0.2,  tags:[], crave:["crunchy","nocook"]},
+    ],
+    /* FRUIT — raw weights, same idea. Encouraged but never mandatory. */
+    fruit: [
+      {key:"berries",   name:"Blueberries",        kcal:57,  protein:0.7, carbs:14, fat:0.3,  tags:[], crave:["sweet","nocook"]},
+      {key:"honeycrisp",name:"Apple, Honeycrisp (med)",  unit:{soft:true, g:200,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","fresh","nocook"]},
+      {key:"gala",      name:"Apple, Gala (med)",         unit:{soft:true, g:172,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
+      {key:"fuji",      name:"Apple, Fuji (med)",         unit:{soft:true, g:190,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
+      {key:"grannysmith",name:"Apple, Granny Smith (med)",unit:{soft:true, g:172,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"pinklady",  name:"Apple, Pink Lady (med)",    unit:{soft:true, g:170,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
+      {key:"navel",     name:"Orange, Navel (med)",       unit:{soft:true, g:140,one:"orange",many:"oranges"}, kcal:47, protein:0.9, carbs:12, fat:0.1, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"valencia",  name:"Orange, Valencia (med)",    unit:{soft:true, g:121,one:"orange",many:"oranges"}, kcal:47, protein:0.9, carbs:12, fat:0.1, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"cara",      name:"Orange, Cara Cara (med)",   unit:{soft:true, g:140,one:"orange",many:"oranges"}, kcal:47, protein:0.9, carbs:12, fat:0.1, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"bartlett",  name:"Pear, Bartlett (med)",      unit:{soft:true, g:178,one:"pear",many:"pears"}, kcal:57, protein:0.4, carbs:15, fat:0.1, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"bosc",      name:"Pear, Bosc (med)",          unit:{soft:true, g:170,one:"pear",many:"pears"}, kcal:57, protein:0.4, carbs:15, fat:0.1, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"hassavo",   name:"Avocado, Hass (med)",       unit:{soft:true, g:150,one:"avocado",many:"avocados"}, kcal:160, protein:2, carbs:9, fat:15, tags:[], crave:["creamy","fresh"]},
+      {key:"bananamed", name:"Banana (med, 7-8\")",       unit:{soft:true, g:118,one:"banana",many:"bananas"}, kcal:89, protein:1.1, carbs:22.8, fat:0.3, tags:[], crave:["sweet","nocook"]},
+      {key:"bananalg",  name:"Banana (large, 8-9\")",     unit:{soft:true, g:136,one:"banana",many:"bananas"}, kcal:89, protein:1.1, carbs:22.8, fat:0.3, tags:[], crave:["sweet","nocook"]},
+      {key:"strawberry",name:"Strawberries",       kcal:32,  protein:0.7, carbs:8,  fat:0.3,  tags:[], crave:["sweet","fresh","light"]},
+      {key:"raspberry", name:"Raspberries",        kcal:52,  protein:1.2, carbs:12, fat:0.7,  tags:[], crave:["sweet","fresh"]},
+      {key:"blackberry",name:"Blackberries",       kcal:43,  protein:1.4, carbs:10, fat:0.5,  tags:[], crave:["sweet","fresh"]},
+      {key:"cherries",  name:"Cherries",           kcal:63,  protein:1.1, carbs:16, fat:0.2,  tags:[], crave:["sweet","nocook"]},
+      {key:"plum", unit:{soft:true, g:66,one:"plum",many:"plums"},      name:"Plum, medium",               kcal:46,  protein:0.7, carbs:11, fat:0.3,  tags:[], crave:["sweet","fresh"]},
+      {key:"peach", unit:{soft:true, g:150,one:"peach",many:"peaches"},     name:"Peach, medium",              kcal:39,  protein:0.9, carbs:10, fat:0.3,  tags:[], crave:["sweet","fresh"]},
+      {key:"apricot",   name:"Apricot",            kcal:48,  protein:1.4, carbs:11, fat:0.4,  tags:[], crave:["sweet"]},
+      {key:"grapefruit",name:"Grapefruit",         kcal:42,  protein:0.8, carbs:11, fat:0.1,  tags:[], crave:["fresh","light","nocook"]},
+      {key:"kiwi", unit:{soft:true, g:69,one:"kiwi",many:"kiwis"},      name:"Kiwi, medium",               kcal:61,  protein:1.1, carbs:15, fat:0.5,  tags:[], crave:["sweet","fresh"]},
+      {key:"mango",     name:"Mango",              kcal:60,  protein:0.8, carbs:15, fat:0.4,  tags:[], crave:["sweet"]},
+      {key:"pineapple", name:"Pineapple",          kcal:50,  protein:0.5, carbs:13, fat:0.1,  tags:[], crave:["sweet","fresh"]},
+      {key:"papaya",    name:"Papaya",             kcal:43,  protein:0.5, carbs:11, fat:0.3,  tags:[], crave:["sweet","fresh"]},
+      {key:"cantaloupe",name:"Cantaloupe",         kcal:34,  protein:0.8, carbs:8,  fat:0.2,  tags:[], crave:["fresh","light","nocook"]},
+      {key:"watermelon",name:"Watermelon",         kcal:30,  protein:0.6, carbs:8,  fat:0.2,  tags:[], crave:["fresh","light","nocook"]},
+      {key:"grapes",    name:"Grapes",             kcal:69,  protein:0.7, carbs:18, fat:0.2,  tags:[], crave:["sweet","nocook"]},
+      {key:"pomegranate",name:"Pomegranate",       kcal:83,  protein:1.7, carbs:19, fat:1.2,  tags:[], crave:["sweet","fresh"]},
+      {key:"fig",       name:"Figs",               kcal:74,  protein:0.8, carbs:19, fat:0.3,  tags:[], crave:["sweet"]},
+      {key:"dates", unit:{soft:true, g:24,one:"date",many:"dates"},     name:"Dates",              kcal:277, protein:1.8, carbs:75, fat:0.2,  tags:[], crave:["sweet","carbheavy","nocook"]},
+      {key:"blood",     name:"Blood Orange",        kcal:50,  protein:1,   carbs:12, fat:0.2, tags:[], crave:["fresh","sweet"]},
+      {key:"lime",      name:"Lime",                kcal:30,  protein:0.7, carbs:11, fat:0.2, tags:[], crave:["fresh"]},
+      {key:"lemon",     name:"Lemon",               kcal:29,  protein:1.1, carbs:9,  fat:0.3, tags:[], crave:["fresh"]},
+      {key:"apricotdry",name:"Dried Apricots",      kcal:241, protein:3.4, carbs:63, fat:0.5, tags:[], crave:["sweet","nocook","carbheavy"]},
+      {key:"mangodry",  name:"Dried Mango",         kcal:319, protein:2.4, carbs:78, fat:1.2, tags:[], crave:["sweet","nocook","carbheavy"]},
+      {key:"prunes",    name:"Prunes",              kcal:240, protein:2.2, carbs:64, fat:0.4, tags:[], crave:["sweet","nocook"]},
+      {key:"coconutmeat",name:"Fresh Coconut",      kcal:354, protein:3.3, carbs:15, fat:33,  tags:[], crave:["sweet","crunchy"]},
+      {key:"jackfruit", name:"Jackfruit",           kcal:95,  protein:1.7, carbs:23, fat:0.6, tags:[], crave:["sweet","fresh"]},
+      {key:"tangerine", unit:{soft:true, g:88,one:"tangerine",many:"tangerines"}, name:"Tangerine",           kcal:53,  protein:0.8, carbs:13, fat:0.3, tags:[], crave:["sweet","nocook","fresh"]},
+      {key:"nectarine", unit:{soft:true, g:142,one:"nectarine",many:"nectarines"}, name:"Nectarine, medium",          kcal:44,  protein:1.1, carbs:11, fat:0.3, tags:[], crave:["sweet","fresh"]},
+      {key:"mandarin", unit:{soft:true, g:88,one:"mandarin",many:"mandarins"},  name:"Mandarin Orange",    kcal:53,  protein:0.8, carbs:13, fat:0.3, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"clementine", unit:{soft:true, g:74,one:"clementine",many:"clementines"},name:"Clementine",         kcal:47,  protein:0.9, carbs:12, fat:0.2, tags:[], crave:["sweet","nocook"]},
+      {key:"honeydew",  name:"Honeydew Melon",     kcal:36,  protein:0.5, carbs:9,  fat:0.1, tags:[], crave:["fresh","light","nocook"]},
+      {key:"lychee",    name:"Lychee",             kcal:66,  protein:0.8, carbs:17, fat:0.4, tags:[], crave:["sweet","fresh"]},
+      {key:"guava",     name:"Guava",              kcal:68,  protein:2.6, carbs:14, fat:1,   tags:[], crave:["sweet","fresh"]},
+      {key:"passionfruit",name:"Passion Fruit",    kcal:97,  protein:2.2, carbs:23, fat:0.7, tags:[], crave:["sweet","fresh"]},
+      {key:"dragonfruit",name:"Dragon Fruit",      kcal:60,  protein:1.2, carbs:13, fat:0.4, tags:[], crave:["fresh","sweet"]},
+      {key:"starfruit", name:"Starfruit",          kcal:31,  protein:1,   carbs:6.7,fat:0.3, tags:[], crave:["fresh","light"]},
+      {key:"persimmon", name:"Persimmon",          kcal:70,  protein:0.6, carbs:19, fat:0.2, tags:[], crave:["sweet"]},
+      {key:"cranberry", name:"Fresh Cranberries",  kcal:46,  protein:0.4, carbs:12, fat:0.1, tags:[], crave:["fresh"]},
+      {key:"blueberrfroz",name:"Frozen Mixed Berries",kcal:48,protein:0.8,carbs:11, fat:0.4, tags:[], crave:["sweet","nocook"]},
+      {key:"applesauce",name:"Unsweetened Applesauce",kcal:42,protein:0.2,carbs:11, fat:0.1, tags:[], crave:["sweet","nocook"]},
+      {key:"raisins",   name:"Raisins",            kcal:299, protein:3.1, carbs:79, fat:0.5,  tags:[], crave:["sweet","carbheavy","nocook"]},
+    ],
+    /* SAUCES — the difference between "chicken and rice" and dinner.
+       Values are per 100g; `serving` is a realistic single portion in grams.
+       `level` grades how calorie-costly it is, which decides who gets shown
+       what: a hard cut sees hot sauce and salsa, a bulk sees pesto and
+       alfredo. `pairs` lists carbs it belongs on, when it belongs on any. */
+    sauce: [
+      {key:"marinara",  name:"Marinara Sauce",        kcal:60,  protein:1.8,carbs:9,   fat:1.8, serving:125, level:"standard", tags:["nightshade"], crave:["savory","comfort","warmbowl"], pairs:["pasta","wwpasta","orzo","gnocchi","polenta","chickpasta","ricenoodle"], brands:["Rao's Homemade Marinara — ~90 kcal / ½ cup","Classico Tomato & Basil — ~60 kcal / ½ cup","Victoria Marinara — ~70 kcal / ½ cup"]},
+      {key:"pizzasauce",name:"Tomato / Pizza Sauce",  kcal:32,  protein:1.6,carbs:7,   fat:0.2, serving:60,  level:"light",    tags:["nightshade"], crave:["savory","comfort"], pairs:["pasta","wwpasta","pita","engmuffin","flourtort"], brands:["Muir Glen Pizza Sauce — ~35 kcal / ¼ cup","Contadina Pizza Sauce — ~30 kcal / ¼ cup"]},
+      {key:"alfredo",   name:"Alfredo Sauce",         kcal:180, protein:3,  carbs:4,   fat:17,  serving:60,  level:"rich",     tags:["dairy"], crave:["creamy","comfort"], pairs:["pasta","wwpasta","orzo","gnocchi"], brands:["Rao's Homemade Alfredo — ~110 kcal / ¼ cup","Bertolli Alfredo — ~110 kcal / ¼ cup"]},
+      {key:"pesto",     name:"Basil Pesto",           kcal:450, protein:5,  carbs:6,   fat:45,  serving:30,  level:"rich",     tags:["dairy","nuts"], crave:["savory","fresh"], pairs:["pasta","wwpasta","orzo","gnocchi","sourdough"], brands:["Rana Basil Pesto — ~140 kcal / 2 tbsp","Costco Kirkland Pesto — ~150 kcal / 2 tbsp"]},
+      {key:"bbq",       name:"BBQ Sauce",             kcal:172, protein:0.8,carbs:41,  fat:0.5, serving:35,  level:"standard", tags:["nightshade"], crave:["savory","comfort","grilled","sweet"], pairs:[], brands:["Sweet Baby Ray's Original — ~70 kcal / 2 tbsp","Stubb's Original — ~50 kcal / 2 tbsp","Bull's-Eye Original — ~60 kcal / 2 tbsp"]},
+      {key:"bbqlight",  name:"Sugar-Free BBQ Sauce",  kcal:40,  protein:0.5,carbs:10,  fat:0,   serving:35,  level:"light",    tags:["nightshade"], crave:["savory","grilled","comfort"], pairs:[], brands:["G Hughes Sugar-Free BBQ — ~10 kcal / 2 tbsp","Sweet Baby Ray's No Sugar Added — ~15 kcal / 2 tbsp","Guy's Award Winning Sugar-Free — ~15 kcal / 2 tbsp"]},
+      {key:"hotsauce",  name:"Hot Sauce",             kcal:12,  protein:0.5,carbs:1.8, fat:0.4, serving:15,  level:"light",    tags:["nightshade"], crave:["spicy","savory"], pairs:[], brands:["Frank's RedHot — ~0 kcal / tsp","Cholula — ~0 kcal / tsp","Tabasco — ~0 kcal / tsp","Yellowbird Habanero — ~5 kcal / tsp"]},
+      {key:"sriracha",  name:"Sriracha",              kcal:93,  protein:1.9,carbs:19,  fat:0.9, serving:15,  level:"light",    tags:["nightshade"], crave:["spicy","savory"], pairs:["rice","whiterice","brownrice","ricenoodle","soba"], brands:["Huy Fong Sriracha — ~15 kcal / tsp","Yellowbird Sriracha — ~10 kcal / tsp"]},
+      {key:"buffalo",   name:"Buffalo Sauce",         kcal:60,  protein:0,  carbs:4,   fat:5,   serving:30,  level:"light",    tags:["nightshade"], crave:["spicy","savory","comfort"], pairs:[], brands:["Frank's RedHot Buffalo — ~15 kcal / tbsp","Noble Made Buffalo — ~10 kcal / tbsp"]},
+      {key:"salsa",     name:"Salsa",                 kcal:36,  protein:1.5,carbs:7,   fat:0.2, serving:60,  level:"light",    tags:["nightshade"], crave:["spicy","fresh","nocook"], pairs:["corntort","flourtort","rice","whiterice","quinoa"], brands:["Pace Chunky Salsa — ~20 kcal / 2 tbsp","Herdez Salsa Casera — ~10 kcal / 2 tbsp","Trader Joe's Salsa Autentica — ~10 kcal / 2 tbsp"]},
+      {key:"salsaverde",name:"Salsa Verde",           kcal:30,  protein:1,  carbs:6,   fat:0.2, serving:60,  level:"light",    tags:["nightshade"], crave:["spicy","fresh"], pairs:["corntort","flourtort","rice","whiterice"], brands:["Herdez Salsa Verde — ~10 kcal / 2 tbsp","Frontera Tomatillo Salsa — ~15 kcal / 2 tbsp"]},
+      {key:"enchilada", name:"Enchilada Sauce",       kcal:45,  protein:1,  carbs:7,   fat:1.5, serving:60,  level:"light",    tags:["nightshade"], crave:["spicy","comfort","warmbowl"], pairs:["corntort","flourtort","rice"], brands:["Las Palmas Red Enchilada — ~20 kcal / ¼ cup","Hatch Red Enchilada — ~25 kcal / ¼ cup"]},
+      {key:"soy",       name:"Soy Sauce",             kcal:53,  protein:8,  carbs:4.9, fat:0.1, serving:15,  level:"light",    tags:["gluten","soy"], crave:["savory"], pairs:["rice","whiterice","brownrice","ricenoodle","soba","quinoa"], brands:["Kikkoman Soy Sauce — ~10 kcal / tbsp","Kikkoman Less Sodium — ~10 kcal / tbsp"]},
+      {key:"aminos",    name:"Coconut Aminos",        kcal:90,  protein:1,  carbs:20,  fat:0,   serving:15,  level:"light",    tags:[], crave:["savory"], pairs:["rice","whiterice","brownrice","ricenoodle","soba"], brands:["Bragg Coconut Aminos — ~15 kcal / tbsp","Coconut Secret — ~15 kcal / tbsp"]},
+      {key:"teriyaki",  name:"Teriyaki Sauce",        kcal:89,  protein:3,  carbs:16,  fat:0,   serving:30,  level:"standard", tags:["gluten","soy"], crave:["savory","sweet"], pairs:["rice","whiterice","brownrice","ricenoodle","soba"], brands:["Kikkoman Teriyaki — ~40 kcal / tbsp","Trader Joe's Soyaki — ~50 kcal / tbsp"]},
+      {key:"hoisin",    name:"Hoisin Sauce",          kcal:220, protein:3,  carbs:44,  fat:3.4, serving:20,  level:"standard", tags:["gluten","soy"], crave:["savory","sweet"], pairs:["rice","whiterice","ricenoodle","soba"], brands:["Lee Kum Kee Hoisin — ~35 kcal / tbsp","Kikkoman Hoisin — ~40 kcal / tbsp"]},
+      {key:"sweetchili",name:"Sweet Chili Sauce",     kcal:240, protein:0.5,carbs:58,  fat:0.3, serving:20,  level:"standard", tags:[], crave:["spicy","sweet"], pairs:["rice","whiterice","ricenoodle"], brands:["Mae Ploy Sweet Chili — ~50 kcal / tbsp","Thai Kitchen Sweet Red Chili — ~35 kcal / tbsp"]},
+      {key:"gochujang", name:"Gochujang Sauce",       kcal:220, protein:5,  carbs:45,  fat:1.5, serving:20,  level:"standard", tags:["gluten","soy","nightshade"], crave:["spicy","savory"], pairs:["rice","whiterice","brownrice","soba"], brands:["Chung Jung One Gochujang — ~35 kcal / tbsp","Bibigo Gochujang — ~30 kcal / tbsp"]},
+      {key:"peanutsauce",name:"Peanut Sauce",         kcal:250, protein:8,  carbs:18,  fat:17,  serving:30,  level:"rich",     tags:["nuts","legume","soy"], crave:["creamy","spicy","savory"], pairs:["ricenoodle","soba","rice","whiterice"], brands:["House of Tsang Bangkok Peanut — ~80 kcal / 2 tbsp","Thai Kitchen Peanut Satay — ~80 kcal / 2 tbsp"]},
+      {key:"curry",     name:"Coconut Curry Sauce",   kcal:120, protein:2,  carbs:8,   fat:9,   serving:60,  level:"standard", tags:[], crave:["spicy","creamy","warmbowl"], pairs:["rice","whiterice","brownrice","ricenoodle"], brands:["Maya Kaimal Coconut Curry — ~80 kcal / ¼ cup","Trader Joe's Thai Red Curry — ~70 kcal / ¼ cup"]},
+      {key:"ketchup",   name:"Ketchup",               kcal:101, protein:1,  carbs:25,  fat:0.1, serving:17,  level:"light",    tags:["nightshade"], crave:["comfort","sweet"], pairs:["whitepot","bread","engmuffin"], brands:["Heinz Ketchup — ~20 kcal / tbsp","Primal Kitchen Unsweetened — ~10 kcal / tbsp"]},
+      {key:"mustard",   name:"Yellow Mustard",        kcal:66,  protein:3.7,carbs:5.8, fat:3.4, serving:10,  level:"light",    tags:[], crave:["savory"], pairs:["bread","sourdough","pita","engmuffin"], brands:["French's Classic Yellow — ~0 kcal / tsp","Grey Poupon Dijon — ~5 kcal / tsp"]},
+      {key:"honeymust", name:"Honey Mustard",         kcal:220, protein:1.5,carbs:30,  fat:11,  serving:20,  level:"standard", tags:["egg"], crave:["sweet","savory"], pairs:["bread","sourdough","pita"], brands:["Ken's Honey Mustard — ~60 kcal / tbsp","Sir Kensington's Honey Mustard — ~50 kcal / tbsp"]},
+      {key:"ranch",     name:"Ranch Dressing",        kcal:430, protein:1.5,carbs:6,   fat:45,  serving:30,  level:"rich",     tags:["dairy","egg"], crave:["creamy","comfort"], pairs:[], brands:["Hidden Valley Original — ~130 kcal / 2 tbsp","Primal Kitchen Ranch — ~120 kcal / 2 tbsp"]},
+      {key:"ranchlight",name:"Light Ranch",           kcal:160, protein:1,  carbs:10,  fat:13,  serving:30,  level:"light",    tags:["dairy","egg"], crave:["creamy","fresh"], pairs:[], brands:["Bolthouse Farms Yogurt Ranch — ~45 kcal / 2 tbsp","Hidden Valley Light — ~60 kcal / 2 tbsp"]},
+      {key:"caesar",    name:"Caesar Dressing",       kcal:460, protein:2,  carbs:3,   fat:49,  serving:30,  level:"rich",     tags:["dairy","egg","fish"], crave:["creamy","savory"], pairs:[], brands:["Ken's Caesar — ~170 kcal / 2 tbsp","Primal Kitchen Caesar — ~130 kcal / 2 tbsp"]},
+      {key:"balsamic",  name:"Balsamic Vinaigrette",  kcal:240, protein:0.2,carbs:12,  fat:21,  serving:30,  level:"standard", tags:[], crave:["fresh","light"], pairs:[], brands:["Newman's Own Balsamic — ~90 kcal / 2 tbsp","Primal Kitchen Balsamic — ~120 kcal / 2 tbsp"]},
+      {key:"vinlight",  name:"Light Vinaigrette",     kcal:90,  protein:0,  carbs:8,   fat:6.5, serving:30,  level:"light",    tags:[], crave:["fresh","light"], pairs:[], brands:["Bolthouse Farms Vinaigrette — ~30 kcal / 2 tbsp","Skinnygirl Balsamic — ~10 kcal / 2 tbsp"]},
+      {key:"tzatziki",  name:"Tzatziki",              kcal:100, protein:3,  carbs:4,   fat:8,   serving:60,  level:"standard", tags:["dairy"], crave:["creamy","fresh"], pairs:["pita","couscous","bulgur","quinoa"], brands:["Cedar's Tzatziki — ~50 kcal / 2 tbsp","Trader Joe's Tzatziki — ~35 kcal / 2 tbsp"]},
+      {key:"hummus",    name:"Hummus",                kcal:166, protein:8,  carbs:14,  fat:10,  serving:30,  level:"standard", tags:["legume"], crave:["creamy","fresh","nocook"], pairs:["pita","bread","couscous","bulgur"], brands:["Sabra Classic — ~70 kcal / 2 tbsp","Cedar's Original — ~60 kcal / 2 tbsp"]},
+      {key:"tahinisauce",name:"Tahini Sauce",         kcal:300, protein:8,  carbs:10,  fat:26,  serving:30,  level:"rich",     tags:[], crave:["creamy","savory"], pairs:["pita","couscous","bulgur","quinoa","farro"], brands:["Soom Tahini Sauce — ~90 kcal / 2 tbsp","Trader Joe's Tahini Sauce — ~80 kcal / 2 tbsp"]},
+      {key:"chimichurri",name:"Chimichurri",          kcal:300, protein:1,  carbs:3,   fat:32,  serving:20,  level:"rich",     tags:[], crave:["fresh","grilled","savory"], pairs:[], brands:["Gaucho Ranch Chimichurri — ~60 kcal / tbsp","Trader Joe's Chimichurri — ~70 kcal / tbsp"]},
+      {key:"ponzu",     name:"Ponzu",                 kcal:40,  protein:2,  carbs:7,   fat:0,   serving:15,  level:"light",    tags:["gluten","soy","fish"], crave:["fresh","savory","light"], pairs:["rice","whiterice","soba","ricenoodle"], brands:["Kikkoman Ponzu — ~10 kcal / tbsp","Otafuku Ponzu — ~10 kcal / tbsp"]},
+      {key:"tikka",     name:"Tikka Masala Sauce",   kcal:110, protein:2,  carbs:9,   fat:7,   serving:80, level:"standard", tags:["dairy","nightshade"], crave:["spicy","creamy","warmbowl"], pairs:["basmati","rice","naan","brownrice"], brands:["Maya Kaimal Tikka Masala — ~90 kcal / ¼ cup","Trader Joe's Masala Simmer — ~70 kcal / ¼ cup"]},
+      {key:"tzatzikilight",name:"Yogurt Dill Sauce",  kcal:60,  protein:5,  carbs:4,   fat:2.5, serving:60, level:"light",    tags:["dairy"], crave:["creamy","fresh","light"], pairs:["pita","couscous","quinoa","bulgur"], brands:["Fage Tzatziki — ~30 kcal / 2 tbsp","Homemade: 0% Greek yogurt + dill + lemon"]},
+      {key:"salsaroja",  name:"Salsa Roja / Taquera", kcal:35,  protein:1.2,carbs:7,   fat:0.3, serving:60, level:"light",    tags:["nightshade"], crave:["spicy","savory"], pairs:["corntort","rice","lowcarbtort"], brands:["Herdez Salsa Taquera — ~10 kcal / 2 tbsp","La Costeña Salsa Roja — ~10 kcal / 2 tbsp"]},
+      {key:"chipotle",  name:"Chipotle Adobo Sauce",  kcal:80,  protein:1.5,carbs:14,  fat:2,   serving:25, level:"light",    tags:["nightshade"], crave:["spicy","savory","grilled"], pairs:["corntort","rice","lowcarbtort"], brands:["La Morena Chipotles in Adobo — ~20 kcal / tbsp","San Marcos Chipotle — ~20 kcal / tbsp"]},
+      {key:"chilicrisp",name:"Chili Crisp",           kcal:500, protein:6,  carbs:12,  fat:50,  serving:12, level:"standard", tags:["soy","nightshade"], crave:["spicy","savory","crunchy"], pairs:["rice","whiterice","ricenoodle","soba","udon"], brands:["Lao Gan Ma Chili Crisp — ~60 kcal / tbsp","Fly By Jing Sichuan Chili Crisp — ~80 kcal / tbsp"]},
+      {key:"oystersauce",name:"Oyster Sauce",         kcal:51,  protein:2,  carbs:11,  fat:0.3, serving:20, level:"light",    tags:["fish","shellfish","soy","gluten"], crave:["savory","warmbowl"], pairs:["rice","whiterice","ricenoodle","udon","soba"], brands:["Lee Kum Kee Panda Oyster — ~10 kcal / tbsp","Kikkoman Oyster Sauce — ~15 kcal / tbsp"]},
+      {key:"fishsauce", name:"Fish Sauce",            kcal:35,  protein:5,  carbs:4,   fat:0,   serving:10, level:"light",    tags:["fish"], crave:["savory"], pairs:["rice","ricenoodle","soba"], brands:["Red Boat Fish Sauce — ~5 kcal / tbsp","Three Crabs Fish Sauce — ~10 kcal / tbsp"]},
+      {key:"buffalowing",name:"Garlic Parmesan Sauce",kcal:400, protein:4,  carbs:5,   fat:41,  serving:25, level:"rich",     tags:["dairy"], crave:["savory","creamy","comfort"], pairs:[], brands:["Buffalo Wild Wings Garlic Parm — ~130 kcal / 2 tbsp","Ken's Garlic Parmesan — ~140 kcal / 2 tbsp"]},
+      {key:"thousand",  name:"Thousand Island",       kcal:390, protein:1,  carbs:16,  fat:36,  serving:30, level:"rich",     tags:["egg","nightshade"], crave:["creamy","comfort"], pairs:[], brands:["Ken's Thousand Island — ~120 kcal / 2 tbsp","Primal Kitchen Special Sauce — ~110 kcal / 2 tbsp"]},
+      {key:"greekdress",name:"Greek Dressing",        kcal:270, protein:0.5,carbs:5,   fat:28,  serving:30, level:"standard", tags:[], crave:["fresh","savory"], pairs:[], brands:["Ken's Greek — ~110 kcal / 2 tbsp","Cardini's Greek — ~100 kcal / 2 tbsp"]},
+      {key:"gravy",     name:"Turkey / Brown Gravy",  kcal:45,  protein:1.5,carbs:6,   fat:1.5, serving:60, level:"light",    tags:["gluten"], crave:["savory","comfort","warmbowl"], pairs:["whitepot","potato","bread"], brands:["Heinz Home Style Gravy — ~25 kcal / ¼ cup","Trader Joe's Turkey Gravy — ~30 kcal / ¼ cup"]},
+      {key:"applesaucecond",name:"Cranberry Sauce",   kcal:151, protein:0.1,carbs:39,  fat:0.1, serving:35, level:"standard", tags:[], crave:["sweet","comfort"], pairs:[], brands:["Ocean Spray Whole Berry — ~50 kcal / 2 tbsp","365 Organic Cranberry Sauce — ~45 kcal / 2 tbsp"]},
+      {key:"cocktail",  name:"Cocktail Sauce",        kcal:130, protein:1,  carbs:31,  fat:0.3, serving:30,  level:"light",    tags:["nightshade"], crave:["fresh","spicy"], pairs:[], brands:["Heinz Cocktail Sauce — ~30 kcal / 2 tbsp","Old Bay Cocktail Sauce — ~30 kcal / 2 tbsp"]},
     ]
   };
   /* Produce portions are pegged to this slice of a meal's kcal target */
-  const PRODUCE_KCAL_SHARE = 0.05;
+  /* =========================================================
+     DISH TEMPLATES
+     Meals should feel like something you'd cook, not a pile of macros.
+     Each template is a dish concept with a shortlist of valid ingredients
+     per slot; the portion engine then sizes it to the person's targets.
+     Options are ordered loosely by how classic they are, and the picker
+     favours whichever ones the person starred, so the same template can
+     come out as chicken burrito bowls or shrimp burrito bowls.
+     `slots` marks which meals it suits. Anything absent simply isn't used.
+  ========================================================= */
+  const RECIPES = [
+    // ---------- BREAKFAST ----------
+    {name:"Greek Yogurt Bowl", pattern:"{P} & {F} Bowl", form:"Bowl", slots:["breakfast","snack"], crave:["sweet","creamy","nocook"],
+     protein:["yogurt0","yogurt2","skyr","cottage1"], carb:["oats","granola","honey"], fat:["almonds","walnuts","chia","pb","pecans"],
+     fruit:["berries","strawberry","banana","blueberrfroz","raspberry"], veg:[], sauce:[]},
+    {name:"Overnight Oats", pattern:"{F} Overnight Oats", form:"Oats", slots:["breakfast","snack"], crave:["sweet","creamy","nocook"],
+     protein:["whey","yogurt0","skyr"], carb:["oats"], fat:["chia","pb","almondbutter","flaxseed"],
+     fruit:["banana","berries","strawberry","applesauce"], veg:[], sauce:[]},
+    {name:"Scrambled Eggs & Toast", pattern:"Scrambled {P} with {V} & {C} Toast", form:"Toast", slots:["breakfast"], crave:["savory","comfort"],
+     protein:["wholeegg","eggwhites"], protein2:["cheddar","turkbacon"], carb:["protbread","bread","sourdough","ezekiel","engmuffin"], fat:["butter","avocado","oil"],
+     veg:["spinach","mushrooms","tomatoes","peppers","scallion"], fruit:["navel","berries"], sauce:["hotsauce","salsa","ketchup"]},
+    {name:"Breakfast Burrito", pattern:"{P} & {V} Breakfast Burrito", form:"Burrito", slots:["breakfast"], crave:["savory","spicy","comfort"],
+     protein:["wholeegg","eggwhites","turkbacon","grndturk93","cheddar"], carb:["lowcarbtort10","flourtort10","corntort6"], fat:["avocado","cheddar","oil"],
+     veg:["peppers","onion","spinach","poblano"], fruit:[], sauce:["salsa","hotsauce","salsaverde"]},
+    {name:"Protein Pancakes", pattern:"{F} Protein Pancakes", form:"Pancakes", slots:["breakfast"], crave:["sweet","comfort"],
+     protein:["whey","cottage1","wholeegg"], carb:["oats","honey","maple"], fat:["pb","butter","almondbutter"],
+     fruit:["berries","banana","strawberry"], veg:[], sauce:[]},
+    {name:"Avocado Toast & Eggs", pattern:"Avocado {C} Toast with {P}", form:"Toast", slots:["breakfast"], crave:["savory","creamy","fresh"],
+     protein:["wholeegg","eggwhites","feta"], carb:["sourdough","protbread","ezekiel","bread"], fat:["avocado","oil"],
+     veg:["tomatoes","arugula","radish","sprouts"], fruit:[], sauce:["hotsauce","balsamic"]},
+    {name:"Smoothie Bowl", pattern:"{F} & {V} Smoothie Bowl", form:"Bowl", slots:["breakfast","snack"], crave:["sweet","creamy","nocook"],
+     protein:["whey","yogurt0","skyr"], carb:["oats","granola","banana"], fat:["pb","almondbutter","chia","hemphearts"],
+     fruit:["berries","mango","strawberry","blueberrfroz","dragonfruit"], veg:["spinach","kale"], sauce:[]},
+    {name:"Cottage Cheese & Fruit", pattern:"{P} with {F}", form:"Bowl", slots:["breakfast","snack"], crave:["creamy","fresh","nocook"],
+     protein:["cottage1","cottage4","yogurt0"], carb:["ricecakes","granola","honey"], fat:["almonds","walnuts","pistachios"],
+     fruit:["pineapple","peach","berries","cantaloupe","persimmon"], veg:[], sauce:[]},
+
+    // ---------- CHICKEN / POULTRY ----------
+    {name:"Chicken & Rice Bowl", pattern:"{S}-Glazed {P} & {C} Bowl", form:"Bowl", slots:["lunch","dinner"], crave:["savory","comfort","warmbowl"],
+     protein:["chicken","chickthigh","turkey"], carb:["rice","whiterice","brownrice","quinoa","caulirice"], fat:["oil","avocado","sesameoil"],
+     veg:["broccoli","peppers","onion","carrots","snappeas","broccolini"], fruit:[], sauce:["teriyaki","sriracha","soy","gochujang","bbqlight"]},
+    {name:"Chicken Burrito Bowl", pattern:"{P} Burrito Bowl with {C}", form:"Bowl", slots:["lunch","dinner"], crave:["spicy","savory","comfort"],
+     protein:["chicken","grndturk93","beef93","shrimp"], carb:["rice","whiterice","brownrice","caulirice"], fat:["avocado","guac","cheddar","sourcream"],
+     veg:["peppers","onion","romaine","tomatoes","corn","poblano"], fruit:[], sauce:["salsa","salsaverde","hotsauce","enchilada"]},
+    {name:"Chicken Stir-Fry", pattern:"{P} & {V} Stir-Fry over {C}", form:"Stir-Fry", slots:["lunch","dinner"], crave:["savory","spicy","warmbowl"],
+     protein:["chicken","chickthigh","shrimp","tofu"], carb:["rice","whiterice","ricenoodle","soba","shirataki"], fat:["sesameoil","oil","cashews","peanuts"],
+     veg:["broccoli","peppers","snowpeas","bokchoy","carrots","napa","mushrooms"], fruit:[], sauce:["soy","teriyaki","hoisin","sweetchili","ponzu","gochujang"]},
+    {name:"Buffalo Chicken Wrap", pattern:"Buffalo {P} Wrap on {C}", form:"Wrap", slots:["lunch"], crave:["spicy","savory","comfort"],
+     protein:["chicken","turkey"], carb:["lowcarbtort10","protwrap","lavash"], fat:["ranchlight","avocado","cheddar"],
+     veg:["romaine","celery","carrots","tomatoes","onion"], fruit:[], sauce:["buffalo","hotsauce","ranchlight"]},
+    {name:"Chicken Caesar Salad", pattern:"{P} Caesar with {V}", form:"Salad", slots:["lunch","dinner"], crave:["fresh","savory","light"],
+     protein:["chicken","turkey","shrimp"], carb:["sourdough","bread","chickpeas","quinoa"], fat:["parmesan","oil","avocado"],
+     veg:["romaine","kale","tomatoes","cucumber"], fruit:[], sauce:["caesar","balsamic","vinlight"]},
+    {name:"Chicken Fajitas", pattern:"{P} Fajitas with {V}", form:"Fajitas", slots:["lunch","dinner"], crave:["spicy","savory","grilled"],
+     protein:["chicken","steak","shrimp"], carb:["lowcarbtort8","corntort6","flourtort8","rice"], fat:["avocado","guac","sourcream","oil"],
+     veg:["peppers","onion","poblano","tomatoes","roastedpeppers"], fruit:[], sauce:["salsa","salsaverde","hotsauce"]},
+    {name:"Honey Mustard Chicken", pattern:"Honey Mustard {P} with {C} & {V}", form:"Plate", slots:["lunch","dinner"], crave:["savory","sweet","comfort"],
+     protein:["chicken","chickthigh","pork"], carb:["potato","whitepot","rice","quinoa","farro"], fat:["oil","butter","almonds"],
+     veg:["greenbeans","brussels","asparagus","carrots","broccolini"], fruit:["honeycrisp"], sauce:["honeymust","mustard"]},
+    {name:"Chicken Shawarma Bowl", pattern:"{P} Shawarma Bowl with {C}", form:"Bowl", slots:["lunch","dinner"], crave:["savory","fresh","spicy"],
+     protein:["chicken","chickthigh","lamb","feta"], carb:["pita","couscous","bulgur","rice","lavash"], fat:["tahini","oil","olives","feta"],
+     veg:["cucumber","tomatoes","onion","romaine","peppers"], fruit:[], sauce:["tzatziki","tahinisauce","hummus","hotsauce"]},
+
+    // ---------- BEEF / PORK ----------
+    {name:"Steak & Potatoes", pattern:"{P} with {C} & {V}", form:"Plate", slots:["dinner"], crave:["savory","grilled","comfort"],
+     protein:["steak","ribeye","bison","porkchop"], carb:["whitepot","potato","farro","sourdough"], fat:["butter","oil","chimichurri"],
+     veg:["asparagus","brussels","mushrooms","broccolini","greenbeans"], fruit:[], sauce:["chimichurri","mustard","bbq"]},
+    {name:"Spaghetti & Meat Sauce", pattern:"{P} Bolognese over {C}", form:"Pasta", slots:["lunch","dinner"], crave:["comfort","savory","carbheavy"],
+     protein:["beef93","beef85","grndturk93","grndchick"], carb:["propasta","lentilpasta","edamamepasta","pasta","wwpasta","squashzoodle","spaghettisq"], fat:["parmesan","oil"],
+     veg:["mushrooms","onion","peppers","zucchini","spinach"], fruit:[], sauce:["marinara","pizzasauce"]},
+    {name:"Beef & Broccoli", pattern:"{P} & {V} over {C}", form:"Bowl", slots:["lunch","dinner"], crave:["savory","warmbowl","comfort"],
+     protein:["steak","beef93","chicken","tofu"], carb:["rice","whiterice","brownrice","ricenoodle","caulirice"], fat:["sesameoil","oil","cashews"],
+     veg:["broccoli","broccolini","carrots","snowpeas","mushrooms"], fruit:[], sauce:["soy","hoisin","teriyaki","gochujang"]},
+    {name:"Smash Burger Plate", pattern:"{P} Smash Burger on {C}", form:"Burger", slots:["lunch","dinner"], crave:["savory","comfort","grilled"],
+     protein:["beef85","beef93","bison","grndturk93","cheddar"], carb:["protbread","sandthin","bread","whitepot"], fat:["cheddar","avocado","butter"],
+     veg:["romaine","tomatoes","onion","pickles"], fruit:[], sauce:["ketchup","mustard","bbq","ranchlight"]},
+    {name:"Pork Loin & Roasted Veg", pattern:"{P} with Roasted {V} & {C}", form:"Plate", slots:["dinner"], crave:["savory","comfort","grilled"],
+     protein:["pork","porkchop","chicken"], carb:["potato","whitepot","parsnip","farro","quinoa"], fat:["oil","butter","pecans"],
+     veg:["brussels","carrots","acornsq","greenbeans","turnip"], fruit:["honeycrisp","bartlett"], sauce:["mustard","honeymust","bbqlight"]},
+    {name:"Taco Bowl", pattern:"{P} Taco Bowl with {C}", form:"Bowl", slots:["lunch","dinner"], crave:["spicy","savory","comfort"],
+     protein:["beef93","grndturk93","grndchick","blackbeans"], carb:["rice","corntort6","caulirice","whiterice"], fat:["cheddar","avocado","guac","sourcream"],
+     veg:["romaine","tomatoes","onion","corn","peppers"], fruit:[], sauce:["salsa","hotsauce","salsaverde"]},
+
+    // ---------- SEAFOOD ----------
+    {name:"Salmon & Rice", pattern:"{S}-Glazed {P} with {C} & {V}", form:"Plate", slots:["lunch","dinner"], crave:["savory","grilled","warmbowl"],
+     protein:["salmon","ahi","cod"], carb:["rice","whiterice","brownrice","quinoa"], fat:["sesameoil","oil","avocado"],
+     veg:["bokchoy","broccoli","asparagus","snapPeas","cucumber"], fruit:[], sauce:["soy","teriyaki","ponzu","sriracha"]},
+    {name:"Shrimp Scampi", pattern:"{P} Scampi over {C}", form:"Pasta", slots:["lunch","dinner"], crave:["savory","comfort"],
+     protein:["shrimp","scallops","chicken"], carb:["propasta","lentilpasta","pasta","wwpasta","squashzoodle","shirataki"], fat:["butter","oil","parmesan"],
+     veg:["spinach","tomatoes","zucchini","mushrooms","broccolini"], fruit:[], sauce:["marinara","pesto"]},
+    {name:"Fish Tacos", pattern:"{P} Tacos with {V} Slaw", form:"Tacos", slots:["lunch","dinner"], crave:["fresh","spicy","light"],
+     protein:["tilapia","cod","shrimp"], carb:["lowcarbtort8","corntort6","rice"], fat:["avocado","guac","sourcream"],
+     veg:["cabbage","napa","romaine","onion","tomatoes"], fruit:["mango","pineapple"], sauce:["salsaverde","hotsauce","salsa"]},
+    {name:"Poke Bowl", pattern:"{P} Poke Bowl with {C}", form:"Bowl", slots:["lunch","dinner"], crave:["fresh","light","nocook"],
+     protein:["ahi","salmon","tofu","edamame"], carb:["rice","whiterice","brownrice","caulirice"], fat:["avocado","sesameoil","cashews"],
+     veg:["cucumber","carrots","edamamepod","daikon","scallion","napa"], fruit:["mango","pineapple"], sauce:["soy","ponzu","sriracha","sweetchili"]},
+    {name:"Tuna Salad Plate", pattern:"{P} Salad with {V}", form:"Plate", slots:["lunch","snack"], crave:["light","nocook","fresh"],
+     protein:["tunacan","salmoncan","eggwhites","cottage1"], carb:["ricecakes","protbread","sandthin","bread"], fat:["avocado","olives","oil"],
+     veg:["celery","romaine","cucumber","tomatoes","pickles"], fruit:[], sauce:["mustard","hotsauce","vinlight"]},
+
+    // ---------- VEGETARIAN / PLANT ----------
+    {name:"Tofu Stir-Fry", pattern:"{P} & {V} Stir-Fry over {C}", form:"Stir-Fry", slots:["lunch","dinner"], crave:["savory","spicy","warmbowl"],
+     protein:["tofu","tempeh","edamame","seitan"], carb:["rice","brownrice","ricenoodle","soba","shirataki"], fat:["sesameoil","cashews","peanuts","oil"],
+     veg:["bokchoy","broccoli","peppers","snowpeas","napa","mushrooms"], fruit:[], sauce:["soy","hoisin","peanutsauce","gochujang","sweetchili"]},
+    {name:"Lentil Curry", pattern:"{P} Curry with {V} over {C}", form:"Curry", slots:["lunch","dinner"], crave:["spicy","warmbowl","comfort"],
+     protein:["lentils","chickpeas","tofu","splitpeas"], carb:["rice","brownrice","quinoa","millet"], fat:["coconutmilk","oil","cashews"],
+     veg:["spinach","tomatoes","onion","cauliflower","collards"], fruit:[], sauce:["curry","hotsauce"]},
+    {name:"Mediterranean Grain Bowl", pattern:"Mediterranean {P} & {C} Bowl", form:"Bowl", slots:["lunch","dinner"], crave:["fresh","savory","warmbowl"],
+     protein:["chickpeas","feta","chicken","lentils"], carb:["quinoa","couscous","bulgur","farro","rice"], fat:["olives","oil","tahini","feta"],
+     veg:["cucumber","tomatoes","onion","peppers","artichokehearts","sundried"], fruit:[], sauce:["hummus","tzatziki","tahinisauce","balsamic"]},
+    {name:"Black Bean Bowl", pattern:"{P} & {V} Bowl over {C}", form:"Bowl", slots:["lunch","dinner"], crave:["spicy","warmbowl","comfort"],
+     protein:["blackbeans","pintobeans","tofu","grndturk93"], carb:["rice","brownrice","corntort6","quinoa"], fat:["avocado","guac","cheddar"],
+     veg:["peppers","onion","corn","tomatoes","romaine"], fruit:[], sauce:["salsa","hotsauce","enchilada"]},
+    {name:"Protein Pasta Primavera", pattern:"{P} {C} Primavera with {V}", form:"Pasta", slots:["lunch","dinner"], crave:["comfort","fresh","savory"],
+     protein:["chicken","shrimp","chickpeas","mozzarella"], carb:["propasta","lentilpasta","edamamepasta","wwpasta"], fat:["oil","parmesan","pesto"],
+     veg:["zucchini","peppers","broccolini","spinach","tomatoes","asparagus"], fruit:[], sauce:["pesto","marinara","balsamic"]},
+
+    // ---------- SNACKS ----------
+    {name:"Protein Shake & Fruit", pattern:"{F} Protein Shake", form:"Shake", slots:["snack"], crave:["sweet","nocook"],
+     protein:["whey"], carb:["banana","oats","ricecakes"], fat:["pb","almondbutter","almonds"],
+     fruit:["banana","berries","strawberry","mango"], veg:[], sauce:[]},
+    {name:"Jerky & Trail Mix", pattern:"{P} & Trail Mix", form:"Snack", slots:["snack"], crave:["savory","crunchy","nocook"],
+     protein:["jerky","cheddar","edamame"], carb:["ricecakes","granola","dates"], fat:["almonds","cashews","pistachios","peanuts","darkchoc"],
+     fruit:["raisins","honeycrisp","grapes"], veg:[], sauce:[]},
+    {name:"Hummus & Veg Plate", pattern:"Hummus with {V} & {C}", form:"Plate", slots:["snack"], crave:["fresh","crunchy","nocook"],
+     protein:["chickpeas","feta","cottage1"], carb:["pita","ricecakes","lavash"], fat:["hummus","olives","tahini"],
+     veg:["carrots","cucumber","peppers","celery","radish","snappeas"], fruit:[], sauce:["hummus","tzatziki"]},
+    {name:"Rice Cakes & Nut Butter", pattern:"{C} with Nut Butter & {F}", form:"Snack", slots:["snack"], crave:["sweet","crunchy","nocook"],
+     protein:["whey","yogurt0","cottage1"], carb:["ricecakes","protbread"], fat:["pb","almondbutter","sunbutter","darkchoc"],
+     fruit:["banana","strawberry","honeycrisp"], veg:[], sauce:[]},
+    {name:"Turkey Roll-Ups", pattern:"{P} Roll-Ups with {V}", form:"Roll-Ups", slots:["snack","lunch"], crave:["savory","nocook","light"],
+     protein:["turkey","ham","cheddar","mozzarella"], carb:["lowcarbtort10","ricecakes","sandthin"], fat:["avocado","olives","cheddar"],
+     veg:["cucumber","peppers","romaine","pickles","sprouts"], fruit:["grapes","honeycrisp"], sauce:["mustard","hotsauce","ranchlight"]},
+  ];
+
+  /* Side portions are pegged to a slice of the meal's calories, never used to
+     hit a carb or fat target — so a salad is a side, not your carb source. */
+  const VEG_KCAL_SHARE   = 0.08;
+  const FRUIT_KCAL_SHARE = 0.07;
+  const SAUCE_KCAL_CAP   = 0.12;   // a sauce never eats more than this much of a meal
+
+  /* Which sauces suit which goal. A hard cut sees hot sauce and salsa; a
+     bulk can afford pesto and alfredo, where the calories are useful. */
+  /* Protein powder is a supplement, not a meal. It's allowed to top up
+     breakfast or a snack, and whey is the only one suggested. */
+  const POWDER_OK = ['breakfast','snack'];
+
+  const SAUCE_LEVELS = {
+    extreme_loss: ["light"],
+    loss:         ["light"],
+    maintain:     ["light","standard"],
+    gain:         ["light","standard","rich"],
+  };
 
 
   /* Meal split: 3 mains @ 30% + 1 optional snack @ 10% */
@@ -960,15 +1408,16 @@
     selectedTierId:null,
     preferences:[], // e.g. ["vegetarian","nutfree"]
     cravings:[],    // e.g. ["savory","crunchy"]
-    favorites:{protein:[], carb:[], fat:[], produce:[]},
-    discoveryMode:'favorites',   // 'favorites' | 'new' 
+    favorites:{protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[]},
+    discoveryMode:'favorites',   // 'favorites' | 'new'
+    dislikes:[],      // food keys the person never wants suggested
     mealCount:4,      // eating occasions per day
     eaten:[],         // day-level manual entries: {name,kcal,protein,carbs,fat,covers}
     eatingStyle:null, // 'consistent' | 'balanced' | 'variety'
-    // selections[mealKey] = {protein:foodKey|"", carb:foodKey|"", fat:foodKey|"", produce:foodKey|""}
+    // selections[mealKey] = {protein:[keys], carb:[], fat:[], veg:[], fruit:[], sauce:[], notes:""}
     selections:{}
   };
-  function blankMeal(){ return {protein:[""], carb:[""], fat:[""], produce:[""], notes:""}; }
+  function blankMeal(){ return {protein:[""], carb:[""], fat:[""], veg:[""], fruit:[""], sauce:[], notes:"", dish:""}; }
 
   function setMealCount(n){
     state.mealCount = n;
@@ -1240,28 +1689,44 @@
     }
 
     const goal = state.goal || 'maintain';
+    const L = MACRO_LIMITS;
     let protein, fat;
 
     if (state.bodyweight > 0){
-      protein = Math.round(state.bodyweight * PROTEIN_PER_LB[goal]);
-      protein = Math.min(protein, Math.round((kcal * 0.40) / 4));
-      fat = Math.max(Math.round((kcal * 0.25) / 9), Math.round(state.bodyweight * 0.30));
+      // 1. Protein is the protected macro — hit the g/lb target, but it can't
+      //    swallow the whole budget
+      protein = Math.min(
+        Math.round(state.bodyweight * PROTEIN_PER_LB[goal]),
+        Math.round((kcal * L.proteinMaxPct) / 4)
+      );
+      // 2. Fat sits at its target, lifted to the per-lb floor if calories are
+      //    low, but capped so it can't take over as the budget shrinks
+      fat = Math.round((kcal * L.fatTargetPct) / 9);
+      fat = Math.max(fat, Math.round(state.bodyweight * L.fatMinPerLb));
+      fat = Math.min(fat, Math.round((kcal * L.fatMaxPct) / 9));
     } else {
-      // No bodyweight given — fall back to a percentage split
       protein = Math.round((kcal * 0.30) / 4);
-      fat     = Math.round((kcal * 0.25) / 9);
+      fat     = Math.round((kcal * L.fatTargetPct) / 9);
     }
 
+    // 3. Carbs take the remainder — but never less than their minimum share.
+    //    If they'd fall short, the room comes out of fat first.
     let carbs = Math.round((kcal - protein*4 - fat*9) / 4);
-    if (carbs < 0 && state.bodyweight > 0){
-      fat = Math.round(state.bodyweight * 0.30);
+    const carbMin = Math.round((kcal * L.carbMinPct) / 4);
+    if (carbs < carbMin){
+      const fatFloor = state.bodyweight > 0
+        ? Math.max(Math.round(state.bodyweight * L.fatFloorPerLb), Math.round((kcal * 0.18) / 9))
+        : Math.round((kcal * 0.18) / 9);
+      fat = Math.max(fatFloor, Math.round((kcal - protein*4 - carbMin*4) / 9));
       carbs = Math.round((kcal - protein*4 - fat*9) / 4);
     }
+    // 4. Last resort — an extreme deficit on a large frame can still squeeze;
+    //    give protein back a little rather than leave carbs at zero
     if (carbs < 0){
       protein = Math.round((kcal - fat*9) / 4 * 0.7);
       carbs = Math.round((kcal - protein*4 - fat*9) / 4);
     }
-    return {kcal, protein, carbs, fat:Math.max(fat,0)};
+    return {kcal, protein, carbs:Math.max(carbs,0), fat:Math.max(fat,0)};
   }
 
   /* =========================================================
@@ -1331,7 +1796,9 @@
       Protein: FOODS.protein.filter(passesPrefs).length,
       Carb:    FOODS.carbs.filter(passesPrefs).length,
       Fat:     FOODS.fat.filter(passesPrefs).length,
-      Produce: FOODS.produce.filter(passesPrefs).length,
+      Veg: FOODS.veg.filter(passesPrefs).length,
+      Fruit: FOODS.fruit.filter(passesPrefs).length,
+      Sauce: FOODS.sauce.filter(passesPrefs).length,
     };
     const empty = Object.keys(counts).filter(k=>counts[k]===0);
     if (empty.length){
@@ -1344,7 +1811,7 @@
       prefSummary.style.color = "var(--muted)";
       return;
     }
-    prefSummary.textContent = `Available: ${counts.Protein} protein · ${counts.Carb} carb · ${counts.Fat} fat · ${counts.Produce} produce.`;
+    prefSummary.textContent = `Available: ${counts.Protein} protein · ${counts.Carb} carb · ${counts.Fat} fat · ${counts.Veg} veg · ${counts.Fruit} fruit · ${counts.Sauce} sauce.`;
     prefSummary.style.color = "var(--green)";
   }
 
@@ -1395,34 +1862,78 @@
   const favPicker = document.getElementById('favPicker');
   const discoveryGrid = document.getElementById('discoveryGrid');
   const discoveryNote = document.getElementById('discoveryNote');
-  const FAV_MAX = 3;
+  const FAV_MAX = 6;
   const FAV_CATS = [
     {slot:'protein', icon:'🍗', label:'PROTEIN'},
     {slot:'carb',    icon:'🍚', label:'CARBS'},
     {slot:'fat',     icon:'🥑', label:'FATS'},
-    {slot:'produce', icon:'🥦', label:'VEG & FRUIT'},
+    {slot:'veg',     icon:'🥦', label:'VEGETABLES'},
+    {slot:'fruit',   icon:'🍓', label:'FRUIT'},
+    {slot:'sauce',   icon:'🥫', label:'SAUCES'},
   ];
-  const favOpen = {protein:true, carb:false, fat:false, produce:false};
+  const favOpen = {protein:true, carb:false, fat:false, veg:false, fruit:false, sauce:false};
+
+  let favQuery = '';
+
+  /* Everything the person has starred, shown above the picker so their
+     choices stay visible while they search deeper in the list. */
+  function renderChosen(){
+    const host = document.getElementById('favChosen');
+    if (!host) return;
+    const bits = [];
+    FAV_CATS.forEach(cat=>{
+      favKeys(cat.slot).forEach(k=>{
+        const f = listFor(cat.slot).find(x=>x.key===k);
+        if (f) bits.push(`<button class="chip on" data-fav="${cat.slot}|${f.key}">★ ${f.name} ✕</button>`);
+      });
+    });
+    host.innerHTML = bits.join('');
+    host.querySelectorAll('[data-fav]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const [slot, key] = btn.getAttribute('data-fav').split('|');
+        const arr = state.favorites[slot];
+        const at = arr.indexOf(key);
+        if (at >= 0) arr.splice(at, 1);
+        renderFavPicker(); renderDiscovery();
+      });
+    });
+  }
 
   function renderFavPicker(){
+    const q = favQuery.trim().toLowerCase();
+    const searching = q.length > 0;
+    let totalMatches = 0;
+
     favPicker.innerHTML = FAV_CATS.map(cat=>{
       const chosen = favKeys(cat.slot);
-      const foods = listFor(cat.slot).filter(passesPrefs);
+      let foods = listFor(cat.slot).filter(passesPrefs).filter(f => !isDisliked(f));
+      if (searching) foods = foods.filter(f => f.name.toLowerCase().includes(q));
+      totalMatches += foods.length;
+
+      // while searching, hide categories with no hits and open the ones with
+      if (searching && !foods.length) return '';
+      const open = searching ? true : favOpen[cat.slot];
       const full = chosen.length >= FAV_MAX;
+
       const chips = foods.map(f=>{
         const on = chosen.includes(f.key);
         const locked = full && !on;
         return `<button class="chip${on?' on':''}${locked?' locked':''}" data-fav="${cat.slot}|${f.key}">${on?'★ ':''}${f.name}</button>`;
       }).join('');
+
       return `
         <div class="fav-cat">
           <button class="fav-head" data-favtoggle="${cat.slot}">
-            <span>${cat.icon} ${cat.label}</span>
-            <span class="fav-count${full?' full':''}">${chosen.length}/${FAV_MAX} ${favOpen[cat.slot]?'▾':'▸'}</span>
+            <span>${cat.icon} ${cat.label}${searching ? ` (${foods.length})` : ''}</span>
+            <span class="fav-count${full?' full':''}">${chosen.length}/${FAV_MAX} ${open?'▾':'▸'}</span>
           </button>
-          <div class="fav-chips${favOpen[cat.slot]?'':' hidden'}">${chips || '<span class="season-hint">No foods match your dietary filters here.</span>'}</div>
+          <div class="fav-chips${open?'':' hidden'}">${chips || '<span class="fav-nores">Nothing here matches your dietary filters.</span>'}</div>
         </div>`;
     }).join('');
+
+    if (searching && !totalMatches){
+      favPicker.innerHTML = `<div class="fav-nores">No foods match “${favQuery}”. Try a shorter word, or check whether a dietary filter is hiding it.</div>`;
+    }
 
     favPicker.querySelectorAll('[data-favtoggle]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -1442,6 +1953,7 @@
         renderDiscovery();
       });
     });
+    renderChosen();
   }
 
   function totalFavs(){
@@ -1476,6 +1988,84 @@
     discoveryNote.style.color = "var(--muted)";
   }
 
+  const dislikeSearch = document.getElementById('dislikeSearch');
+  const dislikeClear = document.getElementById('dislikeClear');
+  const dislikeResults = document.getElementById('dislikeResults');
+  const dislikeChosen = document.getElementById('dislikeChosen');
+  let dislikeQuery = '';
+
+  const ALL_SLOTS = ['protein','carb','fat','veg','fruit','sauce'];
+
+  function renderDislikes(){
+    // current blocks
+    dislikeChosen.innerHTML = (state.dislikes || []).map(k=>{
+      for (const sl of ALL_SLOTS){
+        const f = listFor(sl).find(x=>x.key===k);
+        if (f) return `<button class="chip on" data-undislike="${k}">🚫 ${f.name} ✕</button>`;
+      }
+      return '';
+    }).join('');
+    dislikeChosen.querySelectorAll('[data-undislike]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const k = btn.getAttribute('data-undislike');
+        state.dislikes = state.dislikes.filter(x=>x !== k);
+        renderDislikes(); renderFavPicker();
+      });
+    });
+
+    // search results
+    const q = dislikeQuery.trim().toLowerCase();
+    if (!q){ dislikeResults.innerHTML = ''; return; }
+    const hits = [];
+    ALL_SLOTS.forEach(sl=>{
+      listFor(sl).forEach(f=>{
+        if (f.name.toLowerCase().includes(q) && !(state.dislikes||[]).includes(f.key)){
+          hits.push({slot:sl, food:f});
+        }
+      });
+    });
+    if (!hits.length){
+      dislikeResults.innerHTML = `<div class="fav-nores">Nothing matches “${dislikeQuery}”.</div>`;
+      return;
+    }
+    dislikeResults.innerHTML = `<div class="fav-chips" style="padding:4px 0;">` +
+      hits.slice(0, 40).map(({food}) =>
+        `<button class="chip" data-dislike="${food.key}">${food.name}</button>`).join('') + `</div>`;
+    dislikeResults.querySelectorAll('[data-dislike]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const k = btn.getAttribute('data-dislike');
+        if (!state.dislikes.includes(k)) state.dislikes.push(k);
+        // a blocked food can't also be a favourite
+        ALL_SLOTS.forEach(sl=>{
+          state.favorites[sl] = state.favorites[sl].filter(x=>x !== k);
+        });
+        renderDislikes(); renderFavPicker();
+      });
+    });
+  }
+
+  dislikeSearch.addEventListener('input', ()=>{
+    dislikeQuery = dislikeSearch.value;
+    dislikeClear.style.display = dislikeQuery ? '' : 'none';
+    renderDislikes();
+  });
+  dislikeClear.addEventListener('click', ()=>{
+    dislikeQuery=''; dislikeSearch.value=''; dislikeClear.style.display='none';
+    renderDislikes(); dislikeSearch.focus();
+  });
+
+  const favSearch = document.getElementById('favSearch');
+  const favClear = document.getElementById('favClear');
+  favSearch.addEventListener('input', ()=>{
+    favQuery = favSearch.value;
+    favClear.style.display = favQuery ? '' : 'none';
+    renderFavPicker();
+  });
+  favClear.addEventListener('click', ()=>{
+    favQuery = ''; favSearch.value = ''; favClear.style.display = 'none';
+    renderFavPicker(); favSearch.focus();
+  });
+
   discoveryGrid.addEventListener('click', (e)=>{
     const btn = e.target.closest('.choice-btn');
     if(!btn) return;
@@ -1489,6 +2079,7 @@
   const btnSkipCravings = document.getElementById('btnSkipCravings');
 
   function renderCravings(){
+    renderDislikes();
     renderFavPicker();
     renderDiscovery();
     craveGrid.innerHTML = "";
@@ -1509,7 +2100,7 @@
       return;
     }
     const names = CRAVINGS.filter(c=>state.cravings.includes(c.key)).map(c=>c.name);
-    const matchCount = ['protein','carbs','fat','produce']
+    const matchCount = ['protein','carbs','fat','veg','fruit','sauce']
       .reduce((n,cat)=> n + FOODS[cat].filter(f=>passesPrefs(f) && matchesCraving(f)).length, 0);
     craveSummary.textContent = `${names.join(" · ")} — ${matchCount} Food Blocks will be pinned to the top of your dropdowns.`;
     craveSummary.style.color = "var(--green)";
@@ -1553,7 +2144,7 @@
   btnConfirmCravings.addEventListener('click', goToStyle);
   btnSkipCravings.addEventListener('click', ()=>{
     state.cravings = [];
-    state.favorites = {protein:[], carb:[], fat:[], produce:[]};
+    state.favorites = {protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[]};
     state.discoveryMode = 'favorites';
     renderCravings();
     goToStyle();
@@ -1615,16 +2206,17 @@
 
   /* Largest sensible serving per slot. Without this the macro math will
      happily suggest 700g of black beans to hit a protein target. */
-  const PORTION_CAP = { protein:400, carb:350, fat:90, produce:300 };
-  const SLOT_MACRO  = { protein:'protein', carb:'carbs', fat:'fat', produce:'kcal' };
+  const PORTION_CAP = { protein:350, carb:300, fat:90, veg:300, fruit:250, sauce:150 };
+  const SLOT_MACRO  = { protein:'protein', carb:'carbs', fat:'fat', veg:'kcal', fruit:'kcal', sauce:'kcal' };
 
   /* Grams this food would need to cover a main meal's share of the target */
   function servingFor(slot, food){
     const tg = currentTargets();
     const share = 0.30; // sized against a main meal
-    const target = slot === 'produce'
-      ? tg.kcal * share * PRODUCE_KCAL_SHARE
-      : (slot === 'protein' ? tg.protein : slot === 'carb' ? tg.carbs : tg.fat) * share;
+    const target = slot === 'veg'   ? tg.kcal * share * VEG_KCAL_SHARE
+                 : slot === 'fruit' ? tg.kcal * share * FRUIT_KCAL_SHARE
+                 : slot === 'sauce' ? tg.kcal * share * SAUCE_KCAL_CAP
+                 : (slot === 'protein' ? tg.protein : slot === 'carb' ? tg.carbs : tg.fat) * share;
     return gramsFor(food, SLOT_MACRO[slot], target);
   }
 
@@ -1654,6 +2246,43 @@
     let d = 0; for (let i = 0; i < 4; i++) d += Math.abs(A[i] - B[i]);
     const macroSim = Math.max(0, 1 - d / 2.5);
     return jaccard(a.crave, b.crave)*3 + jaccard(a.tags, b.tags)*1.5 + macroSim*2;
+  }
+
+  /* When a dish leans on something the person hates, swap in the closest
+     thing that plays the same role rather than dropping the dish. */
+  const SUBSTITUTES = {
+    mayo:["mayolight","yogurt0","tzatziki","avocado"],
+    mayolight:["yogurt0","tzatziki","avocado"],
+    bluecheese:["feta","goatcheese","parmesan"],
+    gorgonzola:["feta","goatcheese","parmesan"],
+    sourcream:["yogurt0","tzatzikilight","guac"],
+    ranch:["ranchlight","tzatzikilight","vinlight"],
+    caesar:["vinlight","balsamic","greekdress"],
+    heavycream:["halfhalf","coconutmilk","milk"],
+    butter:["oil","avocadooil","ghee"],
+    cheddar:["cheddarred","jack","mozzarella"],
+    parmesan:["romano","asiago","nutyeast"],
+    mushrooms:["zucchini","peppers","broccoli"],
+    olives:["pickles","artichokehearts","sundried"],
+    tofu:["tempeh","chicken","chickpeas"],
+    salmon:["trout","cod","chicken"],
+    tunacan:["salmoncan","chicken","eggwhites"],
+    cottage1:["yogurt0","skyr","ricotta"],
+    yogurt0:["skyr","cottage1","kefir"],
+  };
+
+  function isDisliked(food){
+    return !!food && (state.dislikes || []).includes(food.key);
+  }
+
+  /* A stand-in for a blocked food, from the same slot and also not blocked */
+  function substituteFor(slot, key){
+    const opts = SUBSTITUTES[key] || [];
+    for (const alt of opts){
+      const f = listFor(slot).find(x=>x.key === alt);
+      if (f && passesPrefs(f) && !isDisliked(f)) return f;
+    }
+    return null;
   }
 
   function favKeys(slot){ return (state.favorites && state.favorites[slot]) || []; }
@@ -1708,7 +2337,7 @@
      matches, keep portions realistic, and avoid repeats when asked.
      hardFilter is absolute — if nothing survives it, nothing is returned. */
   function pickFood(list, usedKeys, avoidRepeat, slot, hardFilter){
-    let avail = list.filter(passesPrefs);
+    let avail = list.filter(passesPrefs).filter(f => !isDisliked(f));
     if (hardFilter) avail = avail.filter(hardFilter);
     if (!avail.length) return null;
 
@@ -1721,6 +2350,13 @@
     const craved = pool.filter(matchesCraving);
     if (craved.length) pool = craved;
 
+    // aromatics and sweeteners are real ingredients but poor standalone
+    // picks — nobody plates 30g of garlic or calls maple syrup their carb
+    if (slot === 'veg' || slot === 'carb'){
+      const sensible = pool.filter(f => !f.aromatic && !f.topping);
+      if (sensible.length) pool = sensible;
+    }
+
     // drop anything that would demand a silly serving size
     if (slot && PORTION_CAP[slot]){
       const sane = pool.filter(f => servingFor(slot, f) <= PORTION_CAP[slot]);
@@ -1731,6 +2367,10 @@
     if (slot === 'protein'){
       const roomy = pool.filter(f => servingKcal(slot, f) <= currentTargets().kcal * 0.30 * 0.75);
       if (roomy.length) pool = roomy;
+      // whey is the only powder ever suggested; casein and plant blends stay
+      // selectable by hand but don't get auto-picked
+      const noOddPowders = pool.filter(f => !f.powder || f.key === 'whey');
+      if (noOddPowders.length) pool = noOddPowders;
     }
 
     if (avoidRepeat && usedKeys){
@@ -1740,86 +2380,291 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function generateSuggestion(){
-    const style = state.eatingStyle || 'balanced';
-    const used = {protein:new Set(), carb:new Set(), fat:new Set(), produce:new Set()};
+  /* Sauces the person's goal can afford */
+  function sauceAllowed(food){
+    const levels = SAUCE_LEVELS[state.goal || 'maintain'] || SAUCE_LEVELS.maintain;
+    return levels.includes(food.level);
+  }
 
-    // Foods held constant across the whole day, by style
-    const fixed = {};
-    if (style === 'consistent'){
-      fixed.protein = pickFood(FOODS.protein, null, false, 'protein');
-      fixed.carb    = pickFood(FOODS.carbs,   null, false, 'carb');
-      fixed.fat     = pickFood(FOODS.fat,     null, false, 'fat');
-      fixed.produce = pickFood(FOODS.produce, null, false, 'produce');
-    } else if (style === 'balanced'){
-      fixed.protein = pickFood(FOODS.protein, null, false, 'protein');
-      fixed.carb    = pickFood(FOODS.carbs,   null, false, 'carb');
+  /* Does this sauce belong on this meal? It has to either share a mood with
+     something already on the plate, or be a listed match for the carb. A
+     sweet oats-and-berries breakfast shares nothing with marinara, so it
+     simply doesn't get a sauce — which is the point. */
+  function sauceFits(food, sel){
+    if (!sauceAllowed(food)) return false;
+    const carbKeys = sel.carb.filter(Boolean);
+    if ((food.pairs || []).some(k => carbKeys.includes(k))) return true;
+
+    const plate = [];
+    ['protein','carb','veg'].forEach(sl=>{
+      sel[sl].filter(Boolean).forEach(k=>{
+        const f = listFor(sl).find(x=>x.key===k);
+        if (f) plate.push(...(f.crave || []));
+      });
+    });
+    if (!plate.length) return false;
+    const overlap = (food.crave || []).filter(c => plate.includes(c));
+    // a shared "sweet" mood alone isn't enough to justify a savory sauce
+    return overlap.some(c => c !== 'sweet');
+  }
+
+  /* Trim a food name down to something that reads well in a dish title:
+     "Chicken Breast (raw)" -> "Chicken", "Ground Beef 93/7 (raw)" -> "Ground Beef" */
+  const NAME_OVERRIDES = {
+    chicken:"Chicken", chickthigh:"Chicken Thigh", grndchick:"Ground Chicken",
+    grndturk93:"Ground Turkey", grndturk85:"Ground Turkey", turkey:"Turkey",
+    beef93:"Ground Beef", beef85:"Ground Beef", beef80:"Ground Beef",
+    steak:"Sirloin", ribeye:"Ribeye", bison:"Bison", pork:"Pork Loin", porkchop:"Pork Chop",
+    tilapia:"Tilapia", cod:"Cod", salmon:"Salmon", ahi:"Ahi", tunacan:"Tuna", salmoncan:"Salmon",
+    shrimp:"Shrimp", scallops:"Scallop", wholeegg:"Egg", eggwhites:"Egg White",
+    yogurt0:"Greek Yogurt", yogurt2:"Greek Yogurt", yogurt5:"Greek Yogurt", skyr:"Skyr",
+    cottage1:"Cottage Cheese", cottage4:"Cottage Cheese", whey:"Protein",
+    tofu:"Tofu", tempeh:"Tempeh", seitan:"Seitan", lentils:"Lentil", chickpeas:"Chickpea",
+    blackbeans:"Black Bean", pintobeans:"Pinto Bean", edamame:"Edamame", jerky:"Jerky",
+    ham:"Ham", turkbacon:"Turkey Bacon", feta:"Feta", mozzarella:"Mozzarella", cheddar:"Cheddar",
+    rice:"Jasmine Rice", whiterice:"White Rice", brownrice:"Brown Rice", caulirice:"Cauliflower Rice",
+    ricenoodle:"Rice Noodle", soba:"Soba", shirataki:"Shirataki",
+    pasta:"Pasta", wwpasta:"Whole Wheat Pasta", propasta:"Protein Pasta",
+    lentilpasta:"Red Lentil Pasta", edamamepasta:"Edamame Pasta", orzo:"Orzo",
+    lowcarbtort6:"Low-Carb Tortilla", lowcarbtort8:"Low-Carb Tortilla", lowcarbtort10:"Low-Carb Tortilla",
+    flourtort6:"Flour Tortilla", flourtort8:"Flour Tortilla", flourtort10:"Flour Tortilla", flourtort12:"Flour Tortilla",
+    corntort6:"Corn Tortilla", corntort8:"Corn Tortilla", whitecorn:"White Corn Tortilla", wwtort8:"Whole Wheat Tortilla",
+    protwrap:"High-Protein Wrap", spinachwrap:"Spinach Wrap",
+    honeycrisp:"Honeycrisp Apple", gala:"Gala Apple", fuji:"Fuji Apple", grannysmith:"Granny Smith",
+    pinklady:"Pink Lady", navel:"Navel Orange", valencia:"Valencia Orange", cara:"Cara Cara",
+    bartlett:"Bartlett Pear", bosc:"Bosc Pear", hassavo:"Avocado", bananamed:"Banana", bananalg:"Banana",
+    protbread:"High-Protein Bread", sandthin:"Sandwich Thin", sourdough:"Sourdough",
+    bread:"Whole Wheat", ezekiel:"Ezekiel", pita:"Pita", lavash:"Lavash",
+    potato:"Sweet Potato", whitepot:"Potato", quinoa:"Quinoa", farro:"Farro",
+    couscous:"Couscous", bulgur:"Bulgur", oats:"Oat", granola:"Granola",
+    squashzoodle:"Zoodle", spaghettisq:"Spaghetti Squash", ricecakes:"Rice Cake",
+    strawberry:"Strawberry", berries:"Blueberry", raspberry:"Raspberry", blackberry:"Blackberry",
+    cherries:"Cherry", grapes:"Grape", dates:"Date", figs:"Fig", raisins:"Raisin",
+    blueberrfroz:"Mixed Berry", applesauce:"Apple", cranberry:"Cranberry",
+    greenbeans:"Green Bean", snappeas:"Snap Pea", snowpeas:"Snow Pea", peas:"Pea",
+    brussels:"Brussels Sprout", mushrooms:"Mushroom", carrots:"Carrot", tomatoes:"Tomato",
+    peppers:"Bell Pepper", olives:"Olive", collards:"Collard Green", greens:"Mixed Green",
+    beets:"Beet", radish:"Radish", pickles:"Pickle", sprouts:"Bean Sprout",
+    roastedpeppers:"Roasted Pepper", sundried:"Sun-Dried Tomato", artichokehearts:"Artichoke",
+    heartsofpalm:"Hearts of Palm", edamamepod:"Edamame", scallion:"Scallion",
+  };
+  function shortName(food){
+    if (!food) return '';
+    if (NAME_OVERRIDES[food.key]) return NAME_OVERRIDES[food.key];
+    return food.name.replace(/\s*\([^)]*\)/g, '').replace(/,.*$/, '').trim();
+  }
+
+  /* Build the dish title from what was actually chosen, so a "Stir-Fry"
+     template that landed on shrimp and soba reads "Shrimp Soba Stir-Fry". */
+  const PLURAL_OK = {wholeegg:"Eggs", eggwhites:"Egg Whites"};
+  function dishTitle(recipe, sel){
+    const nameOf = (slot) => {
+      const k = sel[slot] && sel[slot].find(Boolean);
+      return k ? shortName(listFor(slot).find(f=>f.key===k)) : '';
+    };
+    let P = nameOf('protein');
+    const pk = sel.protein && sel.protein.find(Boolean);
+    if (recipe.form === 'Toast' && PLURAL_OK[pk]) P = PLURAL_OK[pk];
+    const C = nameOf('carb'), V = nameOf('veg'), S_ = nameOf('sauce'), F = nameOf('fruit');
+    const out = (recipe.pattern || '{P} {C} {form}')
+      .replace('{P}', P).replace('{C}', C).replace('{V}', V)
+      .replace('{S}', S_).replace('{F}', F)
+      .replace('{form}', recipe.form || 'Bowl');
+    return out.replace(/\s+/g, ' ').replace(/^\s*[&,]\s*/, '').replace(/\s*[&,]\s*$/, '').trim() || recipe.name;
+  }
+
+  /* Which meal slot is this? First three sittings map to breakfast/lunch/
+     dinner; anything beyond is a snack. */
+  function mealRole(meal, index){
+    if (!meal.required) return 'snack';
+    return ['breakfast','lunch','dinner'][index] || 'dinner';
+  }
+
+  /* A recipe only works if every slot it actually needs still has at least
+     one ingredient after dietary filters. */
+  function recipeUsable(recipe, role){
+    if (!recipe.slots.includes(role)) return false;
+    for (const slot of ['protein','carb','fat']){
+      const opts = (recipe[slot] || []).map(k => {
+        const f = listFor(slot).find(x=>x.key===k);
+        return (f && isDisliked(f)) ? substituteFor(slot, k) : f;
+      }).filter(f => f && passesPrefs(f) && !isDisliked(f) && !(f.powder && !POWDER_OK.includes(role)));
+      if (!opts.length) return false;
+    }
+    return true;
+  }
+
+  /* Score a recipe: favorites it can use, cravings it matches, and a nudge
+     away from whatever was served earlier today. */
+  function scoreRecipe(recipe, usedNames){
+    let score = Math.random() * 0.8;
+    ['protein','carb','fat','veg','fruit','sauce'].forEach(slot=>{
+      const favs = favKeys(slot);
+      if (!favs.length) return;
+      const hits = (recipe[slot] || []).filter(k => favs.includes(k)).length;
+      score += hits * 2.5;
+    });
+    if (state.cravings.length){
+      const hits = (recipe.crave || []).filter(c => state.cravings.includes(c)).length;
+      score += hits * 2;
+    }
+    if (usedNames.has(recipe.name)) score -= 5;
+    return score;
+  }
+
+  /* Choose an ingredient for one slot of a recipe: favorites first, then
+     craving matches, then anything the recipe allows. */
+  function pickFromRecipe(recipe, slot, role, taken, guard){
+    // swap blocked ingredients for a stand-in before filtering
+    const expanded = [];
+    (recipe[slot] || []).forEach(k=>{
+      const f = listFor(slot).find(x=>x.key===k);
+      if (!f) return;
+      if (isDisliked(f)){
+        const sub = substituteFor(slot, k);
+        if (sub) expanded.push(sub);
+      } else expanded.push(f);
+    });
+    let opts = expanded
+      .filter(Boolean)
+      .filter(passesPrefs)
+      .filter(f => !isDisliked(f))
+      .filter(f => !(f.powder && !POWDER_OK.includes(role)))
+      .filter(f => !taken.includes(f.key));
+    if (guard) opts = opts.filter(guard);
+    if (!opts.length) return null;
+
+    const favs = favKeys(slot);
+    const faved = opts.filter(f => favs.includes(f.key));
+    if (faved.length) opts = faved;
+    else {
+      const craved = opts.filter(matchesCraving);
+      if (craved.length) opts = craved;
+    }
+    // On a deficit, high-protein swaps (Barilla Protein+, edamame pasta,
+    // low-carb tortillas) let you eat a full serving and still hit protein,
+    // so they get preference where they exist in the dish.
+    if (slot === 'carb' && (state.goal === 'loss' || state.goal === 'extreme_loss')){
+      const smart = opts.filter(f => f.macroFriendly);
+      if (smart.length && Math.random() < 0.65) opts = smart;
     }
 
-    // How many items to suggest per slot — variety builds fuller dishes
-    const counts = style === 'consistent'
-      ? {protein:1, carb:1, fat:1, produce:1}
-      : style === 'balanced'
-      ? {protein:1, carb:1, fat:1, produce:2}
-      : {protein:2, carb:1, fat:1, produce:2};
+    // Portion sanity — very low-calorie carbs (cauliflower rice, shirataki)
+    // would need absurd weights to hit a macro target on their own, and the
+    // leanest proteins can run past 400g. Prefer options that plate sensibly.
+    if (PORTION_CAP[slot]){
+      const sane = opts.filter(f => servingFor(slot, f) <= PORTION_CAP[slot]);
+      if (sane.length) opts = sane;
+    }
+    if (slot === 'protein'){
+      const roomy = opts.filter(f => servingKcal(slot, f) <= currentTargets().kcal * 0.30 * 0.75);
+      if (roomy.length) opts = roomy;
+    }
+    return opts[Math.floor(Math.random() * opts.length)];
+  }
 
-    MEALS.forEach(meal=>{
-      const isSnack = !meal.required;
+  function generateSuggestion(){
+    const style = state.eatingStyle || 'balanced';
+    const usedNames = new Set();
+    let lockedRecipe = null;   // 'consistent' repeats one main dish
+
+    MEALS.forEach((meal, mi)=>{
+      const role = mealRole(meal, mi);
       const prev = state.selections[meal.key] || {};
-      const sel = {protein:[], carb:[], fat:[], produce:[], notes: prev.notes || ""};
-      [['protein', FOODS.protein], ['carb', FOODS.carbs], ['fat', FOODS.fat], ['produce', FOODS.produce]]
-        .forEach(([slot, list])=>{
-          const want = isSnack ? 1 : counts[slot];
+      const sel = {protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[], notes: prev.notes || "", dish:""};
 
-          // One cut of meat per meal, max. Non-meat proteins are unrestricted,
-          // so chicken + lentils is fine, chicken + steak is not.
-          const meatGuard = ()=> {
-            if (slot !== 'protein') return null;
-            const already = sel.protein.some(k=>{
-              const f = FOODS.protein.find(x=>x.key===k);
-              return f && isMeat(f);
-            });
-            return already ? (f => !isMeat(f)) : null;
-          };
+      // ---- choose the dish ----
+      let recipe = null;
+      if (style === 'consistent' && lockedRecipe && lockedRecipe.slots.includes(role)){
+        recipe = lockedRecipe;
+      } else {
+        const usable = RECIPES.filter(r => recipeUsable(r, role));
+        if (usable.length){
+          recipe = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
+                         .sort((a,b) => b.s - a.s)[0].r;
+          if (style === 'consistent' && role !== 'snack' && !lockedRecipe) lockedRecipe = recipe;
+        }
+      }
 
-          if (fixed[slot]){
-            sel[slot].push(fixed[slot].key);
-            used[slot].add(fixed[slot].key);
-            for (let i = 1; i < want; i++){
-              const extra = pickFood(list, used[slot], true, slot, meatGuard());
-              if (extra && !sel[slot].includes(extra.key)){
-                sel[slot].push(extra.key);
-                used[slot].add(extra.key);
-              }
+      if (recipe){
+        usedNames.add(recipe.name);
+
+        const wantTwoVeg = style !== 'consistent' && role !== 'snack';
+        [['protein',1], ['carb',1], ['fat',1], ['veg', wantTwoVeg ? 2 : 1], ['fruit',1], ['sauce',1]]
+          .forEach(([slot, want])=>{
+            for (let i = 0; i < want; i++){
+              const guard = (slot === 'protein' && sel.protein.some(k=>{
+                const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
+              })) ? (f => !isMeat(f)) : null;
+              const food = pickFromRecipe(recipe, slot, role, sel[slot], guard);
+              if (food) sel[slot].push(food.key);
             }
-            return;
+          });
+
+        // If the chosen protein alone would need an enormous portion (lean
+        // dairy is the usual culprit — 500g of cottage cheese), bring in a
+        // second protein from the same dish so they split the target.
+        if (sel.protein.length === 1){
+          const only = FOODS.protein.find(f=>f.key===sel.protein[0]);
+          if (only && servingFor('protein', only) > PORTION_CAP.protein){
+            const guard = isMeat(only) ? (f => !isMeat(f)) : null;
+            const partner = pickFromRecipe(recipe, 'protein', role, sel.protein, guard);
+            if (partner) sel.protein.push(partner.key);
           }
-          for (let i = 0; i < want; i++){
-            const food = pickFood(list, used[slot], true, slot, meatGuard());
-            if (food && !sel[slot].includes(food.key)){
-              sel[slot].push(food.key);
-              used[slot].add(food.key);
-            }
-          }
-        });
-      SLOT_DEFS.forEach(d => { if (!sel[d.slot].length) sel[d.slot] = [""]; });
+        }
+
+        // sauce only where the dish calls for one, and not every single time
+        if (sel.sauce.length && Math.random() > 0.75) sel.sauce = [];
+        if (sel.sauce.length && !sauceAllowed(FOODS.sauce.find(f=>f.key===sel.sauce[0]))){
+          const alt = (recipe.sauce || []).map(k=>FOODS.sauce.find(f=>f.key===k))
+            .filter(f => f && passesPrefs(f) && !isDisliked(f) && sauceAllowed(f));
+          sel.sauce = alt.length ? [alt[Math.floor(Math.random()*alt.length)].key] : [];
+        }
+      } else {
+        // No template fits (heavy dietary filters) — fall back to free assembly
+        const guard = ()=> sel.protein.some(k=>{
+          const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
+        }) ? (f => !isMeat(f)) : null;
+        [['protein', FOODS.protein], ['carb', FOODS.carbs], ['fat', FOODS.fat], ['veg', FOODS.veg]]
+          .forEach(([slot, list])=>{
+            const f = pickFood(list, null, true, slot,
+              slot === 'protein' ? (x => !(x.powder && !POWDER_OK.includes(role)) && (guard() ? !isMeat(x) : true)) : null);
+            if (f) sel[slot].push(f.key);
+          });
+        const fr = pickFood(FOODS.fruit, null, true, 'fruit');
+        if (fr && (role === 'snack' || mi % 2 === 0)) sel.fruit.push(fr.key);
+      }
+
+      if (recipe) sel.dish = dishTitle(recipe, sel);
+      SLOT_DEFS.forEach(d => { if (!sel[d.slot].length && d.slot !== 'sauce' && d.slot !== 'fruit') sel[d.slot] = [""]; });
+      if (!sel.fruit.length) sel.fruit = [""];
       state.selections[meal.key] = sel;
     });
   }
 
   const STYLE_BLURB = {
     consistent: "Same four Food Blocks in every meal — cook once, portion it out.",
-    balanced:   "Protein and carb stay put; fats and produce rotate to keep it interesting.",
+    balanced:   "Protein and carb stay put; fats and sides rotate to keep it interesting.",
     variety:    "A different pick in every slot, no repeats where the inventory allows.",
   };
 
   function slotFood(slot, key){
     if (!key) return null;
-    const list = slot === 'protein' ? FOODS.protein
-               : slot === 'carb'    ? FOODS.carbs
-               : slot === 'produce' ? FOODS.produce
-               : FOODS.fat;
-    return list.find(f => f.key === key) || null;
+    return listFor(slot).find(f => f.key === key) || null;
+  }
+
+  /* Shop-shelf suggestions for whichever sauce landed on this meal, filtered
+     to what the person's goal can afford. */
+  function brandHint(mealKey){
+    const keys = (state.selections[mealKey].sauce || []).filter(Boolean);
+    if (!keys.length) return '';
+    return keys.map(k=>{
+      const f = FOODS.sauce.find(x=>x.key===k);
+      if (!f || !f.brands || !f.brands.length) return '';
+      const picks = f.brands.slice(0, 2).join(' · ');
+      return `<div style="font-size:9px; color:var(--amber); margin-top:8px; line-height:1.6;">
+        🏷️ ${f.name} — look for: ${picks}</div>`;
+    }).join('');
   }
 
   function renderSuggestion(){
@@ -1852,7 +2697,8 @@
           if (!k || g == null) return null;
           const food = def.list().find(f=>f.key === k);
           if (!food) return null;
-          return `${food.name} <span style="color:var(--green)">${g.toFixed(0)}g</span>`;
+          const ul = unitLabel(food, g);
+          return `${food.name} <span style="color:var(--green)">${ul ? ul : g.toFixed(0)+'g'}</span>${ul ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}`;
         }).filter(Boolean);
         if (!parts.length){
           rows += `<div style="font-size:11px; color:var(--muted); margin-bottom:4px;">${def.icon} — none available</div>`;
@@ -1865,8 +2711,10 @@
       card.className = 'panel';
       card.innerHTML = `
         <div style="font-size:11px; color:var(--cyan); letter-spacing:1px; margin-bottom:4px;">${meal.label}${meal.required ? '' : ' (OPTIONAL)'}</div>
+        ${sel.dish ? `<div style="font-family:'Share Tech Mono',monospace; font-size:15px; color:var(--green); margin-bottom:6px;">🍽️ ${sel.dish}</div>` : ''}
         <div style="font-size:9px; color:var(--muted); margin-bottom:10px;">~${Math.round(tg.kcal*meal.share)} kcal target</div>
         ${rows}
+        ${brandHint(meal.key)}
         <div style="font-size:9px; color:var(--muted); margin-top:8px;">Weights are raw / dry. Season it however you like — add your own on the next screen.</div>
       `;
       suggestList.appendChild(card);
@@ -1968,21 +2816,28 @@
   function listFor(slot){
     return slot === 'protein' ? FOODS.protein
          : slot === 'carb'    ? FOODS.carbs
-         : slot === 'produce' ? FOODS.produce
+         : slot === 'veg'     ? FOODS.veg
+         : slot === 'fruit'   ? FOODS.fruit
+         : slot === 'sauce'   ? FOODS.sauce
          : FOODS.fat;
   }
   function macroKeyFor(slot){
     return slot === 'protein' ? 'protein'
          : slot === 'carb'    ? 'carbs'
-         : slot === 'produce' ? 'kcal'
-         : 'fat';
+         : slot === 'fat'     ? 'fat'
+         : 'kcal';   // veg, fruit and sauce are sized by calories
   }
 
+  /* Slots sized by a calorie slice rather than a macro target */
+  const SIDE_SLOTS = ['veg','fruit','sauce'];
+
   const SLOT_DEFS = [
-    {slot:'protein', icon:'🍗', label:'PROTEIN', list:()=>FOODS.protein},
-    {slot:'carb',    icon:'🍚', label:'CARB',    list:()=>FOODS.carbs},
-    {slot:'fat',     icon:'🥑', label:'FAT',     list:()=>FOODS.fat},
-    {slot:'produce', icon:'🥦', label:'VEG / FRUIT', list:()=>FOODS.produce},
+    {slot:'protein', icon:'🍗', label:'PROTEIN',    list:()=>FOODS.protein},
+    {slot:'carb',    icon:'🍚', label:'CARB',       list:()=>FOODS.carbs},
+    {slot:'fat',     icon:'🥑', label:'FAT',        list:()=>FOODS.fat},
+    {slot:'veg',     icon:'🥦', label:'VEGETABLES', list:()=>FOODS.veg},
+    {slot:'fruit',   icon:'🍓', label:'FRUIT',      list:()=>FOODS.fruit},
+    {slot:'sauce',   icon:'🥫', label:'SAUCE',      list:()=>FOODS.sauce},
   ];
 
   /* ---------------------------------------------------------
@@ -2052,25 +2907,38 @@
   function computeMealPlan(mealKey){
     const sel = state.selections[mealKey];
     const bud = mealBudget(mealKey);
-    const grams = {protein:{}, carb:{}, fat:{}, produce:{}};
+    const grams = {protein:{}, carb:{}, fat:{}, veg:{}, fruit:{}, sauce:{}};
     const mealKcal = bud.kcal;
     let usedP = 0, usedC = 0, usedF = 0, usedKcal = 0;
 
     const live = slot => sel[slot].map((k,i)=>({k,i})).filter(x=>x.k);
     const foodOf = (slot,k) => listFor(slot).find(f=>f.key===k);
 
-    // 1. Produce — a fixed slice of the meal's calories
-    const prod = live('produce');
-    if (prod.length){
-      const each = (mealKcal * PRODUCE_KCAL_SHARE) / prod.length;
-      prod.forEach(({k,i})=>{
-        const food = foodOf('produce',k); if(!food) return;
+    // 1. Sides first — veg, fruit and sauce each take a slice of the meal's
+    //    calories. They're never asked to hit a macro target, so nobody ends
+    //    up trying to make broccoli their carb source.
+    const sideShare = {veg:VEG_KCAL_SHARE, fruit:FRUIT_KCAL_SHARE, sauce:SAUCE_KCAL_CAP};
+    SIDE_SLOTS.forEach(slotName=>{
+      const items = live(slotName);
+      if (!items.length) return;
+      let budget = mealKcal * sideShare[slotName];
+      // a sauce is used at its real serving size, capped so it can't take over
+      if (slotName === 'sauce'){
+        const want = items.reduce((a,{k})=>{
+          const f = foodOf('sauce',k);
+          return a + (f ? f.kcal * (f.serving || 30) / 100 : 0);
+        }, 0);
+        budget = Math.min(want, budget);
+      }
+      const each = budget / items.length;
+      items.forEach(({k,i})=>{
+        const food = foodOf(slotName,k); if(!food) return;
         const g = gramsFor(food, 'kcal', each);
-        grams.produce[i] = g;
+        grams[slotName][i] = g;
         usedP += food.protein*g/100; usedC += food.carbs*g/100;
         usedF += food.fat*g/100;     usedKcal += food.kcal*g/100;
       });
-    }
+    });
 
     // 2. Protein — sized to hit the protein target, then trimmed only if it
     //    would eat the entire calorie budget on its own
@@ -2124,12 +2992,90 @@
     // happily answer "0g of olive oil" when a fatty steak already covered the
     // fat target — true, but useless. Every selected item gets a floor, then
     // everything is rebalanced back onto the calorie target.
+    // Settle the whole-unit foods first, then let the flexible foods
+    // rebalance around them so the meal still lands on its calorie target.
+    // Settle the whole-unit foods, then rebalance the flexible foods around
+    // them. Snapping is re-asserted last so a portion is never left mid-unit;
+    // enforceMinimums is then re-run to soak up the rounding.
+    snapToUnits(grams, sel);
     enforceMinimums(grams, sel, mealKcal);
+    snapToUnits(grams, sel);
     return grams;
   }
 
   /* Smallest portion worth putting on a plan, per slot */
-  const MIN_GRAMS = {protein:20, carb:15, fat:4, produce:25};
+  const MIN_GRAMS = {protein:20, carb:15, fat:4, veg:30, fruit:30, sauce:10};
+
+  /* Pre-portioned foods come in units. Nobody weighs out 63g of tortilla —
+     they grab two. Snap these to whole units (halves for the bigger single
+     items) and let the flexible foods absorb the difference. */
+  /* One rule for how finely a unit food can be divided, used everywhere */
+  function unitStep(food){
+    return (food.unit.whole || food.unit.g < 45) ? 1 : 0.5;
+  }
+
+  function snapToUnits(grams, sel){
+    SLOT_DEFS.forEach(def=>{
+      sel[def.slot].forEach((key, i)=>{
+        if (!key || grams[def.slot][i] == null) return;
+        const food = def.list().find(f=>f.key === key);
+        if (!food || !food.unit || food.unit.soft) return;   // produce portions freely
+        const per = food.unit.g;
+        const raw = grams[def.slot][i] / per;
+        const step = unitStep(food);
+        let n = Math.round(raw / step) * step;
+        if (n < step) n = step;              // never suggest zero of something chosen
+        grams[def.slot][i] = n * per;
+      });
+    });
+  }
+
+  /* "2 tortillas (90g)" reads better than "90g" */
+  function unitLabel(food, g){
+    if (!food || !food.unit) return null;
+    const n = g / food.unit.g;
+    const rounded = (food.unit.whole && !food.unit.soft) ? Math.round(n) : Math.round(n * 2) / 2;
+    if (rounded <= 0) return null;
+    let txt;
+    if (Number.isInteger(rounded)) txt = String(rounded);
+    else if (rounded < 1) txt = '½';
+    else txt = `${Math.floor(rounded)}½`;
+    const word = rounded <= 1 ? food.unit.one : food.unit.many;
+    return `${food.unit.soft ? '~' : ''}${txt} ${word}`;
+  }
+
+  /* Rounding up to whole units can push a small meal over its calorie budget.
+     Where a food has more than one unit, give one back. */
+  function trimUnitOvershoot(grams, sel, mealKcal){
+    for (let pass = 0; pass < 4; pass++){
+      let total = 0;
+      const unitItems = [];
+      SLOT_DEFS.forEach(def=>{
+        sel[def.slot].forEach((key, i)=>{
+          if (!key || grams[def.slot][i] == null) return;
+          const food = def.list().find(f=>f.key === key);
+          if (!food) return;
+          total += food.kcal * grams[def.slot][i] / 100;
+          if (food.unit && !food.unit.soft) unitItems.push({def, i, food});
+        });
+      });
+      if (total <= mealKcal * 1.02 || !unitItems.length) return;
+      // shed one step from whichever unit food costs the most per unit
+      unitItems.sort((a,b) => b.food.kcal*b.food.unit.g - a.food.kcal*a.food.unit.g);
+      let trimmed = false;
+      for (const it of unitItems){
+        const per = it.food.unit.g;
+        const step = (it.food.unit.whole || per < 45) ? per : per/2;
+        const cur = grams[it.def.slot][it.i];
+        const units = Math.round(cur / step);
+        if (units > 1){
+          grams[it.def.slot][it.i] = (units - 1) * step;
+          trimmed = true; break;
+        }
+      }
+      if (!trimmed) return;
+    }
+  }
 
   function enforceMinimums(grams, sel, mealKcal){
     const items = [];
@@ -2138,10 +3084,48 @@
         if (!key || grams[def.slot][i] == null) return;
         const food = def.list().find(f=>f.key === key);
         if (!food || !food.kcal) return;
+        // a hard unit food (tortilla, slice of bread) is already at a sensible
+        // whole portion — leave it fixed and let everything else flex around it
+        if (food.unit && !food.unit.soft) return;
         items.push({slot:def.slot, i, food, g:grams[def.slot][i], floor:MIN_GRAMS[def.slot]});
       });
     });
-    if (!items.length || mealKcal <= 0) return;
+    // Calories already committed to unit foods come off the budget. If
+    // rounding up pushed them past what the meal can hold, drop back a unit
+    // — better to serve one tortilla than to blow the target by 200 kcal.
+    const unitItems = [];
+    SLOT_DEFS.forEach(def=>{
+      sel[def.slot].forEach((key, i)=>{
+        if (!key || grams[def.slot][i] == null) return;
+        const food = def.list().find(f=>f.key === key);
+        if (food && food.unit && !food.unit.soft) unitItems.push({slot:def.slot, i, food});
+      });
+    });
+    const unitKcal = () => unitItems.reduce((a,u)=> a + u.food.kcal * grams[u.slot][u.i] / 100, 0);
+    let guard = 0;
+    while (unitKcal() > mealKcal * 0.92 && guard++ < 12){
+      // trim whichever unit food is costing the most, if it can spare one
+      const trim = unitItems
+        .filter(u => {
+          const per = u.food.unit.g;
+          const step = unitStep(u.food);
+          return grams[u.slot][u.i] > per * step + 1e-6;
+        })
+        .sort((a,b) => (b.food.kcal * grams[b.slot][b.i]) - (a.food.kcal * grams[a.slot][a.i]))[0];
+      if (!trim) break;
+      const per = trim.food.unit.g;
+      const step = unitStep(trim.food);
+      grams[trim.slot][trim.i] -= per * step;
+    }
+    mealKcal = Math.max(mealKcal - unitKcal(), 0);
+    if (!items.length) return;
+    if (mealKcal <= 0){
+      // Budget fully spent by unit foods — still give everything else a real
+      // portion. A 0g drizzle of oil helps nobody; a slight overshoot is the
+      // lesser evil and the HUD will show it.
+      items.forEach(it => { grams[it.slot][it.i] = Math.max(it.g, it.floor); });
+      return;
+    }
 
     // A tiny snack may not have room for every floor — shrink them to fit
     const floorKcal = items.reduce((a,it)=>a + it.food.kcal*it.floor/100, 0);
@@ -2242,7 +3226,9 @@
           if (!el) return;
           const g = plan[def.slot][i];
           const food = key ? def.list().find(f=>f.key===key) : null;
-          el.innerHTML = (food && g != null) ? `→ <span class="val">${g.toFixed(0)}g</span> ${food.name}` : '';
+          const ul = (food && g != null) ? unitLabel(food, g) : null;
+          el.innerHTML = (food && g != null)
+            ? `→ <span class="val">${ul ? ul : g.toFixed(0)+'g'}</span> ${food.name}${ul ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}` : '';
         });
       });
     });
@@ -2264,6 +3250,20 @@
     updateHUD();
   }
 
+  function sauceHint(mealKey){
+    const keys = (state.selections[mealKey].sauce || []).filter(Boolean);
+    const levels = (SAUCE_LEVELS[state.goal || 'maintain'] || SAUCE_LEVELS.maintain).join(' / ');
+    if (!keys.length){
+      return `<div class="season-hint">Optional — not every meal wants one. Showing <strong>${levels}</strong> sauces for your goal.</div>`;
+    }
+    const lines = keys.map(k=>{
+      const f = FOODS.sauce.find(x=>x.key===k);
+      if (!f || !f.brands) return '';
+      return `<div style="color:var(--amber); margin-top:4px;">🏷️ ${f.brands.slice(0,3).join('<br>🏷️ ')}</div>`;
+    }).join('');
+    return `<div class="season-hint">${lines}<div style="margin-top:6px;">Label values vary by brand — check the jar if you want exact numbers.</div></div>`;
+  }
+
   function renderMealTimeline(){
     const tier = currentTier();
     const tg = currentTargets();
@@ -2271,7 +3271,7 @@
 
     const produceNote = document.getElementById('produceNote');
     if (produceNote){
-      produceNote.innerHTML = `Tier ${tier.id} — ${tier.name}. <strong style="color:var(--amber)">All weights are raw or dry</strong> — meat before cooking, grains and beans before water. Add as many items per slot as you like; portions rebalance to fit.`;
+      produceNote.innerHTML = `Tier ${tier.id} — ${tier.name}. <strong style="color:var(--amber)">All weights are raw or dry</strong> — meat before cooking, grains and beans before water. Veg, fruit and sauce are sides sized by calories, so they never become your carb or fat source.`;
     }
 
     MEALS.forEach(meal=>{
@@ -2286,8 +3286,9 @@
         arr.forEach((val, i)=>{
           const food = val ? def.list().find(f=>f.key===val) : null;
           const g = plan[def.slot][i];
+          const ulab = (food && g != null) ? unitLabel(food, g) : null;
           const readout = (food && g != null)
-            ? `→ <span class="val">${g.toFixed(0)}g</span> ${food.name}` : "";
+            ? `→ <span class="val">${ulab ? ulab : g.toFixed(0) + 'g'}</span> ${food.name}${ulab ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}` : "";
           rows += `
             <div class="slot-row">
               <span class="slot-icon">${i === 0 ? def.icon : '➕'}</span>
@@ -2304,6 +3305,8 @@
             ${rows}
             <button class="mini-btn add" data-add="${meal.key}|${def.slot}">+ ADD ${def.label}</button>
             ${def.slot === 'protein' ? '<div class="season-hint">Suggestions use one cut of meat per meal to keep cooking simple — beans, tofu, eggs and dairy are unrestricted. You can still add whatever you like here.</div>' : ''}
+            ${def.slot === 'sauce' ? sauceHint(meal.key) : ''}
+            ${def.slot === 'fruit' ? '<div class="season-hint">Optional. Fruit and veg are sides here — they never get used to hit your carb or fat target.</div>' : ''}
           </div>`;
       });
 
@@ -2312,6 +3315,7 @@
       quest.innerHTML = `
         <div class="quest-node" id="node-${meal.key}"></div>
         <div class="quest-title">${meal.label}${meal.required ? '' : ' (OPTIONAL)'}</div>
+        ${sel.dish ? `<div style="font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--green); margin:-4px 0 8px;">🍽️ ${sel.dish}</div>` : ''}
         <div class="quest-sub" id="sub-${meal.key}">${mealSubText(meal.key)}</div>
         ${slotsHtml}
         <div class="slot-group">
