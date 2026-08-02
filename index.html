@@ -18,7 +18,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Cinzel:wght@600;700&family=EB+Garamond:wght@400;500&family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@400;500;600&family=IM+Fell+English+SC&family=Orbitron:wght@600;800&family=Chakra+Petch:wght@400;600&family=Special+Elite&family=Courier+Prime&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Cinzel:wght@600;700&family=EB+Garamond:wght@400;500&family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@400;500;600&family=IM+Fell+English+SC&family=Orbitron:wght@600;800&family=Chakra+Petch:wght@400;600&family=Special+Elite&family=Courier+Prime&family=Fredoka:wght@500;600&family=Nunito:wght@400;600&family=Silkscreen:wght@400;700&family=VT323&family=Roboto+Slab:wght@500;700&family=Lato:wght@400;700&family=Metamorphous&family=Crimson+Text:wght@400;600&family=Racing+Sans+One&family=Titillium+Web:wght@400;600&display=swap">
 
 <style>
   :root{
@@ -112,6 +112,41 @@
   .hud-top .kcal-readout{ color:var(--cyan); font-size:12px; }
   .bar-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
   .bar-row:last-child{ margin-bottom:0; }
+  .text-link{ display:block; width:100%; margin-top:14px; padding:12px; background:transparent;
+              border:0; cursor:pointer; color:var(--muted); font-family:var(--font-body);
+              font-size:var(--fs-body); text-decoration:underline; text-underline-offset:3px; }
+  .text-link:active{ color:var(--cyan); }
+  .modal-wrap{ position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end;
+               justify-content:center; background:rgba(0,0,0,.72); padding:0; }
+  .modal-wrap[hidden]{ display:none; }
+  .modal-card{ width:100%; max-width:640px; max-height:86vh; display:flex; flex-direction:column;
+               background:var(--panel); border:1px solid var(--line);
+               border-radius:16px 16px 0 0; box-shadow:0 -6px 30px rgba(0,0,0,.5);
+               animation:sheetUp .22s ease both; }
+  @keyframes sheetUp{ from{ transform:translateY(24px); opacity:0 } to{ transform:none; opacity:1 } }
+  @media (min-width:640px){
+    .modal-wrap{ align-items:center; padding:20px; }
+    .modal-card{ border-radius:16px; }
+  }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+               padding:16px 16px 12px; border-bottom:1px solid var(--line); }
+  .modal-title{ font-family:var(--font-display); font-size:var(--fs-9); color:var(--cyan); letter-spacing:1px; }
+  .modal-x{ background:transparent; border:1px solid var(--line); border-radius:8px;
+            color:var(--muted); width:38px; height:38px; cursor:pointer; font-size:15px; flex:0 0 auto; }
+  .modal-x:active{ color:var(--red); border-color:var(--red); }
+  .modal-body{ padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .nutri-group{ font-family:var(--font-display); font-size:var(--fs-7); color:var(--muted);
+                letter-spacing:1.5px; margin:16px 0 8px; }
+  .nutri-group:first-child{ margin-top:0; }
+  .nutri-row{ display:flex; align-items:center; gap:10px; padding:7px 0;
+              border-bottom:1px solid rgba(255,255,255,.05); }
+  .nutri-name{ flex:1; font-family:var(--font-body); font-size:var(--fs-body); }
+  .nutri-name.sub{ padding-left:14px; color:var(--muted); font-size:12px; }
+  .nutri-amt{ font-family:var(--font-body); font-size:var(--fs-body); white-space:nowrap; }
+  .nutri-pct{ font-family:var(--font-body); font-size:12px; color:var(--muted);
+              min-width:44px; text-align:right; }
+  .micro-row{ display:flex; justify-content:space-between; gap:12px; margin-top:6px;
+              font-family:var(--font-body); font-size:11px; letter-spacing:0.5px; }
   .bar-label{ width:38px; font-size:9px; color:var(--muted); flex-shrink:0; }
   .bar-track{
     flex:1; height:10px; border-radius:5px; background:var(--panel-2);
@@ -233,8 +268,8 @@
   }
   .tier-card.recommended{ border-color:var(--green); box-shadow:var(--lift); }
   .tier-card.selected{ border-color:var(--cyan); box-shadow:var(--lift); background:var(--accent-soft); }
-  .tier-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-  .tier-name{ font-size:var(--fs-11); color:var(--text); }
+  .tier-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:0; }
+  .tier-name{ font-family:var(--font-display); font-size:var(--fs-13); color:var(--text); line-height:1.25; }
   .tier-kcal{ font-size:14px; color:var(--cyan); }
   .tier-badge{
     position:absolute; top:0; right:0; font-size:8px; font-family:var(--font-display);
@@ -301,6 +336,17 @@
   .mustuse-panel{ border-color:rgba(255,176,0,0.32); }
   .mustuse-chosen .chip{ border-color:var(--amber)!important; color:var(--amber)!important; background:rgba(255,176,0,0.10)!important; }
   .fav-chosen.mustuse-chosen{ display:block; }
+  .off-status{ font-family:var(--font-body); font-size:12px; color:var(--muted);
+               padding:10px 2px; line-height:1.6; }
+  .off-hit{ display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+            padding:10px; margin-bottom:6px; cursor:pointer;
+            background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
+  .off-hit:active{ border-color:var(--cyan); }
+  .off-hit .nm{ flex:1; font-family:var(--font-body); font-size:13px; line-height:1.35; }
+  .off-hit .nm small{ display:block; color:var(--muted); font-size:11px; margin-top:2px; }
+  .off-hit .kc{ font-family:var(--font-body); font-size:12px; color:var(--green); white-space:nowrap; }
+  .off-credit{ font-family:var(--font-body); font-size:10px; color:var(--muted);
+               line-height:1.6; margin-top:8px; }
   .onhand-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px;
                border:1px solid rgba(255,176,0,0.3); background:rgba(255,176,0,0.05);
                border-radius:8px; padding:8px 10px; }
@@ -358,6 +404,141 @@
   @media (min-width:520px){
     .choice-grid{ grid-template-columns:1fr 1fr; }
   }
+  .var-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .var-label{ flex:1; font-family:var(--font-body); font-size:var(--fs-body); }
+  .var-steps{ display:flex; gap:4px; }
+  .var-step{ min-width:38px; min-height:38px; border-radius:8px; cursor:pointer;
+             background:var(--panel-2); border:1px solid var(--line); color:var(--muted);
+             font-family:var(--font-body); font-size:15px; }
+  .var-step.wide{ min-width:64px; font-size:13px; }
+  .var-step.on{ border-color:var(--cyan); color:var(--cyan); background:var(--accent-soft); }
+  /* ---- attract screen ----
+     Deliberately outside the theme system: an arcade cabinet looks the same
+     whatever game is in it, so this stays black-and-pixel regardless. */
+  #screen-attract{ background:#000; }
+  body.attract-mode{ background:#000!important; background-image:none!important; }
+  .attract{
+    min-height:78vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; gap:8px;
+  }
+  .attract-logo{
+    font-family:'Press Start 2P', monospace; font-size:19px; color:#fff;
+    letter-spacing:2px; line-height:1.6; margin-bottom:2px;
+  }
+  .attract-sub{
+    font-family:'Press Start 2P', monospace; font-size:9px; color:#00fff2;
+    letter-spacing:3px; margin-bottom:44px;
+  }
+  .attract-blink{
+    font-family:'Press Start 2P', monospace; font-size:12px; color:#fff;
+    letter-spacing:2px; margin-bottom:30px; animation:blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .arcade-btn{
+    width:132px; height:132px; border-radius:50%; cursor:pointer;
+    font-family:'Press Start 2P', monospace; font-size:13px; letter-spacing:2px;
+    color:#fff; text-shadow:0 2px 3px rgba(0,0,0,.55);
+    background:radial-gradient(circle at 34% 28%, #ff6b6b 0%, #e01f2d 46%, #a10f1a 100%);
+    border:3px solid #6d0a12;
+    box-shadow:0 8px 0 #6d0a12, 0 12px 18px rgba(0,0,0,.6),
+               inset 0 3px 8px rgba(255,255,255,.28);
+    transition:transform .06s ease, box-shadow .06s ease;
+  }
+  .arcade-btn:active{
+    transform:translateY(7px);
+    box-shadow:0 1px 0 #6d0a12, 0 3px 8px rgba(0,0,0,.5),
+               inset 0 3px 8px rgba(255,255,255,.2);
+  }
+  .attract-credit{
+    font-family:'Press Start 2P', monospace; font-size:7px; color:#5f7690;
+    letter-spacing:2px; margin-top:40px;
+  }
+
+  /* ---- game library ---- */
+  .library-grid{ display:grid; gap:12px; grid-template-columns:1fr; }
+  @media (min-width:560px){ .library-grid{ grid-template-columns:1fr 1fr; } }
+  .game-card{
+    position:relative; overflow:hidden; text-align:left; cursor:pointer;
+    border:1px solid var(--line); border-radius:12px; padding:18px 16px;
+    min-height:120px; display:flex; flex-direction:column; justify-content:flex-end; gap:4px;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .game-card:active{ transform:scale(.985); }
+  .game-card .art{ position:absolute; inset:0; opacity:.5; }
+  .game-card .ico{ position:absolute; top:14px; right:16px; font-size:30px; opacity:.9; }
+  .game-card .ttl{ position:relative; font-family:var(--font-display); font-size:15px; line-height:1.3; }
+  .game-card .dsc{ position:relative; font-family:var(--font-body); font-size:13px; line-height:1.5; }
+  .game-card .cls{ position:relative; font-family:var(--font-body); font-size:11px; opacity:.75; margin-top:4px; }
+  .sheet-hero{ text-align:center; padding:26px 18px 22px; }
+  .sheet-class{ font-family:var(--font-display); font-size:var(--fs-18); color:var(--cyan); line-height:1.2; }
+  .sheet-rank{ font-family:var(--font-display); font-size:var(--fs-7); color:var(--muted);
+               letter-spacing:2px; margin:6px 0 18px; }
+  .sheet-kcal{ font-family:var(--font-display); font-size:var(--fs-18); color:var(--text); line-height:1.2; }
+  .sheet-kcal-sub{ font-family:var(--font-body); font-size:var(--fs-body); color:var(--muted); margin-top:4px; }
+  .stat-row{ margin-bottom:16px; }
+  .stat-row:last-child{ margin-bottom:0; }
+  .stat-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .stat-name{ font-family:var(--font-body); font-size:var(--fs-body); }
+  .stat-val{ font-family:var(--font-display); font-size:var(--fs-12); }
+  .stat-bar{ height:8px; border-radius:99px; background:var(--panel-2);
+             border:1px solid var(--line); overflow:hidden; }
+  .stat-bar span{ display:block; height:100%; border-radius:99px; }
+  .stat-note{ font-family:var(--font-body); font-size:11px; color:var(--muted); margin-top:5px; }
+  .kv{ display:flex; justify-content:space-between; gap:12px; padding:8px 0;
+       border-bottom:1px solid rgba(255,255,255,.05); font-family:var(--font-body); font-size:var(--fs-body); }
+  .kv:last-of-type{ border-bottom:0; }
+  .kv span:first-child{ color:var(--muted); }
+  .link-btn{ display:block; width:100%; margin-top:14px; padding:12px; cursor:pointer;
+             background:transparent; border:0; color:var(--muted); text-decoration:underline;
+             font-family:var(--font-body); font-size:var(--fs-body); }
+  .link-btn:active{ color:var(--cyan); }
+  .modal-back{ position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.72);
+               display:flex; align-items:flex-end; justify-content:center;
+               padding:0 0 env(safe-area-inset-bottom); }
+  .modal-back[hidden]{ display:none; }
+  @media (min-width:640px){ .modal-back{ align-items:center; padding:24px; } }
+  .modal{ width:100%; max-width:560px; max-height:86vh; overflow-y:auto;
+          background:var(--panel); border:1px solid var(--line);
+          border-radius:16px 16px 0 0; padding:18px 16px calc(22px + var(--safe-bottom));
+          box-shadow:0 -8px 30px rgba(0,0,0,.5); }
+  @media (min-width:640px){ .modal{ border-radius:16px; padding-bottom:22px; } }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center;
+               gap:12px; margin-bottom:14px; position:sticky; top:0;
+               background:var(--panel); padding-bottom:10px; }
+  .modal-title{ font-family:var(--font-display); font-size:var(--fs-12); color:var(--cyan);
+                letter-spacing:1px; line-height:1.3; }
+  .modal-x{ flex:0 0 auto; width:40px; height:40px; border-radius:10px; cursor:pointer;
+            background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-size:16px; }
+  .modal-x:active{ background:var(--accent-soft); }
+  .nut-group{ font-family:var(--font-display); font-size:var(--fs-8); color:var(--muted);
+              letter-spacing:1px; margin:16px 0 8px; }
+  .nut-group:first-child{ margin-top:0; }
+  .nut{ display:flex; align-items:center; gap:10px; padding:7px 0;
+        border-bottom:1px solid rgba(255,255,255,.05); font-family:var(--font-body); font-size:var(--fs-body); }
+  .nut.sub{ padding-left:16px; color:var(--muted); }
+  .nut-name{ flex:1; }
+  .nut-val{ white-space:nowrap; }
+  .nut-pct{ width:52px; text-align:right; color:var(--muted); font-size:11px; }
+  .shop-row{ display:flex; align-items:center; gap:10px; padding:9px 0;
+             border-bottom:1px solid rgba(255,255,255,.05); cursor:pointer; }
+  .shop-row:last-child{ border-bottom:0; }
+  .shop-tick{ width:20px; height:20px; flex:0 0 auto; margin:0!important; accent-color:var(--green); }
+  .shop-name{ flex:1; font-family:var(--font-body); font-size:var(--fs-body); line-height:1.4; }
+  .shop-qty{ font-family:var(--font-body); font-size:var(--fs-body); color:var(--green); white-space:nowrap; }
+  .shop-tick:checked ~ .shop-name, .shop-tick:checked ~ .shop-qty{ opacity:.4; text-decoration:line-through; }
+  .copy-fallback{ width:100%; height:220px; margin-top:10px; font-size:12px!important; }
+
+  /* Printing gives a clean paper list rather than a screenshot of the app */
+  @media print{
+    body{ background:#fff!important; color:#000!important; }
+    .screen{ display:none!important; }
+    #screen-shop{ display:block!important; max-width:none; padding:0; }
+    #hud, .top-strip, .btn-primary, .btn-ghost, #prepGrid, .eyebrow{ display:none!important; }
+    .panel{ border:1px solid #ccc; background:#fff!important; break-inside:avoid; margin-bottom:10px; }
+    .title, .slot-label, .shop-name, .shop-qty, .subtitle{ color:#000!important; }
+    .shop-qty{ font-weight:700; }
+  }
+
   /* ---- Larger screens ----
      The phone layout is a single 640px column. On a tablet or desktop that
      leaves the content marooned in the middle, so the column widens and the
@@ -392,7 +573,7 @@
 </head>
 <body>
 
-<div id="hud">
+<div id="hud" aria-live="polite">
   <div class="hud-top">
     <span class="lvbadge" id="hudTierBadge">LV.1</span>
     <span id="hudTierName">—</span>
@@ -400,7 +581,7 @@
   </div>
   <div class="bar-row">
     <span class="bar-label">KCAL</span>
-    <div class="bar-track"><div class="bar-fill kcal" id="barKcal" style="width:0%"></div><span class="bar-num" id="numKcal">0 / 0</span></div>
+    <div class="bar-track" role="img" aria-label="Calories consumed"><div class="bar-fill kcal" id="barKcal" style="width:0%"></div><span class="bar-num" id="numKcal">0 / 0</span></div>
     <span class="bar-val" id="valKcal">0 left</span>
   </div>
   <div class="bar-row">
@@ -418,21 +599,77 @@
     <div class="bar-track"><div class="bar-fill fat" id="barFat" style="width:0%"></div><span class="bar-num" id="numFat">0 / 0</span></div>
     <span class="bar-val" id="valFat">0g left</span>
   </div>
+  <div class="micro-row">
+    <span id="hudFibre">FIBRE 0 / 0g</span>
+    <span id="hudSodium">SODIUM 0mg</span>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalHow" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalHowTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="modalHowTitle">HOW THIS WAS WORKED OUT</span>
+      <button class="modal-x" data-close="modalHow" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="sheetBreakdown"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalStats" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalStatsTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="modalStatsTitle">FULL NUTRITION</span>
+      <button class="modal-x" data-close="modalStats" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="fullStatsBody"></div>
+  </div>
 </div>
 
 <div id="app">
 
-  <!-- SCREEN 1: ONBOARDING -->
-  <section class="screen active" id="screen-onboard">
+  <!-- SCREEN 0: ATTRACT -->
+  <section class="screen active" id="screen-attract">
+    <div class="attract">
+      <div class="attract-logo">GAMER&rsquo;S FITNESS</div>
+      <div class="attract-sub">LOADOUT CALCULATOR</div>
+      <div class="attract-blink">PRESS START BUTTON</div>
+      <button class="arcade-btn" id="btnStart" aria-label="Press start">START</button>
+      <button class="btn-ghost" id="attractContinue" style="display:none; max-width:260px; margin-top:22px;">CONTINUE SAVED GAME</button>
+      <div class="attract-credit">INSERT PROTEIN &mdash; 1 CREDIT</div>
+    </div>
+  </section>
+
+  <!-- SCREEN 0.5: GAME LIBRARY -->
+  <section class="screen" id="screen-library">
+    <div class="top-strip">
+      <button class="back-link" data-back="screen-attract">&larr; BACK</button>
+    </div>
+    <div class="eyebrow">SELECT GAME</div>
+    <h1 class="title">Game Library</h1>
+    <p class="subtitle">Pick a world. It sets the look, the language and what your class is called &mdash; the food and the maths stay the same.</p>
+    <div id="libraryGrid" class="library-grid"></div>
+  </section>
+
+  <section class="screen" id="screen-onboard">
+    <div class="top-strip">
+      <button class="back-link" data-back="screen-library">← CHANGE GAME</button>
+    </div>
     <div class="eyebrow" data-word="charCreate">CHARACTER CREATION</div>
     <h1 class="title">Set Your Daily Target</h1>
     <p class="subtitle">Already tracking in MyFitnessPal or another app? Paste that number in — it will always beat a formula. Otherwise the calculator below will estimate it.</p>
 
-    <div class="panel">
-      <label class="field-label">PICK YOUR GENRE</label>
-      <div class="theme-grid" id="themeGrid"></div>
-      <p class="subtitle" id="themeBlurb" style="font-size:10px; margin:10px 0 0;"></p>
+    <div class="panel" id="resumePanel" style="display:none;">
+      <div class="eaten-head">
+        <span class="eaten-title">💾 SAVED PLAN</span>
+        <span class="eaten-total" id="resumeWhen"></span>
+      </div>
+      <p class="subtitle" style="font-size:var(--fs-body); margin-bottom:14px;">
+        Your last setup is still here. Pick up where you left off, or start fresh.
+      </p>
+      <button class="btn-primary" id="btnResume">CONTINUE</button>
+      <button class="btn-ghost" id="btnStartOver">START OVER</button>
     </div>
+
 
     <div class="panel">
       <label class="field-label">SET CALORIES BY</label>
@@ -517,69 +754,54 @@
   </section>
 
   <!-- SCREEN 2: TIER SELECT -->
+  <!-- SCREEN 2: CHARACTER SHEET -->
   <section class="screen" id="screen-tiers">
     <div class="top-strip">
-      <button class="back-link" data-back="screen-onboard">← RESTART</button>
+      <button class="back-link" data-back="screen-onboard">← EDIT STATS</button>
     </div>
-    <div class="eyebrow" data-word="charCreate">CHARACTER SELECT</div>
-    <h1 class="title" data-word="tierPick">Choose Your Tier</h1>
-    <p class="subtitle" id="recommendMsg">The system recommends the highlighted build based on your inputs — but any Tier can be selected.</p>
+    <div class="eyebrow" id="sheetEyebrow">CHARACTER SHEET</div>
+    <h1 class="title" id="sheetTitle">Your Character</h1>
+    <p class="subtitle" id="recommendMsg"></p>
 
-    <div id="tierList"></div>
+    <div class="panel sheet-hero">
+      <div class="sheet-class" id="sheetClass"></div>
+      <div class="sheet-rank" id="sheetRank"></div>
+      <div class="sheet-kcal" id="sheetKcal"></div>
+      <div class="sheet-kcal-sub" id="sheetKcalSub"></div>
+    </div>
 
-    <button class="btn-primary" id="btnConfirmTier" disabled>CONFIRM LOADOUT TIER</button>
+    <div class="panel">
+      <label class="field-label">DAILY MACROS</label>
+      <div id="sheetMacros"></div>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">FIBRE &amp; SODIUM</label>
+      <div id="sheetMicros"></div>
+      <button class="btn-ghost" id="btnFullStats" style="margin-top:14px;">📊 VIEW FULL STATS</button>
+    </div>
+
+    <button class="btn-primary" id="btnConfirmTier">CONTINUE</button>
+    <button class="text-link" id="btnHowWorked">How was this worked out?</button>
   </section>
 
-  <!-- SCREEN 2.5: FOOD PREFERENCES -->
   <section class="screen" id="screen-prefs">
     <div class="top-strip">
       <button class="back-link" data-back="screen-tiers">← CHANGE TIER</button>
     </div>
     <div class="eyebrow" data-word="inventory">INVENTORY FILTERS</div>
-    <h1 class="title">Set Your Food Preferences</h1>
-    <p class="subtitle">Select anything that applies. Your dropdowns in the next step will only show Food Blocks that match — leave blank for the full inventory.</p>
+    <h1 class="title">Food Preferences</h1>
+    <p class="subtitle">Select anything that applies. Only matching foods will be offered — leave blank for the full inventory.</p>
 
     <div class="panel">
-      <label class="field-label">HOW MANY TIMES DO YOU EAT PER DAY?</label>
-      <div class="choice-grid" id="mealCountGrid" style="grid-template-columns:1fr 1fr;">
-        <button class="choice-btn" data-meals="2"><span><strong>2 — Two Meals</strong><span class="desc">Bigger sittings, longer gaps</span></span><span class="tag">🍽️</span></button>
-        <button class="choice-btn" data-meals="3"><span><strong>3 — Three Meals</strong><span class="desc">Classic breakfast/lunch/dinner</span></span><span class="tag">🍽️</span></button>
-        <button class="choice-btn selected" data-meals="4"><span><strong>4 — 3 + a Snack</strong><span class="desc">Three meals plus one snack</span></span><span class="tag">🍽️</span></button>
-        <button class="choice-btn" data-meals="5"><span><strong>5 — 3 + 2 Snacks</strong><span class="desc">Steady grazing through the day</span></span><span class="tag">🍽️</span></button>
-        <button class="choice-btn" data-meals="6"><span><strong>6 — 3 + 3 Snacks</strong><span class="desc">Frequent small feedings</span></span><span class="tag">🍽️</span></button>
-      </div>
-      <p class="subtitle" id="mealCountNote" style="font-size:10px; margin:10px 0 0;"></p>
-
-      <label class="field-label" style="margin-top:18px;">EATING STYLE</label>
-      <div class="choice-grid" id="prefGrid">
-        <button class="choice-btn" data-pref="vegetarian"><span><strong>Vegetarian</strong><span class="desc">No meat, poultry, or fish</span></span><span class="tag">🥕</span></button>
-        <button class="choice-btn" data-pref="vegan"><span><strong>Vegan</strong><span class="desc">No animal products at all</span></span><span class="tag">🌱</span></button>
-        <button class="choice-btn" data-pref="pescatarian"><span><strong>Pescatarian</strong><span class="desc">Fish yes, other meat no</span></span><span class="tag">🐟</span></button>
-        <button class="choice-btn" data-pref="wholefoods"><span><strong>Whole Foods Only</strong><span class="desc">Skips protein powders</span></span><span class="tag">🌾</span></button>
-      </div>
-
+      <label class="field-label">EATING STYLE</label>
+      <div class="choice-grid" id="prefEating"></div>
       <label class="field-label" style="margin-top:18px;">ALLERGIES &amp; INTOLERANCES</label>
-      <div class="choice-grid" id="prefGrid2">
-        <button class="choice-btn" data-pref="dairyfree"><span><strong>Dairy-Free</strong><span class="desc">No yogurt, cottage cheese, whey</span></span><span class="tag">🥛</span></button>
-        <button class="choice-btn" data-pref="glutenfree"><span><strong>Gluten-Free</strong><span class="desc">No wheat bread, farro, couscous, seitan</span></span><span class="tag">🍞</span></button>
-        <button class="choice-btn" data-pref="nutfree"><span><strong>Nut-Free</strong><span class="desc">No almonds, cashews, peanut butter</span></span><span class="tag">🥜</span></button>
-        <button class="choice-btn" data-pref="eggfree"><span><strong>Egg-Free</strong><span class="desc">No egg whites or yolks</span></span><span class="tag">🥚</span></button>
-        <button class="choice-btn" data-pref="soyfree"><span><strong>Soy-Free</strong><span class="desc">No tofu, tempeh, edamame</span></span><span class="tag">🫘</span></button>
-        <button class="choice-btn" data-pref="shellfishfree"><span><strong>Shellfish-Free</strong><span class="desc">No shrimp</span></span><span class="tag">🦐</span></button>
-        <button class="choice-btn" data-pref="legumefree"><span><strong>Legume-Free</strong><span class="desc">No beans, lentils, chickpeas, peanuts</span></span><span class="tag">🌰</span></button>
-        <button class="choice-btn" data-pref="nightshadefree"><span><strong>Nightshade-Free</strong><span class="desc">No white potato, peppers, tomatoes</span></span><span class="tag">🍅</span></button>
-      </div>
-
+      <div class="choice-grid" id="prefAllergy"></div>
       <label class="field-label" style="margin-top:18px;">PROTEINS TO EXCLUDE</label>
-      <div class="choice-grid" id="prefGrid3">
-        <button class="choice-btn" data-pref="porkfree"><span><strong>No Pork</strong><span class="desc">Excludes pork tenderloin</span></span><span class="tag">🥓</span></button>
-        <button class="choice-btn" data-pref="redmeatfree"><span><strong>No Red Meat</strong><span class="desc">No beef or pork</span></span><span class="tag">🥩</span></button>
-        <button class="choice-btn" data-pref="poultryfree"><span><strong>No Poultry</strong><span class="desc">No chicken or turkey</span></span><span class="tag">🍗</span></button>
-        <button class="choice-btn" data-pref="fishfree"><span><strong>No Fish/Seafood</strong><span class="desc">No salmon, tilapia, shrimp</span></span><span class="tag">🎣</span></button>
-      </div>
-
-      <p class="subtitle" id="prefSummary" style="font-size:10px; margin:14px 0 0;"></p>
-      <button class="btn-primary" id="btnConfirmPrefs">NEXT — WHAT ARE WE CRAVING?</button>
+      <div class="choice-grid" id="prefExclude"></div>
+      <p class="subtitle" id="prefSummary" style="font-size:var(--fs-body); margin:14px 0 0;"></p>
+      <button class="btn-primary" id="btnConfirmPrefs">CONTINUE</button>
       <button class="btn-ghost" id="btnSkipPrefs">SKIP — SHOW FULL INVENTORY</button>
     </div>
   </section>
@@ -590,80 +812,123 @@
       <button class="back-link" data-back="screen-prefs">← EDIT PREFERENCES</button>
     </div>
     <div class="eyebrow">FLAVOR PROFILE</div>
-    <h1 class="title">Cravings or Something New?</h1>
-    <p class="subtitle">Mark your go-to foods, then decide whether today's plan should lean on them or push you toward things you haven't tried.</p>
+    <h1 class="title">Cravings &amp; Kitchen</h1>
+    <p class="subtitle">What you already have, what you love, what you can't stand — and how adventurous today should be.</p>
 
     <div class="panel mustuse-panel">
       <label class="field-label">🧊 INGREDIENTS ON HAND YOU ARE PREPARED TO USE</label>
       <div class="fav-search-wrap">
-        <input type="text" id="mustSearch" class="fav-search" placeholder="🔍  Search what you already have — e.g. chicken thigh, rice" autocomplete="off">
-        <button class="fav-clear" id="mustClear" style="display:none;">✕</button>
+        <input type="text" id="mustSearch" class="fav-search" aria-label="Search ingredients you have on hand" placeholder="🔍  Search what you already have — e.g. chicken thigh, rice" autocomplete="off">
+        <button class="fav-clear" id="mustClear" aria-label="Clear search" style="display:none;">✕</button>
       </div>
       <div id="mustChosen" class="fav-chosen mustuse-chosen"></div>
       <div id="mustResults"></div>
-      <p class="subtitle" style="font-size:10px; margin:12px 0 0;">Anything you add here <strong style="color:var(--amber)">will appear in your day</strong> — the planner builds around it instead of treating it as a preference. Use it for food you need to get through before it turns. Enter how much you have and the planner keeps within it.</p>
-      <p class="subtitle" id="mustWarn" style="font-size:10px; margin:8px 0 0; display:none;"></p>
+      <p class="subtitle" id="mustWarn" style="font-size:var(--fs-body); margin:12px 0 0; display:none;"></p>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 0;">
+        These get worked into the plan wherever they fit. Use it for food you need to get through before it turns. Enter how much you have and the planner keeps within it.
+      </p>
     </div>
 
     <div class="panel">
       <label class="field-label">HOW SHOULD WE BUILD YOUR MEALS?</label>
       <div class="choice-grid" id="discoveryGrid" style="grid-template-columns:1fr;">
         <button class="choice-btn selected" data-discovery="favorites"><span><strong>Stick To My Favorites</strong><span class="desc">Build every meal from the foods you picked below</span></span><span class="tag">⭐</span></button>
-        <button class="choice-btn" data-discovery="new"><span><strong>Try Something New</strong><span class="desc">Suggest foods similar to your favorites — but ones you didn't pick</span></span><span class="tag">🧭</span></button>
+        <button class="choice-btn" data-discovery="new"><span><strong>Try Something New</strong><span class="desc">Foods similar to your favorites — but ones you didn't pick</span></span><span class="tag">🧭</span></button>
       </div>
-      <p class="subtitle" id="discoveryNote" style="font-size:10px; margin:10px 0 0;"></p>
+      <p class="subtitle" id="discoveryNote" style="font-size:var(--fs-body); margin:10px 0 0;"></p>
     </div>
 
     <div class="panel">
       <label class="field-label">YOUR FAVORITES — UP TO 6 PER CATEGORY</label>
       <div class="fav-search-wrap">
-        <input type="text" id="favSearch" class="fav-search" placeholder="🔍  Search foods — e.g. salmon, oats, sriracha" autocomplete="off">
-        <button class="fav-clear" id="favClear" style="display:none;">✕</button>
+        <input type="text" id="favSearch" class="fav-search" aria-label="Search foods to add as favourites" placeholder="🔍  Search foods — e.g. salmon, oats, sriracha" autocomplete="off">
+        <button class="fav-clear" id="favClear" aria-label="Clear search" style="display:none;">✕</button>
       </div>
       <div id="favChosen" class="fav-chosen"></div>
       <div id="favPicker"></div>
-      <p class="subtitle" style="font-size:10px; margin:12px 0 0;">Leave a category empty and the whole inventory stays in play for it.</p>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 0;">Leave a category empty and the whole inventory stays in play for it.</p>
     </div>
-
-
 
     <div class="panel">
       <label class="field-label">🚫 FOODS YOU CAN'T STAND</label>
       <div class="fav-search-wrap">
-        <input type="text" id="dislikeSearch" class="fav-search" placeholder="🔍  Search to block — e.g. mayo, blue cheese, olives" autocomplete="off">
-        <button class="fav-clear" id="dislikeClear" style="display:none;">✕</button>
+        <input type="text" id="dislikeSearch" class="fav-search" aria-label="Search foods to block" placeholder="🔍  Search to block — e.g. mayo, blue cheese, olives" autocomplete="off">
+        <button class="fav-clear" id="dislikeClear" aria-label="Clear search" style="display:none;">✕</button>
       </div>
       <div id="dislikeChosen" class="fav-chosen dislike-chosen"></div>
       <div id="dislikeResults"></div>
-      <p class="subtitle" style="font-size:10px; margin:12px 0 0;">Blocked foods never appear in a suggestion. If a dish depends on one, a sensible stand-in is used instead — mayo becomes 0% Greek yogurt, sour cream becomes tzatziki, and so on.</p>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 0;">Blocked foods never appear in a suggestion. If a dish depends on one, a sensible stand-in is used instead — mayo becomes 0% Greek yogurt, sour cream becomes tzatziki.</p>
     </div>
 
     <div class="panel">
+      <label class="field-label">MEAL-TIME RULES</label>
+      <div class="choice-grid" id="mealRuleGrid" style="grid-template-columns:1fr 1fr;">
+        <button class="choice-btn" data-rule="skipBreakfast"><span><strong>Skip Breakfast</strong><span class="desc">Start the day at lunch</span></span><span class="tag">⏭️</span></button>
+        <button class="choice-btn" data-rule="breakfastForDinner"><span><strong>Breakfast Anytime</strong><span class="desc">Eggs for dinner, curry at 7am — no rules</span></span><span class="tag">🍳</span></button>
+        <button class="choice-btn" data-rule="breakfastAllDay"><span><strong>Breakfast All Day</strong><span class="desc">Every meal is breakfast food</span></span><span class="tag">🥞</span></button>
+      </div>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 18px;">
+        By default breakfast sticks to breakfast food, and cereal or pancakes won't turn up at dinner.
+      </p>
+
       <label class="field-label">TODAY'S CRAVINGS (OPTIONAL, SELECT ANY)</label>
       <div class="choice-grid" id="craveGrid"></div>
-      <p class="subtitle" id="craveSummary" style="font-size:10px; margin:12px 0 0;"></p>
-      <button class="btn-primary" id="btnConfirmCravings">NEXT — EATING STYLE</button>
+      <p class="subtitle" id="craveSummary" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
+      <button class="btn-primary" id="btnConfirmCravings">NEXT — PLAN YOUR PREP</button>
       <button class="btn-ghost" id="btnSkipCravings">SKIP — NO PREFERENCES TODAY</button>
     </div>
   </section>
 
-  <!-- SCREEN 2.7: EATING STYLE -->
+  <!-- SCREEN 2.7: PREP PLAN -->
   <section class="screen" id="screen-style">
     <div class="top-strip">
       <button class="back-link" data-back="screen-cravings">← EDIT CRAVINGS</button>
     </div>
     <div class="eyebrow" data-word="playstyle">PLAYSTYLE</div>
-    <h1 class="title">How Do You Like To Eat?</h1>
-    <p class="subtitle">This shapes the meals we suggest — whether you want the same thing on repeat or something different in every slot.</p>
+    <h1 class="title">Plan Your Prep</h1>
+    <p class="subtitle">How much cooking are you willing to do? Repetition is the point of meal prep — decide how much variety is worth the extra pans.</p>
 
     <div class="panel">
-      <label class="field-label">EATING STYLE</label>
-      <div class="choice-grid" id="styleGrid">
-        <button class="choice-btn" data-style="consistent"><span><strong>Consistent</strong><span class="desc">Same foods every meal. Prep once, no decisions.</span></span><span class="tag">🔁</span></button>
-        <button class="choice-btn" data-style="balanced"><span><strong>Balanced</strong><span class="desc">Same protein and carb, rotating sides.</span></span><span class="tag">⚖️</span></button>
-        <button class="choice-btn" data-style="variety"><span><strong>Variety</strong><span class="desc">Something different in every slot.</span></span><span class="tag">🎲</span></button>
+      <label class="field-label">HOW MANY DAYS ARE YOU PREPPING?</label>
+      <div class="choice-grid" id="prepDaysGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+      <p class="subtitle" id="prepDaysNote" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">HOW DOES YOUR DAY BREAK DOWN?</label>
+      <div class="choice-grid" id="mealPlanGrid" style="grid-template-columns:1fr 1fr;"></div>
+      <p class="subtitle" id="mealCountNote" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">HOW BIG SHOULD EACH MEAL FEEL?</label>
+      <div id="weightRows"></div>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 0;">
+        Light mornings and a big dinner? Say so — your calories shift to match and the daily total stays the same.
+      </p>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">HOW MANY DIFFERENT MEALS DO YOU WANT TO COOK?</label>
+      <div class="choice-grid" id="uniqueGrid" style="grid-template-columns:repeat(3,1fr);"></div>
+      <p class="subtitle" id="uniqueNote" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">HOW MANY DIFFERENT INGREDIENTS PER CATEGORY?</label>
+      <div id="varietyRows"></div>
+      <p class="subtitle" style="font-size:var(--fs-body); margin:12px 0 0;">
+        Fewer means bigger packs, less chopping and less waste. More means the week stays interesting.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="eaten-head">
+        <span class="eaten-title" id="styleVerdictName">YOUR PLAYSTYLE</span>
+        <span class="eaten-total" id="styleVerdictTag"></span>
       </div>
-      <button class="btn-primary" id="btnConfirmStyle" disabled>SHOW ME MEALS</button>
+      <p class="subtitle" id="styleVerdict" style="font-size:var(--fs-body); margin:0;"></p>
+      <button class="btn-primary" id="btnConfirmStyle">SHOW ME MEALS</button>
     </div>
   </section>
 
@@ -684,6 +949,27 @@
     <button class="btn-ghost" id="btnBuildOwn">BUILD MY OWN INSTEAD</button>
   </section>
 
+  <!-- SCREEN 4: SHOPPING LIST -->
+  <section class="screen" id="screen-shop">
+    <div class="top-strip">
+      <button class="back-link" data-back="screen-loadout">← BACK TO MEALS</button>
+    </div>
+    <div class="eyebrow">SUPPLY RUN</div>
+    <h1 class="title">Shopping List</h1>
+    <p class="subtitle">Every ingredient totalled across the day, so you buy once. Weights are raw or dry.</p>
+
+    <div class="panel">
+      <div class="eaten-head"><span class="eaten-title">📅 PREPPING FOR</span>
+      <span class="eaten-total" id="prepNote"></span></div>
+      <div class="choice-grid" id="prepGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+    </div>
+
+    <div id="shopList"></div>
+
+    <button class="btn-primary" id="btnCopyList">📋 COPY LIST</button>
+    <button class="btn-ghost" id="btnPrintList">🖨 PRINT / SAVE AS PDF</button>
+  </section>
+
   <!-- SCREEN 3: DAILY LOADOUT -->
   <section class="screen" id="screen-loadout">
     <div class="top-strip">
@@ -699,11 +985,21 @@
         <span class="eaten-title">🍔 ALREADY EATEN TODAY</span>
         <span class="eaten-total" id="eatenTotal">0 kcal</span>
       </div>
+      <div class="fav-search-wrap">
+        <input type="text" id="offSearch" class="fav-search" aria-label="Search packaged foods"
+               placeholder="🔍  Search a food or paste a barcode" autocomplete="off">
+        <button class="fav-clear" id="offClear" aria-label="Clear search" style="display:none;">✕</button>
+      </div>
+      <div id="offResults"></div>
       <div id="eatenList"></div>
-      <button class="mini-btn add" id="btnAddEaten">+ ADD CUSTOM ITEM</button>
+      <button class="mini-btn add" id="btnAddEaten">+ ADD MANUALLY</button>
     </div>
     <div id="customBanner" class="custom-banner" style="display:none;"></div>
     <div class="timeline" id="mealTimeline"></div>
+    <button class="btn-primary" id="btnShopping">🧾 BUILD SHOPPING LIST</button>
+    <p class="subtitle" style="font-size:var(--fs-body); margin-top:14px; opacity:.8;">
+      Nutrition figures are reference values and vary by brand and cut — for anything packaged, the label on the box beats this table.
+    </p>
   </section>
 
 </div>
@@ -770,6 +1066,7 @@
       colors:{ "bg-0":"#0a0e14","bg-1":"#0d1420","panel":"#111a27","panel-2":"#0e1622","line":"#1e2c3d",
                "cyan":"#00fff2","green":"#39ff88","amber":"#ffb000","red":"#ff3860","magenta":"#ff2fb0",
                "text":"#dff3ff","muted":"#8296ad" },
+      sheet:"OPERATOR SCREEN", sheetTitle:"Your Build",
       words:{ tier:"TIER", loadout:"LOADOUT", quest:"QUEST", stat:"STAT", inventory:"INVENTORY",
               build:"BUILD YOUR LOADOUT", charCreate:"CHARACTER CREATION", hp:"KCAL", playstyle:"PLAYSTYLE",
               meals:"Assemble Your Meals", tierPick:"Choose Your Tier" }
@@ -785,6 +1082,7 @@
       colors:{ "bg-0":"#14100a","bg-1":"#1c160d","panel":"#241c11","panel-2":"#1e1710","line":"#3d3320",
                "cyan":"#e8c977","green":"#8fbf6a","amber":"#d9a441","red":"#c0483c","magenta":"#a86fbf",
                "text":"#f2e6cf","muted":"#a29174" },
+      sheet:"CHARACTER SHEET", sheetTitle:"Your Character",
       words:{ tier:"RANK", loadout:"PROVISIONS", quest:"QUEST", stat:"ATTRIBUTE", inventory:"LARDER",
               build:"Forge Your Provisions", charCreate:"CHARACTER CREATION", hp:"VIGOUR", playstyle:"DISCIPLINE",
               meals:"Lay Out Your Feast", tierPick:"Choose Your Rank" }
@@ -800,6 +1098,7 @@
       colors:{ "bg-0":"#0e0f10","bg-1":"#141617","panel":"#1a1d1f","panel-2":"#151819","line":"#2b3033",
                "cyan":"#ff8c1a","green":"#5ec26a","amber":"#e8b62c","red":"#e0463c","magenta":"#7fa8c9",
                "text":"#e6eaec","muted":"#93a0a6" },
+      sheet:"OPERATOR DOSSIER", sheetTitle:"Your Operator",
       words:{ tier:"CLASS", loadout:"LOADOUT", quest:"OBJECTIVE", stat:"METRIC", inventory:"ARMORY",
               build:"Configure Your Loadout", charCreate:"OPERATOR SETUP", hp:"FUEL", playstyle:"DOCTRINE",
               meals:"Build Your Loadout", tierPick:"Select Your Class" }
@@ -815,9 +1114,90 @@
       colors:{ "bg-0":"#12100d","bg-1":"#191712","panel":"#211e18","panel-2":"#1b1814","line":"#3a352a",
                "cyan":"#8fc93a","green":"#a8c93a","amber":"#d99b28","red":"#c2502f","magenta":"#9c7b4a",
                "text":"#e2dcc8","muted":"#a19a85" },
+      sheet:"SURVIVOR PROFILE", sheetTitle:"Your Survivor",
       words:{ tier:"GRADE", loadout:"SUPPLY RUN", quest:"TASK", stat:"READOUT", inventory:"STASH",
               build:"Plan Your Supply Run", charCreate:"SURVIVOR PROFILE", hp:"RATIONS", playstyle:"APPROACH",
               meals:"Ration Out Your Day", tierPick:"Choose Your Grade" }
+    },
+    farm: {
+      tiers:["Sprout","Farmhand","Grower","Rancher","Homesteader"],
+      wash:"radial-gradient(ellipse at top, #1d2a17 0%, #121a0e 60%)",
+      name:"Farm Life Sim", icon:"🌻",
+      blurb:"Sunlit fields and nothing but time",
+      fonts:{ display:"'Fredoka', 'Trebuchet MS', sans-serif", body:"'Nunito', 'Trebuchet MS', sans-serif", scale:1, spacing:"0.5px" },
+      sizes:{ "fs-6":"10px","fs-7":"11px","fs-8":"13px","fs-9":"14px","fs-10":"15px","fs-11":"16px","fs-12":"17px","fs-13":"18px","fs-18":"26px","fs-body":"14px" },
+      glow:"0 1px 0 rgba(0,0,0,.4)", accentSoft:"rgba(157,214,106,.12)", accentLine:"rgba(157,214,106,.45)",
+      colors:{ "bg-0":"#121a0e","bg-1":"#182312","panel":"#1e2b16","panel-2":"#182312","line":"#2f4326",
+               "cyan":"#9dd66a","green":"#c7e58a","amber":"#f0c05a","red":"#e0705c","magenta":"#e59ac4",
+               "text":"#f2f6e6","muted":"#9aab86" },
+      sheet:"FARMER ALMANAC", sheetTitle:"Your Farmer",
+      words:{ tier:"SEASON", loadout:"HARVEST", quest:"CHORE", stat:"YIELD", inventory:"ROOT CELLAR",
+              build:"Plan Your Harvest", charCreate:"NEW FARMER", hp:"STAMINA", playstyle:"FARMING STYLE",
+              meals:"Lay Out Your Table", tierPick:"Choose Your Season" }
+    },
+    craft: {
+      tiers:["Forager","Miner","Crafter","Blacksmith","Dragonslayer"],
+      wash:"linear-gradient(180deg, #1b2018 0%, #10130e 50%)",
+      name:"Survival Craft", icon:"⛏️",
+      blurb:"Punch trees, build base, fear the dark",
+      fonts:{ display:"'Silkscreen', 'Courier New', monospace", body:"'VT323', 'Courier New', monospace", scale:1, spacing:"1px" },
+      sizes:{ "fs-6":"11px","fs-7":"12px","fs-8":"13px","fs-9":"14px","fs-10":"15px","fs-11":"16px","fs-12":"17px","fs-13":"18px","fs-18":"25px","fs-body":"16px" },
+      glow:"none", accentSoft:"rgba(126,196,92,.12)", accentLine:"rgba(126,196,92,.45)",
+      colors:{ "bg-0":"#10130e","bg-1":"#171c14","panel":"#1d241a","panel-2":"#171c14","line":"#33402c",
+               "cyan":"#7ec45c","green":"#a4d97a","amber":"#d9a441","red":"#c85a44","magenta":"#8fa8d9",
+               "text":"#e8eee2","muted":"#93a189" },
+      sheet:"PLAYER STATS", sheetTitle:"Your Player",
+      words:{ tier:"LEVEL", loadout:"HOTBAR", quest:"TASK", stat:"BAR", inventory:"CHEST",
+              build:"Fill Your Hotbar", charCreate:"NEW WORLD", hp:"HEARTS", playstyle:"DIFFICULTY",
+              meals:"Stock Your Hotbar", tierPick:"Choose Your Level" }
+    },
+    outdoors: {
+      tiers:["Angler","Trapper","Tracker","Marksman","Outfitter"],
+      wash:"radial-gradient(ellipse at top, #16241f 0%, #0d1512 60%)",
+      name:"Fishing & Hunting", icon:"🎣",
+      blurb:"Cold mornings, still water, long waits",
+      fonts:{ display:"'Roboto Slab', Georgia, serif", body:"'Lato', 'Helvetica Neue', sans-serif", scale:1, spacing:"0.5px" },
+      sizes:{ "fs-6":"10px","fs-7":"11px","fs-8":"12px","fs-9":"13px","fs-10":"15px","fs-11":"16px","fs-12":"17px","fs-13":"18px","fs-18":"26px","fs-body":"13px" },
+      glow:"0 1px 0 rgba(0,0,0,.5)", accentSoft:"rgba(226,138,58,.12)", accentLine:"rgba(226,138,58,.45)",
+      colors:{ "bg-0":"#0d1512","bg-1":"#131e1a","panel":"#182620","panel-2":"#131e1a","line":"#2a3a32",
+               "cyan":"#e28a3a","green":"#7fb069","amber":"#e0b445","red":"#c35b4a","magenta":"#8ab6c9",
+               "text":"#eef2ec","muted":"#8fa298" },
+      sheet:"FIELD CARD", sheetTitle:"Your Licence",
+      words:{ tier:"TAG", loadout:"KIT", quest:"OUTING", stat:"READING", inventory:"COOLER",
+              build:"Pack Your Kit", charCreate:"LICENCE APPLICATION", hp:"ENERGY", playstyle:"APPROACH",
+              meals:"Pack Your Kit", tierPick:"Choose Your Tag" }
+    },
+    horror: {
+      tiers:["Bystander","Survivor","Investigator","Hunter","Slayer"],
+      wash:"radial-gradient(ellipse at top, #1a0f11 0%, #0b0709 62%)",
+      name:"Horror", icon:"🕯️",
+      blurb:"Something is in the dark with you",
+      fonts:{ display:"'Metamorphous', Georgia, serif", body:"'Crimson Text', Georgia, serif", scale:1, spacing:"1px" },
+      sizes:{ "fs-6":"10px","fs-7":"11px","fs-8":"12px","fs-9":"13px","fs-10":"14px","fs-11":"16px","fs-12":"17px","fs-13":"18px","fs-18":"25px","fs-body":"15px" },
+      glow:"0 0 14px rgba(200,60,60,.20)", accentSoft:"rgba(197,58,58,.14)", accentLine:"rgba(197,58,58,.50)",
+      colors:{ "bg-0":"#0b0709","bg-1":"#120d0f","panel":"#181113","panel-2":"#120d0f","line":"#332226",
+               "cyan":"#e05a5a","green":"#8fae76","amber":"#d19a3c","red":"#e04a4a","magenta":"#9a6ba8",
+               "text":"#ece2e2","muted":"#9c8a8d" },
+      sheet:"CASE FILE", sheetTitle:"Your Case File",
+      words:{ tier:"CHAPTER", loadout:"SUPPLIES", quest:"NIGHT", stat:"VITALS", inventory:"SATCHEL",
+              build:"Ready Your Supplies", charCreate:"THE VICTIM", hp:"SANITY", playstyle:"DISPOSITION",
+              meals:"Ration What's Left", tierPick:"Choose Your Chapter" }
+    },
+    racing: {
+      tiers:["Novice","Privateer","Pro","Ace","Legend"],
+      wash:"linear-gradient(180deg, #16181c 0%, #0c0d10 48%)",
+      name:"Racing", icon:"🏁",
+      blurb:"Carbon, apexes and tenths of a second",
+      fonts:{ display:"'Racing Sans One', 'Arial Narrow', sans-serif", body:"'Titillium Web', 'Helvetica Neue', sans-serif", scale:1, spacing:"1px" },
+      sizes:{ "fs-6":"11px","fs-7":"12px","fs-8":"14px","fs-9":"15px","fs-10":"16px","fs-11":"17px","fs-12":"19px","fs-13":"20px","fs-18":"30px","fs-body":"13px" },
+      glow:"0 1px 0 rgba(0,0,0,.6)", accentSoft:"rgba(232,58,58,.12)", accentLine:"rgba(232,58,58,.45)",
+      colors:{ "bg-0":"#0c0d10","bg-1":"#131519","panel":"#191c21","panel-2":"#131519","line":"#2c3138",
+               "cyan":"#ff5c5c","green":"#4ec97a","amber":"#f0c93a","red":"#ff5a5a","magenta":"#6fa8e0",
+               "text":"#eef1f4","muted":"#8e97a3" },
+      sheet:"DRIVER CARD", sheetTitle:"Your Driver",
+      words:{ tier:"CLASS", loadout:"SETUP", quest:"STINT", stat:"TELEMETRY", inventory:"GARAGE",
+              build:"Dial In Your Setup", charCreate:"DRIVER PROFILE", hp:"FUEL", playstyle:"DRIVING STYLE",
+              meals:"Dial In Your Setup", tierPick:"Choose Your Class" }
     },
     arcade: {
       tiers:["Rookie", "Contender", "Champion", "Boss", "Final Boss"],
@@ -830,6 +1210,7 @@
       colors:{ "bg-0":"#12042a","bg-1":"#1b0740","panel":"#250b52","panel-2":"#1e0844","line":"#3d1780",
                "cyan":"#00e5ff","green":"#4dff5a","amber":"#ffd93d","red":"#ff4d6d","magenta":"#ff5cf0",
                "text":"#fdf3ff","muted":"#b49ad6" },
+      sheet:"PLAYER CARD", sheetTitle:"Your Player",
       words:{ tier:"STAGE", loadout:"POWER-UPS", quest:"ROUND", stat:"SCORE", inventory:"ITEM SELECT",
               build:"Pick Your Power-Ups", charCreate:"PLAYER SELECT", hp:"ENERGY", playstyle:"MODE",
               meals:"Pick Your Power-Ups", tierPick:"Select Stage" }
@@ -862,8 +1243,8 @@
     if (!t.tiers) return;
     TIERS.forEach((tier, i)=>{ if (t.tiers[i]) tier.name = t.tiers[i]; });
     // anything already on screen needs redrawing with the new names
-    if (state.assignedTierId && document.getElementById('tierList')
-        && document.getElementById('tierList').innerHTML) renderTiers();
+    if (state.assignedTierId && document.getElementById('sheetClass')
+        && document.getElementById('sheetClass').innerHTML) renderTiers();
     if (state.selectedTierId && document.getElementById('mealTimeline')
         && document.getElementById('mealTimeline').innerHTML) renderMealTimeline();
   }
@@ -993,6 +1374,69 @@
       {key:"cheddar",   name:"Cheddar Cheese",             kcal:403, protein:24.9,carbs:1.3, fat:33.1,tags:["dairy"], crave:["savory","comfort","creamy"]},
       {key:"feta",      name:"Feta Cheese",                kcal:264, protein:14.2,carbs:4.1, fat:21.3,tags:["dairy"], crave:["savory","fresh"]},
       {key:"parmesan",  name:"Parmesan",                   kcal:431, protein:38.5,carbs:4.1, fat:28.6,tags:["dairy"], crave:["savory","comfort"]},
+      {key:"chickbreastskin",name:"Chicken Breast, skin-on (raw)",kcal:172,protein:20.8,carbs:0,fat:9.3,tags:["meat","poultry"],crave:["savory","grilled","comfort"]},
+      {key:"grndturk99",name:"Ground Turkey 99/1 (raw)",   kcal:112, protein:24.6,carbs:0,   fat:1.3, tags:["meat","poultry"], crave:["savory","light"]},
+      {key:"chickliver", name:"Chicken Liver (raw)",       kcal:119, protein:16.9,carbs:0.7, fat:4.8, tags:["meat","poultry"], crave:["savory"]},
+      {key:"turkeyjerky", name:"Turkey Jerky",             kcal:300, protein:40,  carbs:20,  fat:5,   tags:["meat","poultry"], crave:["savory","crunchy","nocook"]},
+      {key:"eyeround",   name:"Eye of Round (raw)",        kcal:135, protein:22.4,carbs:0,   fat:4.4, tags:["meat","redmeat"], crave:["savory","grilled","light"]},
+      {key:"tritip",     name:"Tri-Tip (raw)",             kcal:158, protein:21.6,carbs:0,   fat:7.4, tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"nystrip",    name:"NY Strip Steak (raw)",      kcal:175, protein:21.5,carbs:0,   fat:9.5, tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"beefliver",  name:"Beef Liver (raw)",          kcal:135, protein:20.4,carbs:3.9, fat:3.6, tags:["meat","redmeat"], crave:["savory"]},
+      {key:"elk",        name:"Elk (raw)",                 kcal:111, protein:22.9,carbs:0,   fat:1.4, tags:["meat","redmeat"], crave:["savory","grilled","light"]},
+      {key:"rabbit",     name:"Rabbit (raw)",              kcal:136, protein:20,  carbs:0,   fat:5.6, tags:["meat","redmeat"], crave:["savory","warmbowl"]},
+      {key:"bratwurst",  name:"Bratwurst (raw)",           kcal:333, protein:14,  carbs:3,   fat:29,  tags:["meat","pork"], crave:["savory","grilled","comfort"]},
+      {key:"kielbasa",   name:"Kielbasa",                  kcal:309, protein:13,  carbs:3.5, fat:27,  tags:["meat","pork"], crave:["savory","comfort"]},
+      {key:"andouille",  name:"Andouille Sausage",         kcal:270, protein:16,  carbs:2,   fat:22,  tags:["meat","pork"], crave:["spicy","savory"]},
+      {key:"porkrind",   name:"Pork Rinds",                kcal:544, protein:61,  carbs:0,   fat:31,  tags:["meat","pork"], crave:["crunchy","savory","nocook"]},
+      {key:"branzino",   name:"Branzino (raw)",            kcal:97,  protein:18.4,carbs:0,   fat:2,   tags:["fish"], crave:["light","grilled","fresh"]},
+      {key:"grouper",    name:"Grouper (raw)",             kcal:92,  protein:19.4,carbs:0,   fat:1,   tags:["fish"], crave:["light","fresh"]},
+      {key:"haddock",    name:"Haddock (raw)",             kcal:90,  protein:20,  carbs:0,   fat:0.6, tags:["fish"], crave:["light","comfort"]},
+      {key:"sole",       name:"Sole (raw)",                kcal:70,  protein:12.4,carbs:0,   fat:1.9, tags:["fish"], crave:["light","fresh"]},
+      {key:"tunasteak",  name:"Yellowfin Tuna (raw)",      kcal:109, protein:24.4,carbs:0,   fat:0.5, tags:["fish"], crave:["light","grilled","fresh"]},
+      {key:"sardinesoil",name:"Sardines in Olive Oil",     kcal:208, protein:24.6,carbs:0,   fat:11.5,tags:["fish"], crave:["savory","nocook"]},
+      {key:"caviar",     name:"Roe / Caviar",              kcal:264, protein:24.6,carbs:4,   fat:18,  tags:["fish"], crave:["savory","fresh","nocook"]},
+      {key:"squid",      name:"Squid (raw)",               kcal:92,  protein:15.6,carbs:3.1, fat:1.4, tags:["fish","shellfish"], crave:["savory","grilled"]},
+      {key:"snowcrab",   name:"Snow Crab Legs",            kcal:90,  protein:18.5,carbs:0,   fat:1.2, tags:["fish","shellfish"], crave:["fresh","savory"]},
+      {key:"eggbeater",  name:"Egg Whites, carton",        kcal:52,  protein:10.9,carbs:0.7, fat:0.2, tags:["egg"], crave:["light","nocook"]},
+      {key:"quarkcheese",name:"Quark",                     kcal:69,  protein:12,  carbs:4,   fat:0.2, tags:["dairy"], crave:["creamy","nocook"]},
+      {key:"labneh",     name:"Labneh",                    kcal:174, protein:8,   carbs:5,   fat:14,  tags:["dairy"], crave:["creamy","savory"]},
+      {key:"halloumigrill",name:"Grilling Cheese",         kcal:321, protein:22,  carbs:2.6, fat:25,  tags:["dairy"], crave:["savory","grilled"]},
+      {key:"cheesestick",name:"Light String Cheese",       kcal:200, protein:24,  carbs:2,   fat:11,  tags:["dairy"], crave:["savory","nocook"]},
+      {key:"eggwhitewrap",name:"Egg White Wrap",           kcal:120, protein:14,  carbs:8,   fat:3,   tags:["egg"], crave:["light","nocook"]},
+      {key:"beefstick",  name:"Beef Stick / Meat Bar",     kcal:400, protein:28,  carbs:2,   fat:31,  tags:["meat","redmeat"], crave:["savory","nocook"]},
+      {key:"tunapouch",  name:"Flavored Tuna Pouch",       kcal:110, protein:20,  carbs:3,   fat:2,   tags:["fish"], crave:["savory","nocook","light"]},
+      {key:"chickthighskin",name:"Chicken Thigh, skin-on (raw)",kcal:211,protein:17.2,carbs:0,fat:15.3,tags:["meat","poultry"],crave:["savory","comfort","grilled"]},
+      {key:"chicktender",name:"Chicken Tenderloin (raw)",  kcal:109, protein:23.2,carbs:0,   fat:1.3, tags:["meat","poultry"], crave:["savory","light","grilled"]},
+      {key:"cornishhen",name:"Cornish Hen (raw)",          kcal:139, protein:20.3,carbs:0,   fat:5.9, tags:["meat","poultry"], crave:["savory","comfort"]},
+      {key:"turkeythigh",name:"Turkey Thigh (raw)",        kcal:144, protein:19.5,carbs:0,   fat:6.8, tags:["meat","poultry"], crave:["savory","comfort"]},
+      {key:"duckleg",   name:"Duck Leg (raw)",             kcal:184, protein:19,  carbs:0,   fat:11.5,tags:["meat","poultry"], crave:["savory","comfort"]},
+      {key:"quail",     name:"Quail (raw)",                kcal:134, protein:21.8,carbs:0,   fat:4.5, tags:["meat","poultry"], crave:["savory","grilled"]},
+      {key:"beef96",    name:"Ground Beef 96/4 (raw)",     kcal:137, protein:21.9,carbs:0,   fat:5,   tags:["meat","redmeat"], crave:["savory","comfort","grilled"]},
+      {key:"skirtsteak",name:"Skirt Steak (raw)",          kcal:184, protein:20.5,carbs:0,   fat:11,  tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"flatiron",  name:"Flat Iron Steak (raw)",      kcal:163, protein:21,  carbs:0,   fat:8.5, tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"filet",     name:"Filet Mignon (raw)",         kcal:158, protein:21.4,carbs:0,   fat:7.9, tags:["meat","redmeat"], crave:["savory","grilled"]},
+      {key:"shortrib",  name:"Short Rib (raw)",            kcal:250, protein:17,  carbs:0,   fat:20,  tags:["meat","redmeat"], crave:["savory","comfort","warmbowl"]},
+      {key:"oxtail",    name:"Oxtail (raw)",               kcal:262, protein:18,  carbs:0,   fat:21,  tags:["meat","redmeat"], crave:["savory","warmbowl","comfort"]},
+      {key:"lambshank", name:"Lamb Shank (raw)",           kcal:150, protein:20,  carbs:0,   fat:7.5, tags:["meat","redmeat"], crave:["savory","warmbowl"]},
+      {key:"goat",      name:"Goat Meat (raw)",            kcal:109, protein:20.6,carbs:0,   fat:2.3, tags:["meat","redmeat"], crave:["savory","warmbowl"]},
+      {key:"porkbelly", name:"Pork Belly (raw)",           kcal:518, protein:9.3, carbs:0,   fat:53,  tags:["meat","pork","redmeat"], crave:["savory","comfort"]},
+      {key:"porkshould",name:"Pork Shoulder (raw)",        kcal:196, protein:17.8,carbs:0,   fat:13.3,tags:["meat","pork","redmeat"], crave:["savory","comfort","warmbowl"]},
+      {key:"italsaus",  name:"Italian Sausage (raw)",      kcal:290, protein:16,  carbs:2,   fat:24,  tags:["meat","pork"], crave:["savory","comfort","grilled"]},
+      {key:"chorizo",   name:"Chorizo (raw)",              kcal:455, protein:24,  carbs:2,   fat:38,  tags:["meat","pork"], crave:["spicy","savory"]},
+      {key:"pepperoni", name:"Pepperoni",                  kcal:504, protein:19.5,carbs:1.2, fat:46,  tags:["meat","pork"], crave:["savory","spicy","nocook"]},
+      {key:"salami",    name:"Salami",                     kcal:336, protein:22,  carbs:2.4, fat:26,  tags:["meat","pork"], crave:["savory","nocook"]},
+      {key:"hotdog",    name:"Beef Hot Dog",               kcal:290, protein:11,  carbs:3,   fat:26,  tags:["meat","redmeat"], crave:["savory","comfort","grilled"]},
+      {key:"chickdog",  name:"Chicken Hot Dog",            kcal:180, protein:14,  carbs:4,   fat:12,  tags:["meat","poultry"], crave:["savory","comfort"]},
+      {key:"arcticchar",name:"Arctic Char (raw)",          kcal:154, protein:20.6,carbs:0,   fat:7.4, tags:["fish"], crave:["savory","grilled"]},
+      {key:"barramundi",name:"Barramundi (raw)",           kcal:97,  protein:19.4,carbs:0,   fat:1.9, tags:["fish"], crave:["light","fresh","grilled"]},
+      {key:"swordfish", name:"Swordfish (raw)",            kcal:144, protein:19.8,carbs:0,   fat:6.7, tags:["fish"], crave:["savory","grilled"]},
+      {key:"herring",   name:"Herring (raw)",              kcal:158, protein:18,  carbs:0,   fat:9,   tags:["fish"], crave:["savory"]},
+      {key:"mackerel",  name:"Mackerel (raw)",             kcal:205, protein:18.6,carbs:0,   fat:13.9,tags:["fish"], crave:["savory","grilled"]},
+      {key:"pollock",   name:"Pollock (raw)",              kcal:92,  protein:19.4,carbs:0,   fat:1,   tags:["fish"], crave:["light","fresh"]},
+      {key:"octopus",   name:"Octopus (raw)",              kcal:82,  protein:14.9,carbs:2.2, fat:1,   tags:["fish","shellfish"], crave:["savory","grilled"]},
+      {key:"crawfish",  name:"Crawfish (raw)",             kcal:77,  protein:15.9,carbs:0,   fat:1,   tags:["fish","shellfish"], crave:["spicy","savory"]},
+      {key:"imitcrab",  name:"Imitation Crab",             kcal:95,  protein:7.6, carbs:15,  fat:0.4, tags:["fish","shellfish","gluten"], crave:["light","nocook"]},
+      {key:"eggwhole6", name:"Egg, extra large (raw)",     unit:{whole:true, g:56,one:"egg",many:"eggs"}, kcal:143, protein:12.6,carbs:0.7, fat:9.5, tags:["egg"], crave:["savory","comfort"]},
       {key:"cheddarred",name:"Reduced-Fat Cheddar",       kcal:282, protein:27,  carbs:3,   fat:18,  tags:["dairy"], crave:["savory","comfort"]},
       {key:"cheddarff", name:"Fat-Free Cheddar",           kcal:158, protein:31,  carbs:6,   fat:0,   tags:["dairy"], crave:["savory","comfort"]},
       {key:"mozzff",    name:"Fat-Free Mozzarella",        kcal:141, protein:31,  carbs:3,   fat:0,   tags:["dairy"], crave:["savory","comfort"]},
@@ -1128,6 +1572,45 @@
       {key:"protwrap",   name:"High-Protein Wrap, 10\"",  macroFriendly:true, unit:{whole:true, g:50,one:"wrap",many:"wraps"}, kcal:200, protein:20, carbs:38, fat:5, tags:["gluten"], crave:["comfort","nocook"]},
       {key:"spinachwrap",name:"Spinach Wrap, 10\"",              unit:{whole:true, g:71,one:"wrap",many:"wraps"}, kcal:290, protein:8,  carbs:49, fat:6.5, tags:["gluten"], crave:["comfort","fresh"]},
       {key:"wwtort8",    name:"Whole Wheat Tortilla, 8\"",        unit:{whole:true, g:45,one:"tortilla",many:"tortillas"}, kcal:290, protein:9,  carbs:47, fat:7,  tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"calrose",   name:"Calrose Rice (dry)",        kcal:358, protein:6.5, carbs:79,  fat:0.6, tags:[], crave:["comfort","warmbowl"]},
+      {key:"parboiled", name:"Parboiled Rice (dry)",       kcal:363, protein:7.5, carbs:79,  fat:1.1, tags:[], crave:["comfort","carbheavy"]},
+      {key:"riceblend", name:"Rice & Quinoa Blend (dry)",  kcal:360, protein:9,   carbs:74,  fat:2.5, tags:[], crave:["warmbowl"]},
+      {key:"linguine",  name:"Linguine (dry)",             kcal:371, protein:13,  carbs:74.7,fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"penne",     name:"Penne (dry)",                kcal:371, protein:13,  carbs:74.7,fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"ravioli",   name:"Cheese Ravioli",             kcal:250, protein:11,  carbs:38,  fat:6,   tags:["gluten","dairy","egg"], crave:["comfort","creamy"]},
+      {key:"dumpling",  name:"Dumplings / Potstickers",    kcal:220, protein:9,   carbs:31,  fat:6,   tags:["gluten"], crave:["comfort","savory"]},
+      {key:"gnocchicau",name:"Cauliflower Gnocchi",        kcal:140, protein:2,   carbs:29,  fat:2,   tags:[], crave:["comfort","light"]},
+      {key:"chapati",   name:"Chapati / Roti",             unit:{whole:true, g:45,one:"roti",many:"rotis"}, kcal:297, protein:9, carbs:52, fat:6, tags:["gluten"], crave:["comfort","warmbowl"]},
+      {key:"arepas",    name:"Arepa",                      unit:{g:80,one:"arepa",many:"arepas"}, kcal:220, protein:4, carbs:44, fat:3, tags:[], crave:["comfort"]},
+      {key:"injera",    name:"Injera",                     unit:{g:100,one:"piece",many:"pieces"}, kcal:180, protein:6, carbs:37, fat:1, tags:["gluten"], crave:["warmbowl","savory"]},
+      {key:"cornbread", name:"Cornbread",                  kcal:330, protein:7,   carbs:52,  fat:10,  tags:["gluten"], crave:["comfort","sweet"]},
+      {key:"biscuit",   name:"Buttermilk Biscuit",         unit:{g:60,one:"biscuit",many:"biscuits"}, kcal:350, protein:7, carbs:45, fat:16, tags:["gluten","dairy"], crave:["comfort"]},
+      {key:"englishcrumpet",name:"Crumpet",                unit:{whole:true, g:55,one:"crumpet",many:"crumpets"}, kcal:200, protein:6, carbs:39, fat:1, tags:["gluten"], crave:["comfort"]},
+      {key:"proteinchips",name:"Protein Chips",            kcal:400, protein:35,  carbs:35,  fat:14,  macroFriendly:true, tags:[], crave:["crunchy","savory","nocook"]},
+      {key:"lentilchips",name:"Lentil Chips",              kcal:440, protein:12,  carbs:60,  fat:17,  tags:["legume"], crave:["crunchy","nocook"]},
+      {key:"proteinoats",name:"Protein Oatmeal (dry)",     kcal:370, protein:28,  carbs:50,  fat:7,   macroFriendly:true, tags:[], crave:["warmbowl","sweet","creamy"]},
+      {key:"kodiakmix", name:"Protein Flapjack Mix (dry)", kcal:360, protein:24,  carbs:56,  fat:4,   macroFriendly:true, tags:["gluten"], crave:["sweet","comfort"]},
+      {key:"cassavaflour",name:"Cassava Tortilla, 8\"",    unit:{g:40,one:"tortilla",many:"tortillas"}, kcal:250, protein:2, carbs:56, fat:2, tags:[], crave:["comfort"]},
+      {key:"jasminebrown",name:"Brown Jasmine Rice (dry)",kcal:363, protein:7.5, carbs:76,  fat:2.7, tags:[], crave:["warmbowl","comfort"]},
+      {key:"blackrice", name:"Forbidden Black Rice (dry)", kcal:356, protein:8.9, carbs:75,  fat:3.3, tags:[], crave:["warmbowl"]},
+      {key:"redrice",   name:"Red Rice (dry)",             kcal:356, protein:7.5, carbs:76,  fat:2.5, tags:[], crave:["warmbowl"]},
+      {key:"glassnoodle",name:"Glass Noodles (dry)",       kcal:351, protein:0.1, carbs:86,  fat:0.1, tags:[], crave:["light","warmbowl"]},
+      {key:"pho",       name:"Pho Rice Noodles (dry)",     kcal:364, protein:3.4, carbs:80,  fat:0.6, tags:[], crave:["warmbowl","comfort"]},
+      {key:"lasagna",   name:"Lasagna Sheets (dry)",       kcal:371, protein:13,  carbs:75,  fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"couscousprl",name:"Pearl Couscous (dry)",      kcal:376, protein:12.8,carbs:77,  fat:0.6, tags:["gluten"], crave:["comfort","warmbowl"]},
+      {key:"sorghum",   name:"Sorghum (dry)",              kcal:329, protein:10.6,carbs:72,  fat:3.5, tags:[], crave:["warmbowl"]},
+      {key:"fonio",     name:"Fonio (dry)",                kcal:360, protein:8.8, carbs:75,  fat:3.4, tags:[], crave:["warmbowl","light"]},
+      {key:"ryebread",  name:"Rye Bread",  unit:{whole:true, g:32,one:"slice",many:"slices"}, kcal:259, protein:8.5, carbs:48, fat:3.3, tags:["gluten"], crave:["comfort","savory"]},
+      {key:"ciabatta",  name:"Ciabatta Roll", unit:{g:70,one:"roll",many:"rolls"}, kcal:271, protein:9,  carbs:52, fat:2.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"baguette",  name:"Baguette", unit:{g:60,one:"piece",many:"pieces"}, kcal:274, protein:9,  carbs:55, fat:1.5, tags:["gluten"], crave:["comfort","carbheavy"]},
+      {key:"croissant", name:"Croissant", unit:{g:57,one:"croissant",many:"croissants"}, kcal:406, protein:8.2, carbs:46, fat:21, tags:["gluten"], crave:["comfort","sweet"]},
+      {key:"waffle",    name:"Frozen Waffle", unit:{whole:true, g:35,one:"waffle",many:"waffles"}, kcal:291, protein:6.8, carbs:44, fat:9.7, tags:["gluten","egg"], crave:["sweet","comfort"]},
+      {key:"pancakemix",name:"Pancake Mix (dry)",          kcal:363, protein:9,   carbs:73,  fat:3.5, tags:["gluten"], crave:["sweet","comfort"]},
+      {key:"protpancake",name:"Protein Pancake Mix (dry)", kcal:370, protein:35,  carbs:44,  fat:5,   macroFriendly:true, tags:["gluten"], crave:["sweet","comfort"]},
+      {key:"protwaffle",name:"Protein Waffle", unit:{whole:true, g:40,one:"waffle",many:"waffles"}, kcal:250, protein:22, carbs:30, fat:5, macroFriendly:true, tags:["gluten"], crave:["sweet","comfort"]},
+      {key:"proteinbar",name:"Protein Bar", unit:{whole:true, g:60,one:"bar",many:"bars"}, kcal:330, protein:33, carbs:38, fat:8, macroFriendly:true, tags:[], crave:["sweet","nocook"]},
+      {key:"oatbran",   name:"Oat Bran (dry)",             kcal:246, protein:17.3,carbs:66,  fat:7,   tags:[], crave:["warmbowl","creamy"]},
+      {key:"cofw",      name:"Cream of Wheat (dry)",       kcal:371, protein:10.6,carbs:78,  fat:1.3, tags:["gluten"], crave:["creamy","comfort","warmbowl"]},
       {key:"basmati",   name:"Basmati Rice (dry)",        kcal:356, protein:8.5, carbs:78,  fat:0.9, tags:[], crave:["comfort","warmbowl","carbheavy"]},
       {key:"sushirice", name:"Sushi Rice (dry)",           kcal:358, protein:6.5, carbs:79,  fat:0.6, tags:[], crave:["comfort","light"]},
       {key:"arborio",   name:"Arborio Rice (dry)",         kcal:349, protein:7,   carbs:77,  fat:0.6, tags:[], crave:["creamy","comfort","warmbowl"]},
@@ -1198,6 +1681,26 @@
       {key:"chia",     name:"Chia Seeds",                kcal:486, protein:17, carbs:42, fat:31,  tags:[], crave:["nocook"]},
       {key:"flaxseed", name:"Ground Flaxseed",           kcal:534, protein:18, carbs:29, fat:42,  tags:[], crave:["nocook"]},
       {key:"yolks", unit:{whole:true, g:17,one:"yolk",many:"yolks"},    name:"Egg Yolks",                 kcal:322, protein:16, carbs:3.6,fat:27,  tags:["egg"], crave:["comfort"]},
+      {key:"macadamiabutter",name:"Macadamia Butter",      kcal:718, protein:8,  carbs:14, fat:76,  tags:["nuts"], crave:["creamy"]},
+      {key:"pecanbutter",name:"Pecan Butter",              kcal:691, protein:9,  carbs:14, fat:72,  tags:["nuts"], crave:["creamy","sweet"]},
+      {key:"pumpkinbutter",name:"Pumpkin Seed Butter",     kcal:590, protein:28, carbs:15, fat:49,  tags:[], crave:["creamy","savory"]},
+      {key:"flaxoil",   name:"Flaxseed Oil",               kcal:884, protein:0,  carbs:0,  fat:100, tags:[], crave:[]},
+      {key:"grapeseed", name:"Grapeseed Oil",              kcal:884, protein:0,  carbs:0,  fat:100, tags:[], crave:[]},
+      {key:"trufflepaste",name:"Truffle Paste",            kcal:400, protein:3,  carbs:8,  fat:40,  tags:[], crave:["savory"]},
+      {key:"cottagedip",name:"Cottage Cheese Dip",         kcal:110, protein:10, carbs:4,  fat:6,   tags:["dairy"], crave:["creamy","savory"]},
+      {key:"kalamata",  name:"Kalamata Olives",            kcal:130, protein:1,  carbs:6,  fat:13,  tags:[], crave:["savory","fresh"]},
+      {key:"pistachiobutter",name:"Pistachio Butter",     kcal:600, protein:20, carbs:28, fat:50,  tags:["nuts"], crave:["creamy","sweet"]},
+      {key:"cashewbutter",name:"Cashew Butter",            kcal:587, protein:18, carbs:30, fat:49,  tags:["nuts"], crave:["creamy","sweet"]},
+      {key:"pbfit",     name:"Chocolate PB Powder",        kcal:390, protein:40, carbs:36, fat:9,   tags:["nuts","legume"], crave:["sweet","nocook"]},
+      {key:"walnutoil", name:"Walnut Oil",                 kcal:884, protein:0,  carbs:0,  fat:100, tags:["nuts"], crave:[]},
+      {key:"peanutoil", name:"Peanut Oil",                 kcal:884, protein:0,  carbs:0,  fat:100, tags:["nuts","legume"], crave:[]},
+      {key:"canola",    name:"Canola Oil",                 kcal:884, protein:0,  carbs:0,  fat:100, tags:[], crave:[]},
+      {key:"chilioil",  name:"Chili Oil",                  kcal:884, protein:0,  carbs:0,  fat:100, tags:["nightshade"], crave:["spicy"]},
+      {key:"creme",     name:"Crème Fraîche",              kcal:292, protein:2.4,carbs:2.8,fat:30,  tags:["dairy"], crave:["creamy"]},
+      {key:"mascarpone",name:"Mascarpone",                 kcal:429, protein:4.8,carbs:4.8,fat:44,  tags:["dairy"], crave:["creamy","sweet"]},
+      {key:"skyrfat",   name:"Whipped Cream",              kcal:257, protein:3.2,carbs:12.5,fat:22, tags:["dairy"], crave:["sweet","creamy"]},
+      {key:"pesto2",    name:"Sun-Dried Tomato Pesto",     kcal:400, protein:5,  carbs:10, fat:38,  tags:["nightshade","dairy"], crave:["savory"]},
+      {key:"blackolive",name:"Black Olives",               kcal:115, protein:0.8,carbs:6,  fat:11,  tags:[], crave:["savory","nocook"]},
       {key:"brazilnuts",name:"Brazil Nuts",                kcal:659, protein:14, carbs:12, fat:67,  tags:["nuts"], crave:["crunchy"]},
       {key:"pinenuts",  name:"Pine Nuts",                   kcal:673, protein:14, carbs:13, fat:68,  tags:["nuts"], crave:["savory","crunchy"]},
       {key:"sesameseeds",name:"Sesame Seeds",               kcal:573, protein:18, carbs:23, fat:50,  tags:[], crave:["crunchy","savory"]},
@@ -1259,6 +1762,32 @@
       {key:"sprouts",   name:"Bean Sprouts",       kcal:30,  protein:3,   carbs:6,  fat:0.2,  tags:[], crave:["fresh","crunchy"]},
       {key:"kimchi",    name:"Kimchi",             kcal:15,  protein:1.1, carbs:2.4,fat:0.5,  tags:[], crave:["spicy","savory","nocook"]},
       {key:"sauerkraut",name:"Sauerkraut",         kcal:19,  protein:0.9, carbs:4.3,fat:0.1,  tags:[], crave:["savory","nocook"]},
+      {key:"asparagusthin",name:"Asparagus, thin",kcal:20,  protein:2.2, carbs:3.9,fat:0.1, tags:[], crave:["grilled","light"]},
+      {key:"greenchile", name:"Hatch Green Chile",kcal:25,  protein:1,   carbs:5,  fat:0.2, tags:["nightshade"], crave:["spicy","grilled"]},
+      {key:"babybella",  name:"Baby Bella Mushroom",kcal:22, protein:2.5, carbs:4.3,fat:0.1, tags:[], crave:["savory","grilled"]},
+      {key:"sugarsnap",  name:"Sugar Snap Peas", kcal:42,  protein:2.8, carbs:7.5,fat:0.2, tags:[], crave:["crunchy","fresh"]},
+      {key:"greenbeansfr",name:"Haricots Verts", kcal:31,  protein:1.8, carbs:7,  fat:0.2, tags:[], crave:["crunchy","light"]},
+      {key:"babycarrot", name:"Baby Carrots",    kcal:35,  protein:0.6, carbs:8,  fat:0.1, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"cauliflorets",name:"Cauliflower Florets",kcal:25,protein:1.9,carbs:5, fat:0.3, tags:[], crave:["warmbowl","light"]},
+      {key:"broccoflorets",name:"Broccoli Florets",kcal:35, protein:2.4, carbs:7,  fat:0.4, tags:[], crave:["warmbowl","savory"]},
+      {key:"pepperonc",  name:"Pepperoncini",    kcal:23,  protein:1.2, carbs:4.5,fat:0.2, tags:["nightshade"], crave:["spicy","nocook"]},
+      {key:"greenolive", name:"Castelvetrano Olives",kcal:145,protein:1, carbs:6, fat:15,  tags:[], crave:["savory","nocook"]},
+      {key:"mustardgreens",name:"Mustard Greens", kcal:27,  protein:2.9, carbs:4.7,fat:0.4, tags:[], crave:["warmbowl","savory"]},
+      {key:"beetgreens",name:"Beet Greens",       kcal:22,  protein:2.2, carbs:4.3,fat:0.1, tags:[], crave:["warmbowl"]},
+      {key:"frisee",    name:"Frisée",            kcal:17,  protein:1.3, carbs:3.4,fat:0.2, tags:[], crave:["fresh","light","nocook"]},
+      {key:"radicchio", name:"Radicchio",         kcal:23,  protein:1.4, carbs:4.5,fat:0.3, tags:[], crave:["fresh","crunchy"]},
+      {key:"celeriac",  name:"Celeriac",          kcal:42,  protein:1.5, carbs:9.2,fat:0.3, tags:[], crave:["warmbowl"]},
+      {key:"sunchoke",  name:"Sunchoke",          kcal:73,  protein:2,   carbs:17, fat:0.01,tags:[], crave:["warmbowl","crunchy"]},
+      {key:"lotusroot", name:"Lotus Root",        kcal:74,  protein:2.6, carbs:17, fat:0.1, tags:[], crave:["crunchy","warmbowl"]},
+      {key:"taro",      name:"Taro",              kcal:112, protein:1.5, carbs:26, fat:0.2, tags:[], crave:["comfort","warmbowl"]},
+      {key:"greenpapaya",name:"Green Papaya",     kcal:39,  protein:0.6, carbs:10, fat:0.1, tags:[], crave:["fresh","crunchy"]},
+      {key:"bittermelon",name:"Bitter Melon",     kcal:17,  protein:1,   carbs:3.7,fat:0.2, tags:[], crave:["warmbowl"]},
+      {key:"enoki",     name:"Enoki Mushrooms",   kcal:37,  protein:2.7, carbs:7.8,fat:0.3, tags:[], crave:["warmbowl","light"]},
+      {key:"oystermush",name:"Oyster Mushrooms",  kcal:33,  protein:3.3, carbs:6.1,fat:0.4, tags:[], crave:["savory","warmbowl"]},
+      {key:"cremini",   name:"Cremini Mushrooms", kcal:22,  protein:2.5, carbs:4.3,fat:0.1, tags:[], crave:["savory","grilled"]},
+      {key:"aspgreens", name:"Broccoli Rabe",     kcal:22,  protein:3.2, carbs:2.9,fat:0.5, tags:[], crave:["savory","warmbowl"]},
+      {key:"cherrytom", name:"Cherry Tomatoes",   kcal:18,  protein:0.9, carbs:3.9,fat:0.2, tags:["nightshade"], crave:["fresh","nocook","crunchy"]},
+      {key:"greentom",  name:"Tomatillo",         kcal:32,  protein:0.9, carbs:5.8,fat:1,   tags:["nightshade"], crave:["spicy","fresh"]},
       {key:"babyspinach",name:"Baby Spinach",     kcal:23,  protein:2.9, carbs:3.6,fat:0.4, tags:[], crave:["fresh","light","nocook"]},
       {key:"butterlettuce",name:"Butter Lettuce",  kcal:13,  protein:1.4, carbs:2.2,fat:0.2, tags:[], crave:["fresh","light","nocook"]},
       {key:"iceberg",   name:"Iceberg Lettuce",    kcal:14,  protein:0.9, carbs:3,  fat:0.1, tags:[], crave:["crunchy","fresh","nocook"]},
@@ -1306,6 +1835,20 @@
     /* FRUIT — raw weights, same idea. Encouraged but never mandatory. */
     fruit: [
       {key:"berries",   name:"Blueberries",        kcal:57,  protein:0.7, carbs:14, fat:0.3,  tags:[], crave:["sweet","nocook"]},
+      {key:"cotton",    name:"Cotton Candy Grapes",kcal:69, protein:0.7, carbs:18, fat:0.2, tags:[], crave:["sweet","nocook"]},
+      {key:"muskmelon", name:"Galia Melon",       kcal:34,  protein:0.8, carbs:8,  fat:0.2, tags:[], crave:["fresh","light"]},
+      {key:"whitepeach",name:"White Peach",       unit:{soft:true, g:150,one:"peach",many:"peaches"}, kcal:39, protein:0.9, carbs:10, fat:0.3, tags:[], crave:["sweet","fresh"]},
+      {key:"appleslices",name:"Apple Slices, bagged",kcal:52,protein:0.3,carbs:14, fat:0.2, tags:[], crave:["crunchy","nocook"]},
+      {key:"berrymix",  name:"Mixed Fresh Berries",kcal:50, protein:1,   carbs:12, fat:0.4, tags:[], crave:["sweet","fresh","nocook"]},
+      {key:"asianpear", name:"Asian Pear",     unit:{soft:true, g:275,one:"pear",many:"pears"}, kcal:42, protein:0.5, carbs:11, fat:0.2, tags:[], crave:["crunchy","fresh","nocook"]},
+      {key:"envy",      name:"Apple, Envy",     unit:{soft:true, g:180,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
+      {key:"mangosteen",name:"Mangosteen",      kcal:73,  protein:0.4, carbs:18, fat:0.6, tags:[], crave:["sweet","fresh"]},
+      {key:"rambutan",  name:"Rambutan",        kcal:82,  protein:0.7, carbs:21, fat:0.2, tags:[], crave:["sweet"]},
+      {key:"currants",  name:"Black Currants",  kcal:63,  protein:1.4, carbs:15, fat:0.4, tags:[], crave:["fresh","sweet"]},
+      {key:"gooseberry",name:"Gooseberries",    kcal:44,  protein:0.9, carbs:10, fat:0.6, tags:[], crave:["fresh"]},
+      {key:"acai",      name:"Açaí Purée",      kcal:70,  protein:1,   carbs:4,  fat:5,   tags:[], crave:["sweet","creamy","nocook"]},
+      {key:"pomelo",    name:"Pomelo",          kcal:38,  protein:0.8, carbs:9.6,fat:0.04,tags:[], crave:["fresh","light"]},
+      {key:"plantainrp",name:"Ripe Plantain",   kcal:122, protein:1.3, carbs:32, fat:0.4, tags:[], crave:["sweet","comfort"]},
       {key:"honeycrisp",name:"Apple, Honeycrisp (med)",  unit:{soft:true, g:200,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","fresh","nocook"]},
       {key:"gala",      name:"Apple, Gala (med)",         unit:{soft:true, g:172,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
       {key:"fuji",      name:"Apple, Fuji (med)",         unit:{soft:true, g:190,one:"apple",many:"apples"}, kcal:52, protein:0.3, carbs:14, fat:0.2, tags:[], crave:["sweet","crunchy","nocook"]},
@@ -1400,6 +1943,22 @@
       {key:"tahinisauce",name:"Tahini Sauce",         kcal:300, protein:8,  carbs:10,  fat:26,  serving:30,  level:"rich",     tags:[], crave:["creamy","savory"], pairs:["pita","couscous","bulgur","quinoa","farro"], brands:["Soom Tahini Sauce — ~90 kcal / 2 tbsp","Trader Joe's Tahini Sauce — ~80 kcal / 2 tbsp"]},
       {key:"chimichurri",name:"Chimichurri",          kcal:300, protein:1,  carbs:3,   fat:32,  serving:20,  level:"rich",     tags:[], crave:["fresh","grilled","savory"], pairs:[], brands:["Gaucho Ranch Chimichurri — ~60 kcal / tbsp","Trader Joe's Chimichurri — ~70 kcal / tbsp"]},
       {key:"ponzu",     name:"Ponzu",                 kcal:40,  protein:2,  carbs:7,   fat:0,   serving:15,  level:"light",    tags:["gluten","soy","fish"], crave:["fresh","savory","light"], pairs:["rice","whiterice","soba","ricenoodle"], brands:["Kikkoman Ponzu — ~10 kcal / tbsp","Otafuku Ponzu — ~10 kcal / tbsp"]},
+      {key:"peri",      name:"Peri Peri Sauce",       kcal:90,  protein:1,  carbs:8,   fat:6,   serving:25, level:"light",    tags:["nightshade"], crave:["spicy","grilled"]},
+      {key:"jerk",      name:"Jerk Marinade",         kcal:120, protein:2,  carbs:18,  fat:4,   serving:25, level:"light",    tags:["nightshade"], crave:["spicy","grilled"]},
+      {key:"mole",      name:"Mole Sauce",            kcal:200, protein:4,  carbs:20,  fat:12,  serving:40, level:"standard", tags:["nuts","nightshade"], crave:["spicy","savory","warmbowl"]},
+      {key:"gochugaru", name:"Ssamjang",              kcal:180, protein:6,  carbs:24,  fat:6,   serving:20, level:"light",    tags:["soy","nightshade"], crave:["spicy","savory"]},
+      {key:"greengoddess",name:"Green Goddess Dressing",kcal:320,protein:2, carbs:5,   fat:33,  serving:30, level:"rich",     tags:["dairy","egg"], crave:["creamy","fresh"]},
+      {key:"honeysriracha",name:"Hot Honey",          kcal:300, protein:0,  carbs:76,  fat:0,   serving:15, level:"standard", tags:["nightshade"], crave:["spicy","sweet"]},
+      {key:"romesco",   name:"Romesco Sauce",        kcal:230, protein:4,  carbs:9,   fat:20,  serving:40, level:"standard", tags:["nuts","nightshade"], crave:["savory","grilled"]},
+      {key:"harissa",   name:"Harissa",               kcal:130, protein:3,  carbs:12,  fat:8,   serving:20, level:"light",    tags:["nightshade"], crave:["spicy","savory"]},
+      {key:"zhoug",     name:"Zhoug (green chili)",   kcal:200, protein:3,  carbs:6,   fat:19,  serving:20, level:"light",    tags:["nightshade"], crave:["spicy","fresh"]},
+      {key:"tkatziki2", name:"Raita",                 kcal:60,  protein:3,  carbs:5,   fat:3,   serving:60, level:"light",    tags:["dairy"], crave:["creamy","fresh"]},
+      {key:"nuocmam",   name:"Nuoc Cham",             kcal:60,  protein:1,  carbs:14,  fat:0,   serving:30, level:"light",    tags:["fish"], crave:["fresh","spicy"]},
+      {key:"blackbean", name:"Black Bean Sauce",      kcal:150, protein:6,  carbs:20,  fat:5,   serving:25, level:"light",    tags:["soy","gluten"], crave:["savory","warmbowl"]},
+      {key:"katsu",     name:"Tonkatsu Sauce",        kcal:120, protein:1,  carbs:29,  fat:0,   serving:25, level:"light",    tags:["gluten"], crave:["savory","sweet"]},
+      {key:"gravywhite",name:"Country Gravy",         kcal:120, protein:2,  carbs:9,   fat:8,   serving:60, level:"standard", tags:["dairy","gluten"], crave:["comfort","creamy"]},
+      {key:"aioli",     name:"Garlic Aioli",          kcal:600, protein:1,  carbs:2,   fat:66,  serving:20, level:"rich",     tags:["egg"], crave:["creamy","savory"]},
+      {key:"remoulade", name:"Remoulade",             kcal:380, protein:1,  carbs:8,   fat:38,  serving:25, level:"rich",     tags:["egg","nightshade"], crave:["creamy","spicy"]},
       {key:"tikka",     name:"Tikka Masala Sauce",   kcal:110, protein:2,  carbs:9,   fat:7,   serving:80, level:"standard", tags:["dairy","nightshade"], crave:["spicy","creamy","warmbowl"], pairs:["basmati","rice","naan","brownrice"], brands:["Maya Kaimal Tikka Masala — ~90 kcal / ¼ cup","Trader Joe's Masala Simmer — ~70 kcal / ¼ cup"]},
       {key:"tzatzikilight",name:"Yogurt Dill Sauce",  kcal:60,  protein:5,  carbs:4,   fat:2.5, serving:60, level:"light",    tags:["dairy"], crave:["creamy","fresh","light"], pairs:["pita","couscous","quinoa","bulgur"], brands:["Fage Tzatziki — ~30 kcal / 2 tbsp","Homemade: 0% Greek yogurt + dill + lemon"]},
       {key:"salsaroja",  name:"Salsa Roja / Taquera", kcal:35,  protein:1.2,carbs:7,   fat:0.3, serving:60, level:"light",    tags:["nightshade"], crave:["spicy","savory"], pairs:["corntort","rice","lowcarbtort"], brands:["Herdez Salsa Taquera — ~10 kcal / 2 tbsp","La Costeña Salsa Roja — ~10 kcal / 2 tbsp"]},
@@ -1416,6 +1975,304 @@
     ]
   };
   /* Produce portions are pegged to this slice of a meal's kcal target */
+  /* =========================================================
+     FIBRE & SODIUM
+     These two are added because they're the ones that actually change a
+     meal-prep decision, and because they can be estimated honestly.
+
+     Values are per 100g and assigned by food class, with overrides where a
+     specific food differs sharply from its class. They are ESTIMATES, not
+     label data — good enough to tell "this day is low on fibre" from "this
+     day is fine", which is what the number is for. Anything packaged should
+     be read off the box.
+
+     Vitamins and the remaining minerals are deliberately NOT included:
+     assigning 15 micronutrients across 600+ foods from memory would produce
+     numbers that look authoritative and aren't. A varied plan with plenty of
+     vegetables covers that ground better than a fabricated readout would.
+  ========================================================= */
+  const FIBRE_BY_FAMILY = {
+    leafygreen:2.4, lettuce:1.3, cabbage:2.3, brassica:2.8, squash:1.4, root:2.6,
+    tomato:1.4, pepper:1.7, chilli:1.9, mushroom:1.0, onion:1.7, peas:2.8,
+    ferment:1.4, olives:3.2, herbs:2.0,
+    berry:5.3, apple:2.4, pear:3.1, orange:2.4, citrus:2.2, melon:0.8,
+    grape:0.9, tropical:1.7, banana:2.6, peach:1.5, driedfruit:7.0,
+    beans:15.5, lentils:11.0, soy:2.5,
+    rice:1.3, grain:7.0, pasta:3.2, noodle:1.8, bread:5.0, tortilla:4.5,
+    potato:2.2, oats:10.1, porridge:1.5, cereal:3.0, granola:7.0, chips:5.0,
+    pastry:2.0, dumpling:1.6, bar:8.0, syrup:0.2,
+    nuts:8.5, seeds:15.0, nutbutter:6.5, avocado:6.7,
+    oil:0, butter:0, cream:0, mayo:0,
+    cheese:0, cheddar:0, mozzarella:0, swiss:0, jackcheese:0, hardcheese:0,
+    bluecheese:0, softcheese:0, feta:0, goatcheese:0, grillcheese:0,
+    freshcheese:0, stringcheese:0, spreadcheese:0, yogurt:0, cottage:0,
+    egg:0, powder:2.0, jerky:1.5,
+    chickencut:0, poultrycut:0, groundpoultry:0, turkeycut:0, curedpoultry:0,
+    beefcut:0, groundbeef:0, porkcut:0, curedpork:0, sausage:0, organ:0,
+    salmon:0, tuna:0, whitefish:0, oilyfish:0, shellfish2:0, roe:0,
+  };
+  const FIBRE_OVERRIDE = {
+    broccoli:2.6, brusselsSprouts:3.8, artichoke:5.4, kale:3.6, spinach:2.2,
+    lentils:30.5, blackbeans:24.9, chickpeas:17.4, splitpeas:25.5,
+    oats:10.6, steelcut:10.1, quinoa:7.0, bulgur:12.5, farro:6.0, barley:15.6,
+    chia:34.4, flaxseed:27.3, almonds:12.5, pistachios:10.6, pecans:9.6,
+    avocado:6.7, hassavo:6.7, raspberry:6.5, blackberry:5.3, dates:8.0,
+    prunes:7.1, popcorn:14.5, ricecakes:4.2, shirataki:3.0, caulirice:2.0,
+    edamame:5.2, tempeh:5.0, tofu:0.9, seitan:0.6, hummus:6.0,
+  };
+  const SODIUM_BY_FAMILY = {   // mg per 100g
+    oil:0, butter:2, cream:40, mayo:600,
+    cheese:600, cheddar:620, mozzarella:400, swiss:190, jackcheese:600,
+    hardcheese:1400, bluecheese:1400, softcheese:600, feta:1100, goatcheese:400,
+    grillcheese:1100, freshcheese:400, stringcheese:600, spreadcheese:900,
+    yogurt:45, cottage:330, egg:140, powder:250,
+    chickencut:60, poultrycut:60, groundpoultry:70, turkeycut:60,
+    curedpoultry:900, beefcut:60, groundbeef:70, porkcut:55,
+    curedpork:1200, sausage:800, organ:70, jerky:1800,
+    salmon:50, tuna:40, whitefish:70, oilyfish:300, shellfish2:250, roe:1500,
+    beans:5, lentils:5, soy:10,
+    rice:2, grain:5, pasta:5, noodle:5, bread:490, tortilla:400,
+    potato:8, oats:3, porridge:3, cereal:400, granola:60, chips:400,
+    pastry:400, dumpling:450, bar:200, syrup:5,
+    nuts:5, seeds:5, nutbutter:150, avocado:7,
+    leafygreen:30, lettuce:10, cabbage:15, brassica:25, squash:5, root:50,
+    tomato:8, pepper:4, chilli:5, mushroom:5, onion:4, peas:5,
+    ferment:900, olives:1500, herbs:10,
+    berry:1, apple:1, pear:1, orange:1, citrus:2, melon:12,
+    grape:2, tropical:2, banana:1, peach:0, driedfruit:15,
+  };
+  const SODIUM_OVERRIDE = {
+    tunacan:320, salmoncan:340, sardines:400, sardinesoil:400, anchovy:3670,
+    ham:1200, bacon:750, prosciutto:2000, pepperoni:1600, salami:1700,
+    hotdog:1100, chickdog:900, kielbasa:1200, andouille:1100, porkrind:1800,
+    pickles:1200, kimchi:800, sauerkraut:660, olives:1500, kalamata:1550,
+    soy:5500, aminos:2400, teriyaki:3800, hoisin:1600, fishsauce:7800,
+    oystersauce:2700, ponzu:3400, sriracha:2100, hotsauce:2600, bbq:1000,
+    ketchup:900, mustard:1100, marinara:400, salsa:700, miso:3700,
+    protshake:180, whey:250, imitcrab:840, canadian:1000, turkbacon:1900,
+  };
+
+  /* Nutrition beyond the macros, per 100g */
+  function fibreOf(food){
+    if (!food) return 0;
+    if (FIBRE_OVERRIDE[food.key] != null) return FIBRE_OVERRIDE[food.key];
+    const fam = FAMILY[food.key];
+    return (fam && FIBRE_BY_FAMILY[fam] != null) ? FIBRE_BY_FAMILY[fam] : 1.0;
+  }
+  function sodiumOf(food){
+    if (!food) return 0;
+    if (SODIUM_OVERRIDE[food.key] != null) return SODIUM_OVERRIDE[food.key];
+    const fam = FAMILY[food.key];
+    return (fam && SODIUM_BY_FAMILY[fam] != null) ? SODIUM_BY_FAMILY[fam] : 30;
+  }
+  /* Sauces carry their sodium in the food's own record where known */
+  function microTotals(){
+    let fibre = 0, sodium = 0;
+    MEALS.forEach(m=>{
+      const plan = computeMealPlan(m.key);
+      SLOT_DEFS.forEach(d=>{
+        state.selections[m.key][d.slot].forEach((k,i)=>{
+          const g = plan[d.slot][i];
+          if (!k || g == null) return;
+          const f = d.list().find(x=>x.key === k);
+          if (!f) return;
+          fibre  += fibreOf(f)  * g / 100;
+          sodium += sodiumOf(f) * g / 100;
+        });
+      });
+    });
+    return {fibre, sodium};
+  }
+
+  /* Reference intakes used only to show progress, not as prescriptions */
+  function fibreTarget(){
+    const tg = currentTargets();
+    return Math.round(Math.max(14 * (tg.kcal / 1000), 21));   // ~14g per 1000 kcal
+  }
+  const SODIUM_LIMIT = 2300;   // mg, general upper guidance
+
+  /* =========================================================
+     FULL NUTRITION MODEL
+     Covers the set MyFitnessPal reports: saturated fat, cholesterol, sugar,
+     fibre, sodium, potassium, calcium, iron, magnesium, zinc and vitamins
+     A, C and D.
+
+     IMPORTANT — these are modelled by food class, not looked up per product.
+     Each family carries a typical per-100g profile and individual foods
+     override it where they differ sharply (liver for iron and vitamin A,
+     citrus for vitamin C, dairy for calcium). They're accurate enough to
+     answer "is this day short on iron?" and not accurate enough to manage a
+     deficiency. Anything packaged: read the label.
+  ========================================================= */
+  /* per 100g: [satFat g, chol mg, sugar g, potassium mg, calcium mg,
+                iron mg, magnesium mg, zinc mg, vitA mcg, vitC mg, vitD mcg] */
+  const NUTRI_BY_FAMILY = {
+    chickencut:[1.0,73,0,256,11,0.7,27,1.0,9,0,0.1],
+    poultrycut:[1.5,80,0,250,12,1.2,25,1.8,15,0,0.2],
+    groundpoultry:[2.5,80,0,240,20,1.3,24,2.4,12,0,0.2],
+    turkeycut:[0.4,60,0,290,12,0.8,28,1.4,5,0,0.1],
+    curedpoultry:[3.0,70,1,290,10,1.0,20,1.6,10,0,0.2],
+    beefcut:[3.5,65,0,320,15,2.3,21,4.5,0,0,0.1],
+    groundbeef:[3.0,70,0,300,18,2.4,20,4.8,0,0,0.1],
+    porkcut:[1.5,65,0,400,15,0.9,26,2.0,2,0.6,0.6],
+    curedpork:[4.0,60,1,320,10,0.9,18,1.8,0,0,0.5],
+    sausage:[9.0,70,1,250,20,1.2,16,2.0,0,0,0.4],
+    organ:[1.6,345,0,290,8,9.0,20,4.0,4900,25,0.4],
+    jerky:[10,60,20,600,20,3.0,50,6.0,0,0,0],
+    salmon:[3.0,55,0,363,12,0.8,29,0.6,12,0,11],
+    tuna:[0.2,39,0,444,4,0.8,50,0.6,6,0,2],
+    whitefish:[0.4,50,0,350,15,0.4,30,0.5,10,0,2],
+    oilyfish:[3.0,60,0,380,80,1.5,35,1.2,30,0,10],
+    shellfish2:[0.2,150,0,220,60,1.5,35,1.4,50,2,0.2],
+    roe:[4.0,590,4,180,275,12,300,1.0,270,0,6],
+    egg:[3.1,372,0.4,138,56,1.8,12,1.3,160,0,2],
+    yogurt:[0.2,5,4,141,110,0.1,11,0.5,1,0.5,0],
+    cottage:[0.6,10,3,104,83,0.1,8,0.4,10,0,0],
+    cheddar:[21,105,1,98,720,0.7,28,3.1,265,0,0.6],
+    mozzarella:[10,54,1,76,505,0.2,20,2.9,180,0,0.4],
+    swiss:[18,90,1,77,790,0.2,36,3.6,220,0,0.6],
+    jackcheese:[19,89,1,81,750,0.7,27,3.0,220,0,0.6],
+    hardcheese:[19,88,1,125,1180,0.8,44,3.4,240,0,0.5],
+    bluecheese:[19,75,1,256,528,0.3,23,2.7,200,0,0.5],
+    softcheese:[17,90,1,120,600,0.3,28,3.0,210,0,0.5],
+    feta:[15,89,4,62,493,0.7,19,2.9,125,0,0.4],
+    goatcheese:[21,79,2,158,298,1.6,30,0.7,290,0,0.3],
+    grillcheese:[16,90,3,60,700,0.4,25,2.8,200,0,0.4],
+    freshcheese:[15,80,3,90,600,0.3,20,2.5,180,0,0.4],
+    stringcheese:[14,60,2,80,700,0.2,22,3.0,190,0,0.4],
+    spreadcheese:[3,20,8,150,300,0.2,12,1.0,90,0,0.2],
+    powder:[2.0,15,7,300,300,1.0,40,2.0,0,0,0],
+    beans:[0.3,0,2,1400,120,6.5,170,3.0,0,4,0],
+    lentils:[0.2,0,2,950,55,7.5,120,4.0,2,4,0],
+    soy:[1.5,0,2,240,180,2.5,60,1.5,1,0,0],
+    rice:[0.2,0,0.1,90,10,0.8,25,1.1,0,0,0],
+    grain:[0.5,0,1,320,30,3.0,120,2.5,0,0,0],
+    pasta:[0.3,0,3,220,20,3.3,55,1.4,0,0,0],
+    noodle:[0.2,0,0.2,60,10,0.8,25,0.6,0,0,0],
+    bread:[0.7,0,5,250,150,3.6,60,1.5,0,0,0],
+    tortilla:[1.8,0,2,150,140,3.0,40,1.0,0,0,0],
+    potato:[0.1,0,4,420,20,0.8,25,0.3,700,20,0],
+    oats:[1.2,0,1,430,54,4.7,177,4.0,0,0,0],
+    porridge:[0.2,0,0.3,80,5,4.0,20,0.5,0,0,0],
+    cereal:[0.2,0,10,110,10,8.0,30,2.0,0,0,0],
+    granola:[3.0,0,20,350,60,3.0,90,2.5,0,0,0],
+    chips:[3.0,0,2,220,40,2.0,60,1.5,0,0,0],
+    pastry:[6.0,25,10,120,60,2.0,20,0.6,50,0,0.2],
+    dumpling:[2.0,15,2,120,30,1.5,20,0.6,10,1,0],
+    bar:[3.0,5,15,300,250,3.0,80,3.0,0,0,0],
+    syrup:[0,0,80,150,25,0.3,15,0.3,0,0,0],
+    nuts:[5.0,0,4,700,150,3.5,250,3.2,0,0,0],
+    seeds:[5.0,0,2,700,200,7.0,400,6.0,0,1,0],
+    nutbutter:[8.0,0,9,650,50,2.0,180,3.0,0,0,0],
+    avocado:[2.1,0,0.7,485,12,0.6,29,0.6,7,10,0],
+    oil:[14,0,0,0,0,0,0,0,0,0,0],
+    butter:[51,215,0.1,24,24,0,2,0.1,680,0,1.5],
+    cream:[19,70,3,120,90,0.1,9,0.3,300,0.8,0.4],
+    mayo:[11,40,1,20,8,0.2,1,0.1,30,0,0.2],
+    olives:[2.0,0,0,42,88,3.3,4,0.2,20,1,0],
+    pestofat:[6.0,10,2,200,150,1.5,40,1.0,150,3,0],
+    leafygreen:[0.1,0,0.4,490,120,2.2,70,0.5,470,35,0],
+    lettuce:[0,0,1,200,35,0.9,13,0.2,300,5,0],
+    cabbage:[0,0,3,190,45,0.5,12,0.2,50,36,0],
+    brassica:[0,0,1.7,320,45,0.7,21,0.4,30,80,0],
+    squash:[0.1,0,2,300,25,0.4,20,0.3,300,15,0],
+    root:[0,0,4,320,35,0.4,15,0.3,700,6,0],
+    tomato:[0,0,2.6,240,10,0.3,11,0.2,42,14,0],
+    pepper:[0,0,4,210,10,0.4,12,0.2,160,120,0],
+    chilli:[0,0,3,320,15,0.5,20,0.3,50,140,0],
+    mushroom:[0,0,2,320,3,0.5,9,0.5,0,2,7],
+    onion:[0,0,4,150,23,0.2,10,0.2,0,7,0],
+    peas:[0,0,4,240,40,2.0,25,0.3,60,50,0],
+    ferment:[0,0,1,200,40,0.5,12,0.2,20,15,0],
+    herbs:[0,0,0,500,150,3.0,60,1.0,400,30,0],
+    berry:[0,0,7,90,20,0.5,14,0.3,3,25,0],
+    apple:[0,0,10,110,6,0.1,5,0,3,5,0],
+    pear:[0,0,10,120,9,0.2,7,0.1,1,4,0],
+    orange:[0,0,9,180,40,0.1,10,0.1,11,53,0],
+    citrus:[0,0,8,160,35,0.2,10,0.1,10,45,0],
+    melon:[0,0,8,220,9,0.2,12,0.2,170,30,0],
+    grape:[0,0,16,190,10,0.4,7,0.1,3,4,0],
+    tropical:[0,0,14,170,15,0.2,12,0.1,50,40,0],
+    banana:[0.1,0,12,360,5,0.3,27,0.2,3,9,0],
+    peach:[0,0,8,190,6,0.3,9,0.2,16,7,0],
+    driedfruit:[0.1,0,60,700,50,1.5,40,0.3,2,2,0],
+  };
+  const NUTRI_OVERRIDE = {
+    beefliver:[1.6,275,0,313,5,6.5,18,4.0,4970,1.3,1.2],
+    chickliver:[1.6,345,0,230,8,9.0,19,2.7,3300,17,0.2],
+    salmon:[3.1,55,0,363,12,0.8,29,0.4,12,0,11],
+    sardines:[1.5,142,0,397,382,2.9,39,1.3,32,0,4.8],
+    sardinesoil:[1.5,142,0,397,382,2.9,39,1.3,32,0,4.8],
+    oysters:[0.5,50,0,168,45,5.1,22,39,25,3,0.8],
+    spinach:[0.1,0,0.4,558,99,2.7,79,0.5,469,28,0],
+    babyspinach:[0.1,0,0.4,558,99,2.7,79,0.5,469,28,0],
+    kale:[0.1,0,0.8,491,150,1.5,47,0.6,500,120,0],
+    broccoli:[0,0,1.7,316,47,0.7,21,0.4,31,89,0],
+    peppers:[0,0,4.2,211,7,0.4,12,0.1,157,128,0],
+    orange:[0,0,9.4,181,40,0.1,10,0.1,11,53,0],
+    navel:[0,0,9.4,181,40,0.1,10,0.1,11,53,0],
+    kiwi:[0,0,9,312,34,0.3,17,0.1,4,93,0],
+    strawberry:[0,0,4.9,153,16,0.4,13,0.1,1,59,0],
+    potato:[0,0,0.8,425,12,0.8,23,0.3,0,20,0],
+    whitepot:[0,0,0.8,425,12,0.8,23,0.3,0,20,0],
+    chia:[3.3,0,0,407,631,7.7,335,4.6,0,1.6,0],
+    pepitas:[8.7,0,1.3,809,46,8.8,592,7.8,1,0.3,0],
+    almonds:[3.8,0,4.4,733,269,3.7,270,3.1,0,0,0],
+    milk:[0.1,2,5,150,125,0,11,0.4,60,0,1.2],
+    kefir:[0.6,5,4,164,130,0,12,0.4,30,1,1.0],
+    yogurt0:[0.1,5,3.6,141,110,0.1,11,0.5,1,0.5,0],
+    wholeegg:[3.1,372,0.4,138,56,1.8,12,1.3,160,0,2.0],
+    eggwhites:[0,0,0.7,163,7,0.1,11,0,0,0,0],
+    mushrooms:[0,0,2,318,3,0.5,9,0.5,0,2,7],
+    shiitake:[0,0,2.4,304,2,0.4,20,1.0,0,3,18],
+    tofu:[0.7,0,0.6,121,350,5.4,30,0.8,0,0,0],
+    tempeh:[2.2,0,0,412,111,2.7,81,1.1,0,0,0],
+    lentils:[0.2,0,2,955,56,7.5,122,4.8,2,4.5,0],
+    blackbeans:[0.2,0,2,1483,123,5.0,171,3.7,0,0,0],
+    chickpeas:[0.6,0,11,875,105,6.2,115,3.4,3,4,0],
+  };
+
+  const NUTRI_KEYS = ['satfat','chol','sugar','potassium','calcium','iron','magnesium','zinc','vita','vitc','vitd'];
+
+  function nutriOf(food){
+    if (!food) return null;
+    const row = NUTRI_OVERRIDE[food.key]
+      || NUTRI_BY_FAMILY[FAMILY[food.key]]
+      || null;
+    if (!row) return null;
+    const out = {};
+    NUTRI_KEYS.forEach((k,i)=> out[k] = row[i] || 0);
+    return out;
+  }
+
+  /* Reference daily values, adult, roughly FDA %DV */
+  const DV = { satfat:20, chol:300, sugar:50, fibre:28, sodium:2300,
+               potassium:4700, calcium:1300, iron:18, magnesium:420,
+               zinc:11, vita:900, vitc:90, vitd:20 };
+
+  function fullNutrition(){
+    const out = {fibre:0, sodium:0};
+    NUTRI_KEYS.forEach(k=> out[k] = 0);
+    MEALS.forEach(m=>{
+      const plan = computeMealPlan(m.key);
+      SLOT_DEFS.forEach(d=>{
+        state.selections[m.key][d.slot].forEach((k,i)=>{
+          const g = plan[d.slot][i];
+          if (!k || g == null) return;
+          const f = d.list().find(x=>x.key === k);
+          if (!f) return;
+          const mult = g / 100;
+          out.fibre  += fibreOf(f)  * mult;
+          out.sodium += sodiumOf(f) * mult;
+          const n = nutriOf(f);
+          if (n) NUTRI_KEYS.forEach(key => out[key] += n[key] * mult);
+        });
+      });
+    });
+    // anything logged by hand contributes its calories and macros only
+    return out;
+  }
+
   /* =========================================================
      FOOD FAMILIES
      Two different carbs in a meal is fine — rice and a tortilla work.
@@ -1521,6 +2378,7 @@
     grapefruit:"citrus", lemon:"citrus", lime:"citrus",
     bartlett:"pear", bosc:"pear",
     bananamed:"banana", bananalg:"banana", banana:"banana",
+    grapes:"grape",
     berries:"berry", strawberry:"berry", raspberry:"berry", blackberry:"berry",
     blueberrfroz:"berry", cranberry:"berry",
     cantaloupe:"melon", honeydew:"melon", watermelon:"melon",
@@ -1544,7 +2402,171 @@
     peas:"peas", snappeas:"peas", snowpeas:"peas", edamamepod:"peas",
     carrots:"root", parsnip:"root", turnip:"root", rutabaga:"root",
     beets:"root", daikon:"root", radish:"root", jicama:"root",
+    jerky:"jerky", chicksaus:"sausage", pineapple:"tropical", fishsauce:"asiansauce",
+    olives:"olives", peach:"peach", chipotle:"chillisauce", applesaucecond:"sweetsauce",
     pickles:"ferment", kimchi:"ferment", sauerkraut:"ferment",
+    chickbreastskin:"chickencut",
+    grndturk99:"groundpoultry",
+    chickliver:"organ",
+    turkeyjerky:"jerky",
+    eyeround:"beefcut",
+    tritip:"beefcut",
+    nystrip:"beefcut",
+    beefliver:"organ",
+    elk:"beefcut",
+    rabbit:"beefcut",
+    bratwurst:"sausage",
+    kielbasa:"sausage",
+    andouille:"sausage",
+    porkrind:"curedpork",
+    branzino:"whitefish",
+    grouper:"whitefish",
+    haddock:"whitefish",
+    sole:"whitefish",
+    tunasteak:"tuna",
+    sardinesoil:"oilyfish",
+    caviar:"roe",
+    squid:"shellfish2",
+    snowcrab:"shellfish2",
+    eggbeater:"egg",
+    quarkcheese:"cottage",
+    labneh:"yogurt",
+    halloumigrill:"grillcheese",
+    cheesestick:"stringcheese",
+    eggwhitewrap:"tortilla",
+    beefstick:"jerky",
+    tunapouch:"tuna",
+    calrose:"rice",
+    parboiled:"rice",
+    riceblend:"rice",
+    linguine:"pasta",
+    penne:"pasta",
+    ravioli:"pasta",
+    dumpling:"dumpling",
+    gnocchicau:"potato",
+    chapati:"tortilla",
+    arepas:"bread",
+    injera:"bread",
+    cornbread:"bread",
+    biscuit:"bread",
+    englishcrumpet:"bread",
+    proteinchips:"chips",
+    lentilchips:"chips",
+    proteinoats:"oats",
+    kodiakmix:"pastry",
+    cassavaflour:"tortilla",
+    macadamiabutter:"nutbutter",
+    pecanbutter:"nutbutter",
+    pumpkinbutter:"nutbutter",
+    flaxoil:"oil",
+    grapeseed:"oil",
+    trufflepaste:"pestofat",
+    cottagedip:"cream",
+    kalamata:"olives",
+    asparagusthin:"brassica",
+    greenchile:"chilli",
+    babybella:"mushroom",
+    sugarsnap:"peas",
+    greenbeansfr:"peas",
+    babycarrot:"root",
+    cauliflorets:"brassica",
+    broccoflorets:"brassica",
+    pepperonc:"chilli",
+    greenolive:"olives",
+    cotton:"grape",
+    muskmelon:"melon",
+    whitepeach:"peach",
+    appleslices:"apple",
+    berrymix:"berry",
+    chickthighskin:"chickencut",
+    chicktender:"chickencut",
+    cornishhen:"poultrycut",
+    turkeythigh:"turkeycut",
+    duckleg:"poultrycut",
+    quail:"poultrycut",
+    beef96:"groundbeef",
+    skirtsteak:"beefcut",
+    flatiron:"beefcut",
+    filet:"beefcut",
+    shortrib:"beefcut",
+    oxtail:"beefcut",
+    lambshank:"beefcut",
+    goat:"beefcut",
+    porkbelly:"porkcut",
+    porkshould:"porkcut",
+    italsaus:"sausage",
+    chorizo:"sausage",
+    pepperoni:"curedpork",
+    salami:"curedpork",
+    hotdog:"sausage",
+    chickdog:"sausage",
+    arcticchar:"salmon",
+    barramundi:"whitefish",
+    swordfish:"whitefish",
+    herring:"oilyfish",
+    mackerel:"oilyfish",
+    pollock:"whitefish",
+    octopus:"shellfish2",
+    crawfish:"shellfish2",
+    imitcrab:"shellfish2",
+    eggwhole6:"egg",
+    jasminebrown:"rice",
+    blackrice:"rice",
+    redrice:"rice",
+    glassnoodle:"noodle",
+    pho:"noodle",
+    lasagna:"pasta",
+    couscousprl:"grain",
+    sorghum:"grain",
+    fonio:"grain",
+    ryebread:"bread",
+    ciabatta:"bread",
+    baguette:"bread",
+    croissant:"pastry",
+    waffle:"pastry",
+    protwaffle:"pastry",
+    pancakemix:"pastry",
+    protpancake:"pastry",
+    proteinbar:"bar",
+    oatbran:"oats",
+    cofw:"porridge",
+    pistachiobutter:"nutbutter",
+    cashewbutter:"nutbutter",
+    pbfit:"nutbutter",
+    walnutoil:"oil",
+    peanutoil:"oil",
+    canola:"oil",
+    chilioil:"oil",
+    creme:"cream",
+    mascarpone:"cream",
+    skyrfat:"cream",
+    pesto2:"pestofat",
+    blackolive:"olives",
+    mustardgreens:"leafygreen",
+    beetgreens:"leafygreen",
+    frisee:"lettuce",
+    radicchio:"lettuce",
+    celeriac:"root",
+    sunchoke:"root",
+    lotusroot:"root",
+    taro:"root",
+    greenpapaya:"squash",
+    bittermelon:"squash",
+    enoki:"mushroom",
+    oystermush:"mushroom",
+    cremini:"mushroom",
+    aspgreens:"brassica",
+    cherrytom:"tomato",
+    greentom:"tomato",
+    asianpear:"pear",
+    envy:"apple",
+    mangosteen:"tropical",
+    rambutan:"tropical",
+    currants:"berry",
+    gooseberry:"berry",
+    acai:"berry",
+    pomelo:"citrus",
+    plantainrp:"banana",
   };
 
   /* Some families genuinely mix on a plate — a handful of greens, two
@@ -1561,13 +2583,14 @@
      rice alongside pasta — they occupy the same role on the plate even
      though they're different families. One member of a group per meal. */
   const GROUP = {
-    tortilla:"bready", bread:"bready",
-    rice:"staple", pasta:"staple", noodle:"staple", grain:"staple", potato:"staple",
-    oats:"breakfastcarb", porridge:"breakfastcarb", cereal:"breakfastcarb", granola:"breakfastcarb",
+    tortilla:"bready", bread:"bready", pastry:"bready",
+    rice:"staple", pasta:"staple", noodle:"staple", grain:"staple", potato:"staple", dumpling:"staple",
+    oats:"breakfastcarb", porridge:"breakfastcarb", pastry:"bready", cereal:"breakfastcarb", granola:"breakfastcarb",
     groundbeef:"redmeat", beefcut:"redmeat", porkcut:"redmeat", curedpork:"redmeat",
     chickencut:"poultry", groundpoultry:"poultry", turkeycut:"poultry",
     curedpoultry:"poultry", poultrycut:"poultry",
-    salmon:"seafood", tuna:"seafood", whitefish:"seafood",
+    salmon:"seafood", tuna:"seafood", whitefish:"seafood", oilyfish:"seafood", shellfish2:"seafood",
+    roe:"seafood",
     nutbutter:"spread", butter:"spread",
   };
   function groupOf(food){
@@ -1758,17 +2781,55 @@
   const MEAL_NAMES = ["BREAKFAST", "LUNCH", "DINNER"];
   const SNACK_WEIGHT = 0.4;
 
-  function buildMeals(count){
-    const n = Math.max(1, Math.min(6, count || 4));
-    const mains = Math.min(n, 3);
-    const snacks = n - mains;
-    const totalWeight = mains + snacks * SNACK_WEIGHT;
+  /* Named configurations rather than a bare count, because "3 sittings"
+     could mean three full meals or two meals and a snack — very different
+     days. `mains` are proper meals, `snacks` are the smaller ones. */
+  const MEAL_PLANS = [
+    {key:'2',   mains:2, snacks:0, label:'2 Meals',        desc:'Two big sittings'},
+    {key:'2+1', mains:2, snacks:1, label:'2 + a Snack',    desc:'Two meals, one snack'},
+    {key:'2+2', mains:2, snacks:2, label:'2 + 2 Snacks',   desc:'Two meals, grazing between'},
+    {key:'3',   mains:3, snacks:0, label:'3 Meals',        desc:'Breakfast, lunch, dinner'},
+    {key:'3+1', mains:3, snacks:1, label:'3 + a Snack',    desc:'Classic plus one snack'},
+    {key:'3+2', mains:3, snacks:2, label:'3 + 2 Snacks',   desc:'Steady through the day'},
+    {key:'3+3', mains:3, snacks:3, label:'3 + 3 Snacks',   desc:'Frequent small feedings'},
+  ];
+
+  /* How heavy each main meal should feel, relative to the others */
+  const WEIGHT_FACTOR = {light:0.65, normal:1, heavy:1.4};
+
+  /* buildMeals runs once before state exists, so the flags it needs live
+     here and state keeps them in sync. */
+  const MEAL_FLAGS = {skipBreakfast:false, mealWeights:{}};
+
+  function planFor(key){
+    return MEAL_PLANS.find(p=>p.key === key) || MEAL_PLANS.find(p=>p.key === '3+1');
+  }
+
+  function buildMeals(planKey){
+    const plan = planFor(planKey);
+    const st = MEAL_FLAGS;
+    const skipB = !!st.skipBreakfast && plan.mains >= 2;
+    const mains = plan.mains;
+    const snacks = plan.snacks;
+
+    // Which named meals are in play. Skipping breakfast shifts everything up.
+    let names;
+    if (mains >= 3) names = skipB ? ["LUNCH","DINNER","LATE MEAL"] : MEAL_NAMES.slice(0, mains);
+    else if (mains === 2) names = skipB ? ["LUNCH","DINNER"] : ["BREAKFAST","DINNER"];
+    else names = ["MEAL"];
+
+    const w = st.mealWeights || {};
+    const factors = names.map((n,i)=> WEIGHT_FACTOR[w[i] || 'normal'] || 1);
+    const totalWeight = factors.reduce((a,b)=>a+b, 0) + snacks * SNACK_WEIGHT;
+
     const out = [];
     for (let i = 0; i < mains; i++){
       out.push({
         key:`meal${i+1}`,
-        label:`MEAL 0${i+1}${mains === 3 ? ` // ${MEAL_NAMES[i]}` : ''}`,
-        share: 1 / totalWeight,
+        label:`MEAL 0${i+1} // ${names[i]}`,
+        name:names[i],
+        share: factors[i] / totalWeight,
+        weight: w[i] || 'normal',
         required:true
       });
     }
@@ -1776,6 +2837,7 @@
       out.push({
         key:`snack${i+1}`,
         label:`SNACK 0${i+1}`,
+        name:'SNACK',
         share: SNACK_WEIGHT / totalWeight,
         required:false
       });
@@ -1783,7 +2845,7 @@
     return out;
   }
 
-  let MEALS = buildMeals(4);
+  let MEALS = buildMeals('3+1');
 
   /* =========================================================
      STATE
@@ -1813,7 +2875,15 @@
     mustUse:[],
     mustQty:{},       // key -> grams available (blank = unlimited)
     onHandUsed:[], onHandUnused:[],       // ingredients on hand — every one of these has to appear
-    mealCount:4,      // eating occasions per day
+    mealPlan:'3+1',       // which meal configuration
+    mealCount:4,          // derived: total sittings
+    mealWeights:{},       // index -> 'light' | 'normal' | 'heavy'
+    skipBreakfast:false,
+    breakfastForDinner:false,
+    breakfastAllDay:false,
+    prepServings:1,     // days being cooked for
+    uniqueMeals:null,   // distinct recipes across the day
+    variety:{protein:2, carb:2, fat:2, veg:3},
     eaten:[],         // day-level manual entries: {name,kcal,protein,carbs,fat,covers}
     eatingStyle:null, // 'consistent' | 'balanced' | 'variety'
     // selections[mealKey] = {protein:[keys], carb:[], fat:[], veg:[], fruit:[], sauce:[], notes:""}
@@ -1821,11 +2891,32 @@
   };
   function blankMeal(){ return {protein:[""], carb:[""], fat:[""], veg:[""], fruit:[""], sauce:[], notes:"", dish:""}; }
 
-  function setMealCount(n){
-    state.mealCount = n;
-    MEALS = buildMeals(n);
+  function setMealPlan(key){
+    MEAL_FLAGS.skipBreakfast = !!state.skipBreakfast;
+    MEAL_FLAGS.mealWeights = state.mealWeights || {};
+    state.mealPlan = key;
+    MEALS = buildMeals(key);
+    state.mealCount = MEALS.length;
     state.selections = {};
     MEALS.forEach(m => state.selections[m.key] = blankMeal());
+  }
+
+  /* Kept for saved plans written before configurations existed */
+  function setMealCount(n){
+    const mains = Math.min(n, 3);
+    const key = mains + (n - mains ? '+' + (n - mains) : '');
+    setMealPlan(MEAL_PLANS.some(p=>p.key===key) ? key : '3+1');
+  }
+
+  function rebuildMeals(){
+    MEAL_FLAGS.skipBreakfast = !!state.skipBreakfast;
+    MEAL_FLAGS.mealWeights = state.mealWeights || {};
+    const prev = state.selections || {};
+    MEALS = buildMeals(state.mealPlan);
+    state.mealCount = MEALS.length;
+    const next = {};
+    MEALS.forEach(m => next[m.key] = prev[m.key] || blankMeal());
+    state.selections = next;
   }
   MEALS.forEach(m => state.selections[m.key] = blankMeal());
 
@@ -1833,6 +2924,8 @@
      NAVIGATION
   ========================================================= */
   function showScreen(id){
+    // the attract screen is a black cabinet, not a themed page
+    document.body.classList.toggle('attract-mode', id === 'screen-attract');
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     const onLoadout = id === 'screen-loadout';
@@ -1847,22 +2940,28 @@
   /* =========================================================
      SCREEN 1: ONBOARDING
   ========================================================= */
-  const themeGrid = document.getElementById('themeGrid');
-  const themeBlurb = document.getElementById('themeBlurb');
 
-  function renderThemePicker(){
-    themeGrid.innerHTML = Object.entries(THEMES).map(([k,t])=>
-      `<button class="theme-btn${state.theme===k?' selected':''}" data-theme="${k}">
-         <span class="ic">${t.icon}</span><span class="nm">${t.name}</span>
-       </button>`).join('');
-    themeGrid.querySelectorAll('[data-theme]').forEach(btn=>{
+  /* Each theme rendered as a game on a shelf, using its own palette so the
+     card previews what you're picking. */
+  function renderLibrary(){
+    const host = document.getElementById('libraryGrid');
+    host.innerHTML = Object.entries(THEMES).map(([k,t])=>{
+      const c = t.colors;
+      return `<button class="game-card" data-game="${k}"
+        style="background:${c['panel']}; border-color:${c['line']};">
+        <span class="art" style="background:${t.wash || c['bg-1']};"></span>
+        <span class="ico">${t.icon}</span>
+        <span class="ttl" style="font-family:${t.fonts.display}; color:${c['text']}; font-size:${t.sizes['fs-13']};">${t.name}</span>
+        <span class="dsc" style="font-family:${t.fonts.body}; color:${c['muted']};">${t.blurb}</span>
+        <span class="cls" style="font-family:${t.fonts.body}; color:${c['cyan']};">${t.tiers.join(' · ')}</span>
+      </button>`;
+    }).join('');
+    host.querySelectorAll('[data-game]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        applyTheme(btn.getAttribute('data-theme'));
-        renderThemePicker();
+        applyTheme(btn.getAttribute('data-game'));
+        showScreen('screen-onboard');
       });
     });
-    const t = THEMES[state.theme] || THEMES.cyberpunk;
-    themeBlurb.textContent = t.blurb;
   }
 
   const modeGrid = document.getElementById('modeGrid');
@@ -2152,42 +3251,156 @@
   /* =========================================================
      SCREEN 2: TIER SELECT
   ========================================================= */
-  const tierList = document.getElementById('tierList');
   const recommendMsg = document.getElementById('recommendMsg');
   const btnConfirmTier = document.getElementById('btnConfirmTier');
 
-  function renderTiers(){
-    const tg = computeTargets();
-    const assigned = TIERS.find(t=>t.id === state.assignedTierId);
-    const src = state.mode === 'direct'
-      ? `Using your entered target of <strong style="color:var(--green)">${tg.kcal} kcal</strong>.`
-      : `Your target is <strong style="color:var(--green)">${tg.kcal} kcal</strong>${state.exerciseKcal ? ` (includes +${state.exerciseKcal} exercise)` : ''}.`;
-    recommendMsg.innerHTML = `${src} That puts you in <strong style="color:var(--cyan)">${assigned ? assigned.name : '—'}</strong>. Your numbers stay exactly as calculated — the Tier is just what to call yourself.`;
+  /* Full nutrition panel, laid out like a label: macros first with their
+     sub-components indented, then minerals and vitamins. */
+  function renderFullStats(){
+    const host = document.getElementById('fullStatsBody');
+    if (!host) return;
+    const tg = currentTargets();
+    const n = fullNutrition();
 
-    tierList.innerHTML = "";
-    TIERS.forEach(t=>{
-      const isYou = t.id === state.assignedTierId;
-      const card = document.createElement('div');
-      card.className = 'tier-card' + (isYou ? ' recommended selected' : '');
-      card.style.opacity = isYou ? '1' : '0.45';
-      card.innerHTML = `
-        ${isYou ? '<div class="tier-badge">YOU</div>' : ''}
-        <div class="tier-head">
-          <span class="tier-rank">TIER ${t.id}</span>
-          <span class="tier-kcal">${isYou ? tg.kcal + ' kcal' : t.min + '–' + t.max}</span>
+    const row = (name, amt, pct, sub) =>
+      `<div class="nutri-row">
+         <span class="nutri-name${sub ? ' sub' : ''}">${name}</span>
+         <span class="nutri-amt">${amt}</span>
+         <span class="nutri-pct">${pct != null ? pct + '%' : ''}</span>
+       </div>`;
+    const pctOf = (v, dv) => dv ? Math.round(v / dv * 100) : null;
+
+    host.innerHTML =
+      `<div class="nutri-group">ENERGY &amp; MACROS</div>` +
+      row('Calories', `${tg.kcal} kcal`, null) +
+      row('Protein', `${tg.protein}g`, pctOf(tg.protein, 50)) +
+      row('Carbohydrate', `${tg.carbs}g`, pctOf(tg.carbs, 275)) +
+      row('Fibre', `${Math.round(n.fibre)}g`, pctOf(n.fibre, DV.fibre), true) +
+      row('Sugars', `${Math.round(n.sugar)}g`, null, true) +
+      row('Fat', `${tg.fat}g`, pctOf(tg.fat, 78)) +
+      row('Saturated', `${Math.round(n.satfat)}g`, pctOf(n.satfat, DV.satfat), true) +
+      row('Cholesterol', `${Math.round(n.chol)}mg`, pctOf(n.chol, DV.chol)) +
+
+      `<div class="nutri-group">MINERALS</div>` +
+      row('Sodium', `${Math.round(n.sodium)}mg`, pctOf(n.sodium, DV.sodium)) +
+      row('Potassium', `${Math.round(n.potassium)}mg`, pctOf(n.potassium, DV.potassium)) +
+      row('Calcium', `${Math.round(n.calcium)}mg`, pctOf(n.calcium, DV.calcium)) +
+      row('Iron', `${n.iron.toFixed(1)}mg`, pctOf(n.iron, DV.iron)) +
+      row('Magnesium', `${Math.round(n.magnesium)}mg`, pctOf(n.magnesium, DV.magnesium)) +
+      row('Zinc', `${n.zinc.toFixed(1)}mg`, pctOf(n.zinc, DV.zinc)) +
+
+      `<div class="nutri-group">VITAMINS</div>` +
+      row('Vitamin A', `${Math.round(n.vita)}mcg`, pctOf(n.vita, DV.vita)) +
+      row('Vitamin C', `${Math.round(n.vitc)}mg`, pctOf(n.vitc, DV.vitc)) +
+      row('Vitamin D', `${n.vitd.toFixed(1)}mcg`, pctOf(n.vitd, DV.vitd)) +
+
+      `<div class="season-hint" style="margin-top:16px;">
+         Percentages are of general adult reference intakes. Micronutrients are
+         modelled from food class rather than read off individual products, so
+         they're a useful steer on whether a day looks short — not a substitute
+         for a label or for medical advice. Items you logged by hand count
+         toward calories and macros only.
+       </div>`;
+  }
+
+  function renderTiers(){
+    const tg = currentTargets();
+    const tier = TIERS.find(t=>t.id === state.assignedTierId) || currentTier();
+    const t = THEMES[state.theme] || THEMES.cyberpunk;
+
+    document.getElementById('sheetEyebrow').textContent = t.sheet || 'CHARACTER SHEET';
+    document.getElementById('sheetTitle').textContent = t.sheetTitle || 'Your Character';
+
+    recommendMsg.textContent = state.mode === 'direct'
+      ? 'Built from the target you entered.'
+      : 'Worked out from your stats, activity and goal.';
+
+    document.getElementById('sheetClass').textContent = tier ? tier.name : '—';
+    document.getElementById('sheetRank').textContent =
+      `${(t.words && t.words.tier) || 'TIER'} ${tier ? tier.id : '—'}`;
+    document.getElementById('sheetKcal').textContent = `${tg.kcal} kcal`;
+    document.getElementById('sheetKcalSub').textContent =
+      state.prepServings > 1 ? `per day · prepping ${state.prepServings} days` : 'per day';
+
+    /* Macros as grams, share of calories, and per pound of bodyweight —
+       the three ways people actually check a plan. */
+    const rows = [
+      {k:'protein', label:'Protein', g:tg.protein, kcal:tg.protein*4, col:'var(--green)'},
+      {k:'carbs',   label:'Carbs',   g:tg.carbs,   kcal:tg.carbs*4,   col:'var(--magenta)'},
+      {k:'fat',     label:'Fat',     g:tg.fat,     kcal:tg.fat*9,     col:'var(--amber)'},
+    ];
+    document.getElementById('sheetMacros').innerHTML = rows.map(r=>{
+      const pct = tg.kcal ? Math.round(r.kcal / tg.kcal * 100) : 0;
+      const perLb = state.bodyweight ? (r.g / state.bodyweight).toFixed(2) + ' g/lb' : '';
+      return `<div class="stat-row">
+        <div class="stat-head">
+          <span class="stat-name">${r.label}</span>
+          <span class="stat-val" style="color:${r.col}">${r.g}g</span>
         </div>
-        <div class="tier-name">${t.name}</div>
-        ${isYou ? `
-        <div class="macro-row">
-          <span class="macro-chip p">P ${tg.protein}g</span>
-          <span class="macro-chip c">C ${tg.carbs}g</span>
-          <span class="macro-chip f">F ${tg.fat}g</span>
-        </div>` : ''}
-      `;
-      tierList.appendChild(card);
-    });
+        <div class="stat-bar"><span style="width:${pct}%; background:${r.col}"></span></div>
+        <div class="stat-note">${pct}% of calories${perLb ? ' · ' + perLb : ''}</div>
+      </div>`;
+    }).join('');
+
+    const fT = fibreTarget();
+    document.getElementById('sheetMicros').innerHTML = `
+      <div class="kv"><span>Fibre target</span><span>${fT}g per day</span></div>
+      <div class="kv"><span>Sodium guidance</span><span>under ${SODIUM_LIMIT}mg per day</span></div>
+      <div class="season-hint" style="margin-top:10px;">
+        Both are tracked live on your loadout as you build it. Figures are
+        estimated from food class rather than package labels, so treat them as
+        a steer rather than a measurement.
+      </div>`;
+
+    /* Show the working. People trust a number more when they can see where
+       it came from, and it makes a wrong input obvious. */
+    const bits = [];
+    if (state.mode === 'direct'){
+      bits.push(['Entered target', `${tg.kcal} kcal`]);
+    } else {
+      if (state.tdee) bits.push(['Daily burn (TDEE)', `${Math.round(state.tdee)} kcal`]);
+      if (state.goal) bits.push(['Goal', GOAL_LABEL[state.goal] || state.goal]);
+      if (state.exerciseKcal) bits.push(['Training added back', `+${Math.round(state.exerciseKcal)} kcal`]);
+      bits.push(['Daily target', `${tg.kcal} kcal`]);
+    }
+    if (state.bodyweight) bits.push(['Bodyweight', `${state.bodyweight} lb`]);
+    bits.push(['Band', `${tier ? tier.min : ''}–${tier ? tier.max : ''} kcal`]);
+
+    document.getElementById('sheetBreakdown').innerHTML =
+      bits.map(([k,v])=>`<div class="kv"><span>${k}</span><span>${v}</span></div>`).join('') +
+      `<div class="season-hint" style="margin-top:10px;">
+         Calories and the three macros are tracked. Fibre, sodium and
+         micronutrients aren't in the food data, so they aren't shown —
+         a varied plan with plenty of veg covers most of that ground.
+       </div>`;
+
     btnConfirmTier.disabled = false;
   }
+
+  function openModal(id){
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (id === 'modalStats') renderFullStats();
+    el.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id){
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('[data-close]').forEach(b=>
+    b.addEventListener('click', ()=> closeModal(b.getAttribute('data-close'))));
+  // tapping the dimmed area closes too
+  ['modalHow','modalStats'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', e=>{ if (e.target === el) closeModal(id); });
+  });
+  document.addEventListener('keydown', e=>{
+    if (e.key === 'Escape'){ closeModal('modalHow'); closeModal('modalStats'); }
+  });
+  document.getElementById('btnHowWorked').addEventListener('click', ()=> openModal('modalHow'));
+  document.getElementById('btnFullStats').addEventListener('click', ()=> openModal('modalStats'));
 
   btnConfirmTier.addEventListener('click', ()=>{
     renderPrefs();
@@ -2197,17 +3410,42 @@
   /* =========================================================
      SCREEN 2.5: FOOD PREFERENCES
   ========================================================= */
-  const prefGrids = ['prefGrid','prefGrid2','prefGrid3'].map(id=>document.getElementById(id));
+  const prefGrids = ['prefEating','prefAllergy','prefExclude'].map(id=>document.getElementById(id));
   const btnConfirmPrefs = document.getElementById('btnConfirmPrefs');
   const btnSkipPrefs = document.getElementById('btnSkipPrefs');
 
   const prefSummary = document.getElementById('prefSummary');
 
+  /* Rendered from data so the three groups stay in one place */
+  const PREF_GROUPS = [
+    {id:'prefEating', items:[
+      ['vegetarian','Vegetarian','No meat, fish or shellfish'],
+      ['vegan','Vegan','No animal products at all'],
+      ['pescatarian','Pescatarian','Fish and seafood, no other meat'],
+      ['wholefoods','Whole Foods Only','Skips powders and supplements']]},
+    {id:'prefAllergy', items:[
+      ['dairyfree','Dairy-Free','No milk, cheese or yogurt'],
+      ['glutenfree','Gluten-Free','No wheat, barley or rye'],
+      ['nutfree','Nut-Free','No tree nuts or peanuts'],
+      ['eggfree','Egg-Free','No eggs or egg products'],
+      ['soyfree','Soy-Free','No tofu, tempeh, edamame or soy sauce'],
+      ['shellfishfree','Shellfish-Free','No shrimp, crab, lobster or scallops'],
+      ['legumefree','Legume-Free','No beans, lentils, peanuts or peas'],
+      ['nightshadefree','Nightshade-Free','No tomato, pepper, potato or eggplant']]},
+    {id:'prefExclude', items:[
+      ['porkfree','No Pork','Skips bacon, ham, chops and sausage'],
+      ['redmeatfree','No Red Meat','Skips beef, pork, lamb and game'],
+      ['poultryfree','No Poultry','Skips chicken, turkey and duck'],
+      ['fishfree','No Fish/Seafood','Skips all fish and shellfish']]},
+  ];
+
   function renderPrefs(){
-    prefGrids.forEach(grid=>{
-      grid.querySelectorAll('.choice-btn').forEach(btn=>{
-        btn.classList.toggle('selected', state.preferences.includes(btn.getAttribute('data-pref')));
-      });
+    PREF_GROUPS.forEach(g=>{
+      const host = document.getElementById(g.id);
+      if (!host) return;
+      host.innerHTML = g.items.map(([key,label,desc])=>
+        `<button class="choice-btn${state.preferences.includes(key)?' selected':''}" data-pref="${key}">
+           <span><strong>${label}</strong><span class="desc">${desc}</span></span></button>`).join('');
     });
     updatePrefSummary();
   }
@@ -2236,18 +3474,16 @@
     prefSummary.style.color = "var(--green)";
   }
 
-  prefGrids.forEach(grid=>{
-    grid.addEventListener('click', (e)=>{
+  PREF_GROUPS.forEach(g=>{
+    const host = document.getElementById(g.id);
+    if (!host) return;
+    host.addEventListener('click', (e)=>{
       const btn = e.target.closest('.choice-btn');
-      if(!btn) return;
-      const pref = btn.getAttribute('data-pref');
-      btn.classList.toggle('selected');
-      if (state.preferences.includes(pref)){
-        state.preferences = state.preferences.filter(p=>p!==pref);
-      } else {
-        state.preferences.push(pref);
-      }
-      updatePrefSummary();
+      if (!btn) return;
+      const key = btn.getAttribute('data-pref');
+      const at = state.preferences.indexOf(key);
+      if (at >= 0) state.preferences.splice(at, 1); else state.preferences.push(key);
+      renderPrefs();
     });
   });
 
@@ -2436,7 +3672,7 @@
           <span class="onhand-name">🧊 ${f.name}</span>
           <input type="number" class="onhand-qty" data-mustqty="${k}" value="${qty}" placeholder="any" inputmode="numeric" min="0" max="5000">
           <span class="onhand-unit">g${asUnits}</span>
-          <button class="mini-btn remove" data-unmust="${k}">✕</button>
+          <button class="mini-btn remove" aria-label="Remove ${f.name}" data-unmust="${k}">✕</button>
         </div>`;
     }).join('');
     mustChosen.querySelectorAll('[data-unmust]').forEach(btn=>{
@@ -2622,7 +3858,26 @@
   const btnConfirmCravings = document.getElementById('btnConfirmCravings');
   const btnSkipCravings = document.getElementById('btnSkipCravings');
 
+  const mealRuleGrid = document.getElementById('mealRuleGrid');
+  function renderMealRules(){
+    mealRuleGrid.querySelectorAll('[data-rule]').forEach(b=>{
+      b.classList.toggle('selected', !!state[b.getAttribute('data-rule')]);
+    });
+  }
+  mealRuleGrid.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.choice-btn');
+    if(!btn) return;
+    const rule = btn.getAttribute('data-rule');
+    state[rule] = !state[rule];
+    // only one rule can apply — they contradict each other
+    const RULES = ['skipBreakfast','breakfastForDinner','breakfastAllDay'];
+    if (state[rule]) RULES.forEach(r=>{ if (r !== rule) state[r] = false; });
+    rebuildMeals();
+    renderMealRules();
+  });
+
   function renderCravings(){
+    renderMealRules();
     renderMustUse();
     renderDislikes();
     renderFavPicker();
@@ -2664,7 +3919,220 @@
     updateCraveSummary();
   });
 
+  /* =========================================================
+     OPEN FOOD FACTS LOOKUP
+     Searches the public Open Food Facts database for packaged products so a
+     branded item can be logged without typing four numbers by hand.
+
+     No API key is needed, which is what makes this workable from a static
+     page — there's no secret to leak in the repository.
+
+     Three things this code has to be careful about, all of them documented
+     behaviours of the service rather than edge cases:
+       1. A miss still returns HTTP 200. The body carries the real answer, so
+          the status line is never trusted on its own.
+       2. The data is contributed by volunteers and is often incomplete —
+          products with no name, no nutrition, or nonsense values are normal.
+          Anything without usable numbers is filtered out before display.
+       3. It's a live network call, so it can simply fail. Every path ends in
+          a readable message rather than a silent nothing.
+  ========================================================= */
+  /* Two endpoints, because the old one is gone.
+
+     The legacy Perl search (cgi/search.pl) has been returning 503 globally
+     and is deprecated; Open Food Facts point people at Search-a-licious
+     instead, which is what free-text search uses here.
+
+     Barcode lookup goes to the v2 product endpoint, which is unaffected and
+     is the most reliable path in the whole service — so if the search is
+     having a bad day, typing the barcode off the packet still works. */
+  const OFF_SEARCH   = 'https://search.openfoodfacts.org/search';
+  const OFF_PRODUCT  = 'https://world.openfoodfacts.org/api/v2/product/';
+  const OFF_FIELDS   = 'code,product_name,brands,quantity,serving_size,nutriments';
+
+  /* Pull a usable per-100g profile out of a product record, or null */
+  function offParseProduct(p){
+    if (!p) return null;
+    const n = p.nutriments || {};
+    const num = v => {
+      const x = typeof v === 'string' ? parseFloat(v) : v;
+      return (typeof x === 'number' && isFinite(x) && x >= 0) ? x : null;
+    };
+    let kcal = num(n['energy-kcal_100g']);
+    if (kcal == null){
+      const kj = num(n['energy_100g']);          // some entries only carry kJ
+      if (kj != null) kcal = kj / 4.184;
+    }
+    const protein = num(n['proteins_100g']);
+    const carbs   = num(n['carbohydrates_100g']);
+    const fat     = num(n['fat_100g']);
+    const name    = (p.product_name || '').trim();
+
+    // without a name or calories there's nothing worth showing
+    if (!name || kcal == null) return null;
+    // obviously wrong records: nothing edible exceeds ~900 kcal per 100g
+    if (kcal > 950) return null;
+
+    return {
+      code: p.code || '',
+      name,
+      brand: (p.brands || '').split(',')[0].trim(),
+      serving: (p.serving_size || '').trim(),
+      kcal,
+      protein: protein == null ? 0 : protein,
+      carbs:   carbs   == null ? 0 : carbs,
+      fat:     fat     == null ? 0 : fat,
+      partial: (protein == null || carbs == null || fat == null),
+    };
+  }
+
+  let offTimer = null, offSeq = 0;
+
+  const looksLikeBarcode = q => /^\d{8,14}$/.test(q.replace(/\s/g,''));
+
+  async function offFetchJson(url, seq){
+    const ctrl = new AbortController();
+    const bail = setTimeout(()=>ctrl.abort(), 12000);
+    try{
+      const res = await fetch(url, {signal: ctrl.signal, headers:{'Accept':'application/json'}});
+      clearTimeout(bail);
+      if (seq !== offSeq) return {stale:true};
+      if (!res.ok) return {httpError:res.status};
+      return {data: await res.json()};
+    }catch(err){
+      clearTimeout(bail);
+      if (seq !== offSeq) return {stale:true};
+      return {netError: (err && err.name === 'AbortError') ? 'timeout' : 'unreachable'};
+    }
+  }
+
+  function offSearch(query){
+    const results = document.getElementById('offResults');
+    const q = query.trim();
+    clearTimeout(offTimer);
+    if (q.length < 3){
+      results.innerHTML = q
+        ? '<div class="off-status">Keep typing — at least three letters, or paste a barcode.</div>' : '';
+      return;
+    }
+    const barcode = looksLikeBarcode(q);
+    results.innerHTML = `<div class="off-status">${barcode ? 'Looking up barcode' : 'Searching Open Food Facts'}…</div>`;
+
+    const seq = ++offSeq;
+    offTimer = setTimeout(async ()=>{
+      /* --- barcode: the reliable path --- */
+      if (barcode){
+        const code = q.replace(/\s/g,'');
+        const r = await offFetchJson(`${OFF_PRODUCT}${code}.json?fields=${OFF_FIELDS}`, seq);
+        if (r.stale) return;
+        if (r.netError || r.httpError){ offShowFailure(r, results); return; }
+        // a missing barcode still returns 200 — status lives in the body
+        if (!r.data || r.data.status === 0 || !r.data.product){
+          results.innerHTML = `<div class="off-status">No product with barcode ${escapeHtml(code)}. It may not be in the database yet — add it manually below.</div>`;
+          return;
+        }
+        const hit = offParseProduct(r.data.product);
+        if (!hit){
+          results.innerHTML = '<div class="off-status">That product is in the database but has no usable nutrition data. Add it manually below.</div>';
+          return;
+        }
+        offRenderHits([hit]);
+        return;
+      }
+
+      /* --- free text --- */
+      const url = `${OFF_SEARCH}?q=${encodeURIComponent(q)}&page_size=24&fields=${OFF_FIELDS}`;
+      const r = await offFetchJson(url, seq);
+      if (r.stale) return;
+      if (r.netError || r.httpError){ offShowFailure(r, results, true); return; }
+
+      // search-a-licious returns {hits:[...]}, older shapes used {products:[...]}
+      const list = Array.isArray(r.data && r.data.hits) ? r.data.hits
+                 : Array.isArray(r.data && r.data.products) ? r.data.products : [];
+      const hits = list.map(offParseProduct).filter(Boolean).slice(0, 12);
+      if (!hits.length){
+        results.innerHTML = `<div class="off-status">Nothing usable found for “${escapeHtml(q)}”. Many entries have no nutrition data — try the brand name, paste the barcode from the packet, or add it manually below.</div>`;
+        return;
+      }
+      offRenderHits(hits);
+    }, 350);
+  }
+
+  function offShowFailure(r, results, offerBarcode){
+    let msg;
+    if (r.netError === 'timeout') msg = 'That search took too long.';
+    else if (r.netError) msg = "Couldn't reach Open Food Facts. You may be offline, or the page may be running somewhere that blocks outside requests — it works on a normal web address.";
+    else if (r.httpError === 503) msg = 'Open Food Facts search is temporarily unavailable (503).';
+    else msg = `Open Food Facts returned an error (${r.httpError}).`;
+    results.innerHTML = `<div class="off-status">${msg}${offerBarcode ? ' Barcode lookups usually still work — try pasting the number from the packet.' : ''} You can always add the item manually below.</div>`;
+  }
+
+  function offRenderHits(hits){
+    const results = document.getElementById('offResults');
+    window.__offHits = hits;
+    results.innerHTML = hits.map((h,i)=>`
+      <button class="off-hit" data-off="${i}">
+        <span class="nm">${escapeHtml(h.name)}
+          <small>${escapeHtml(h.brand || 'unbranded')}${h.serving ? ' · serving ' + escapeHtml(h.serving) : ''}${h.partial ? ' · macros incomplete' : ''}</small>
+        </span>
+        <span class="kc">${Math.round(h.kcal)} kcal<br>/100g</span>
+      </button>`).join('')
+      + `<div class="off-credit">Results from Open Food Facts, a volunteer-built open database.
+           Entries are contributed by the public and are often incomplete or wrong —
+           check against the packet before you rely on them.</div>`;
+
+    results.querySelectorAll('[data-off]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const h = window.__offHits[parseInt(btn.getAttribute('data-off'),10)];
+        if (!h) return;
+        offAddToEaten(h);
+      });
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* Values arrive per 100g. Default to 100g so the numbers shown are the
+     numbers stored, and let the person edit the amount afterwards. */
+  function offAddToEaten(h){
+    const grams = 100;
+    const f = grams / 100;
+    state.eaten.push({
+      name: h.brand ? `${h.name} (${h.brand})` : h.name,
+      kcal:    Math.round(h.kcal * f),
+      protein: Math.round(h.protein * f),
+      carbs:   Math.round(h.carbs * f),
+      fat:     Math.round(h.fat * f),
+      covers: '',
+      grams,
+      per100: {kcal:h.kcal, protein:h.protein, carbs:h.carbs, fat:h.fat},
+    });
+    document.getElementById('offSearch').value = '';
+    document.getElementById('offClear').style.display = 'none';
+    document.getElementById('offResults').innerHTML =
+      '<div class="off-status">Added below — set the amount you actually ate.</div>';
+    renderEatenPanel();
+    refreshTargets();
+    saveState();
+  }
+
   const btnAddEaten = document.getElementById('btnAddEaten');
+  const offSearchInput = document.getElementById('offSearch');
+  const offClearBtn = document.getElementById('offClear');
+  offSearchInput.addEventListener('input', ()=>{
+    offClearBtn.style.display = offSearchInput.value ? '' : 'none';
+    offSearch(offSearchInput.value);
+  });
+  offClearBtn.addEventListener('click', ()=>{
+    offSearchInput.value = '';
+    offClearBtn.style.display = 'none';
+    document.getElementById('offResults').innerHTML = '';
+    offSearchInput.focus();
+  });
+
   btnAddEaten.addEventListener('click', ()=>{
     state.eaten.push({name:"", kcal:"", protein:"", carbs:"", fat:"", covers:""});
     renderEatenPanel();
@@ -2698,18 +4166,91 @@
   /* =========================================================
      SCREEN 2.7: EATING STYLE
   ========================================================= */
-  const styleGrid = document.getElementById('styleGrid');
-  const mealCountGrid = document.getElementById('mealCountGrid');
+  const mealPlanGrid = document.getElementById('mealPlanGrid');
+  const weightRows = document.getElementById('weightRows');
   const mealCountNote = document.getElementById('mealCountNote');
+  const prepDaysGrid = document.getElementById('prepDaysGrid');
+  const prepDaysNote = document.getElementById('prepDaysNote');
+  const uniqueGrid = document.getElementById('uniqueGrid');
+  const uniqueNote = document.getElementById('uniqueNote');
+  const varietyRows = document.getElementById('varietyRows');
   const btnConfirmStyle = document.getElementById('btnConfirmStyle');
 
+  const VARIETY_CATS = [
+    {slot:'protein', icon:'🍗', label:'Proteins', max:6},
+    {slot:'carb',    icon:'🍚', label:'Carbs',    max:6},
+    {slot:'fat',     icon:'🥑', label:'Fats',     max:5},
+    {slot:'veg',     icon:'🥦', label:'Veg',      max:8},
+  ];
+
+  /* The old three-button choice was abstract — "variety" meant nothing
+     concrete. These numbers say exactly what you'll be shopping for and
+     cooking, and the playstyle label is derived from them rather than
+     driving them. */
+  function varietyOf(slot){
+    const v = (state.variety || {})[slot];
+    const cat = VARIETY_CATS.find(c=>c.slot===slot);
+    return v != null ? v : Math.min(2, cat ? cat.max : 2);
+  }
+
+  function derivedStyle(){
+    const meals = MEALS.length;
+    const uniq = Math.min(state.uniqueMeals || meals, meals);
+    const mealRatio = meals > 1 ? (uniq - 1) / (meals - 1) : 0;
+    const varRatio = VARIETY_CATS.reduce((a,c)=>
+      a + (varietyOf(c.slot) - 1) / (c.max - 1), 0) / VARIETY_CATS.length;
+    const score = mealRatio * 0.55 + varRatio * 0.45;
+    if (score < 0.30) return 'consistent';
+    if (score < 0.65) return 'balanced';
+    return 'variety';
+  }
+
+  const STYLE_VERDICT = {
+    consistent: {tag:'🔁 CONSISTENT', text:'Cook once, eat the same thing. Least effort, least waste, no decisions to make during the week.'},
+    balanced:   {tag:'⚖️ BALANCED',   text:'A couple of dishes on rotation with some rotating sides. The usual sweet spot for meal prep.'},
+    variety:    {tag:'🎲 VARIETY',    text:"Plenty of different meals and ingredients. More shopping, more pans, more interesting — make sure you'll actually cook it all."},
+  };
+
   function renderStyle(){
-    styleGrid.querySelectorAll('.choice-btn').forEach(b=>{
-      b.classList.toggle('selected', b.getAttribute('data-style') === state.eatingStyle);
-    });
-    mealCountGrid.querySelectorAll('.choice-btn').forEach(b=>{
-      b.classList.toggle('selected', parseInt(b.getAttribute('data-meals'),10) === state.mealCount);
-    });
+    // days
+    prepDaysGrid.innerHTML = [1,2,3,4,5,6,7].map(n=>
+      `<button class="choice-btn${(state.prepServings||1)===n?' selected':''}" data-prepday="${n}"
+         style="min-height:52px; justify-content:center;"><span><strong>${n}</strong></span></button>`).join('');
+    prepDaysGrid.querySelectorAll('[data-prepday]').forEach(b=>b.addEventListener('click',()=>{
+      state.prepServings = parseInt(b.getAttribute('data-prepday'),10);
+      renderStyle();
+    }));
+    const days = state.prepServings || 1;
+    prepDaysNote.innerHTML = days === 1
+      ? 'Planning a single day. Shopping quantities will match one day of food.'
+      : `Cooking for <strong style="color:var(--green)">${days} days</strong>. You'll get one day's plan and the shopping list multiplies it by ${days}.`;
+
+    // meal configuration
+    mealPlanGrid.innerHTML = MEAL_PLANS.map(pl=>
+      `<button class="choice-btn${state.mealPlan===pl.key?' selected':''}" data-plan="${pl.key}">
+         <span><strong>${pl.label}</strong><span class="desc">${pl.desc}</span></span></button>`).join('');
+    mealPlanGrid.querySelectorAll('[data-plan]').forEach(b=>b.addEventListener('click',()=>{
+      setMealPlan(b.getAttribute('data-plan'));
+      state.uniqueMeals = Math.min(state.uniqueMeals || 3, MEALS.length);
+      renderStyle();
+    }));
+
+    // per-meal heft
+    const mains = MEALS.filter(m=>m.required);
+    weightRows.innerHTML = mains.map((m,i)=>`
+      <div class="var-row">
+        <span class="var-label">${m.name.charAt(0) + m.name.slice(1).toLowerCase()}</span>
+        <div class="var-steps">
+          ${['light','normal','heavy'].map(w=>
+            `<button class="var-step wide${(state.mealWeights[i]||'normal')===w?' on':''}" data-weight="${i}|${w}">${w.charAt(0).toUpperCase()+w.slice(1)}</button>`).join('')}
+        </div>
+      </div>`).join('');
+    weightRows.querySelectorAll('[data-weight]').forEach(b=>b.addEventListener('click',()=>{
+      const [i,w] = b.getAttribute('data-weight').split('|');
+      state.mealWeights[i] = w;
+      rebuildMeals();
+      renderStyle();
+    }));
 
     const tg = currentTargets();
     const parts = MEALS.map(m => `${m.required ? 'meal' : 'snack'} ~${Math.round(tg.kcal * m.share)}`);
@@ -2717,22 +4258,50 @@
       ? `Your ${tg.kcal} kcal splits into: <strong style="color:var(--green)">${parts.join(' · ')}</strong> kcal.`
       : '';
 
-    btnConfirmStyle.disabled = !state.eatingStyle;
+    // unique meals
+    const meals = MEALS.length;
+    if (!state.uniqueMeals || state.uniqueMeals > meals) state.uniqueMeals = Math.min(meals, 3);
+    uniqueGrid.innerHTML = Array.from({length:meals}, (_,i)=>i+1).map(n=>
+      `<button class="choice-btn${state.uniqueMeals===n?' selected':''}" data-uniq="${n}"
+         style="min-height:52px; justify-content:center;"><span><strong>${n}</strong></span></button>`).join('');
+    uniqueGrid.querySelectorAll('[data-uniq]').forEach(b=>b.addEventListener('click',()=>{
+      state.uniqueMeals = parseInt(b.getAttribute('data-uniq'),10);
+      renderStyle();
+    }));
+    const u = state.uniqueMeals;
+    const totalSittings = meals * days;
+    uniqueNote.innerHTML = u === meals
+      ? `Every sitting is a different dish — <strong style="color:var(--green)">${u}</strong> recipes to cook.`
+      : `<strong style="color:var(--green)">${u}</strong> recipe${u>1?'s':''} covering ${meals} sittings a day` +
+        (days>1 ? ` — ${totalSittings} servings in total.` : '.');
+
+    // ingredient variety
+    varietyRows.innerHTML = VARIETY_CATS.map(c=>{
+      const v = varietyOf(c.slot);
+      return `<div class="var-row">
+        <span class="var-label">${c.icon} ${c.label}</span>
+        <div class="var-steps">
+          ${Array.from({length:c.max},(_,i)=>i+1).map(n=>
+            `<button class="var-step${v===n?' on':''}" data-var="${c.slot}|${n}" aria-label="${n} different ${c.label}">${n}</button>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+    varietyRows.querySelectorAll('[data-var]').forEach(b=>b.addEventListener('click',()=>{
+      const [slot,n] = b.getAttribute('data-var').split('|');
+      state.variety = state.variety || {};
+      state.variety[slot] = parseInt(n,10);
+      renderStyle();
+    }));
+
+    // derived verdict
+    state.eatingStyle = derivedStyle();
+    const v = STYLE_VERDICT[state.eatingStyle];
+    document.getElementById('styleVerdictTag').textContent = v.tag;
+    document.getElementById('styleVerdict').textContent = v.text;
+    btnConfirmStyle.disabled = false;
   }
 
-  mealCountGrid.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.choice-btn');
-    if(!btn) return;
-    setMealCount(parseInt(btn.getAttribute('data-meals'), 10));
-    renderStyle();
-  });
 
-  styleGrid.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.choice-btn');
-    if(!btn) return;
-    state.eatingStyle = btn.getAttribute('data-style');
-    renderStyle();
-  });
 
   btnConfirmStyle.addEventListener('click', ()=>{
     generateSuggestion();
@@ -2752,6 +4321,9 @@
   /* Largest sensible serving per slot. Without this the macro math will
      happily suggest 700g of black beans to hit a protein target. */
   const PORTION_CAP = { protein:350, carb:300, fat:90, veg:300, fruit:250, sauce:150 };
+  /* Hard ceiling applied to the finished plan. Ultra-light foods (shirataki,
+     cucumber) can otherwise be scaled to a kilo chasing a macro target. */
+  const HARD_CAP = { protein:700, carb:600, fat:200, veg:600, fruit:500, sauce:300 };
   const SLOT_MACRO  = { protein:'protein', carb:'carbs', fat:'fat', veg:'kcal', fruit:'kcal', sauce:'kcal' };
 
   /* Grams this food would need to cover a main meal's share of the target */
@@ -3064,10 +4636,47 @@
 
   /* A recipe only works if every slot it actually needs still has at least
      one ingredient after dietary filters. */
+  /* ---------------------------------------------------------
+     RECIPE OPTIONS
+     A template lists a handful of ingredients, which left most of the
+     pantry unreachable — 617 foods, only 175 ever suggested. A dish that
+     calls for "Chicken Breast" is just as happy with chicken thigh or
+     tenderloin; one that wants jasmine rice takes basmati. So the listed
+     keys are expanded to their family siblings, which unlocks the whole
+     inventory without putting a banana in a burrito bowl.
+  --------------------------------------------------------- */
+  const OPTION_CACHE = {};
+  function recipeOptions(recipe, slot){
+    const cacheKey = recipe.name + '|' + slot;
+    if (OPTION_CACHE[cacheKey]) return OPTION_CACHE[cacheKey];
+    const listed = recipe[slot] || [];
+    const out = new Set(listed);
+    listed.forEach(k=>{
+      const base = listFor(slot).find(f=>f.key === k);
+      if (!base) return;
+      const fam = FAMILY[k];
+      if (!fam) return;
+      listFor(slot).forEach(f=>{
+        if (FAMILY[f.key] !== fam) return;
+        // a sibling has to be close in energy density, or a dish built for
+        // lean chicken ends up carrying pork belly
+        const ratio = base.kcal > 0 ? f.kcal / base.kcal : 1;
+        if (ratio >= 0.55 && ratio <= 1.9) out.add(f.key);
+      });
+    });
+    const arr = [...out];
+    OPTION_CACHE[cacheKey] = arr;
+    return arr;
+  }
+
   function recipeUsable(recipe, role){
-    if (!recipe.slots.includes(role)) return false;
+    if (role === 'universal'){
+      // has to read as breakfast AND as a main — few dishes do, so fall
+      // back to anything that works at lunch if none qualify
+      if (!recipe.slots.includes('breakfast') && !recipe.slots.includes('lunch')) return false;
+    } else if (!recipe.slots.includes(role)) return false;
     for (const slot of ['protein','carb','fat']){
-      const opts = (recipe[slot] || []).map(k => {
+      const opts = recipeOptions(recipe, slot).map(k => {
         const f = listFor(slot).find(x=>x.key===k);
         return (f && isDisliked(f)) ? substituteFor(slot, k) : f;
       }).filter(f => f && passesPrefs(f) && !isDisliked(f) && !(f.powder && !POWDER_OK.includes(role)));
@@ -3164,88 +4773,382 @@
   }
 
   function generateSuggestion(){
-    const style = state.eatingStyle || 'balanced';
     const usedNames = new Set();
-    let lockedRecipe = null;   // 'consistent' repeats one main dish
+    const meals = MEALS.length;
+    const uniqCount = Math.max(1, Math.min(state.uniqueMeals || meals, meals));
 
-    MEALS.forEach((meal, mi)=>{
-      const role = mealRole(meal, mi);
+    const mainMeals  = MEALS.filter(m=>m.required);
+    const snackMeals = MEALS.filter(m=>!m.required);
+    const mainCount  = Math.max(1, Math.min(uniqCount, mainMeals.length));
+    const snackCount = snackMeals.length
+      ? Math.max(1, Math.min(uniqCount, snackMeals.length)) : 0;
+
+    /* ---- ORDER MATTERS ----
+       Dishes are chosen FIRST, then the shopping palette is drawn from what
+       those dishes actually call for. Doing it the other way round produced
+       "Banana Protein Pancakes" made of Canadian bacon — the palette had
+       ingredients the recipe never wanted, and they got forced in anyway. */
+    const coverage = mainBlueprints_coverage(mainMeals, mainCount);
+    const chosenRecipes = [];
+    coverage.forEach(role=>{
+      const usable = RECIPES.filter(r => recipeUsable(r, role));
+      if (!usable.length){ chosenRecipes.push(null); return; }
+      const pick = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
+                         .sort((a,b)=>b.s-a.s)[0].r;
+      usedNames.add(pick.name);
+      chosenRecipes.push({recipe:pick, role});
+    });
+    const snackRecipes = [];
+    for (let i = 0; i < snackCount; i++){
+      const usable = RECIPES.filter(r => recipeUsable(r, 'snack'));
+      if (!usable.length){ snackRecipes.push(null); continue; }
+      const pick = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
+                         .sort((a,b)=>b.s-a.s)[0].r;
+      usedNames.add(pick.name);
+      snackRecipes.push({recipe:pick, role:'snack'});
+    }
+
+    const allPicked = chosenRecipes.concat(snackRecipes).filter(Boolean);
+    const palette = buildPalette(allPicked);
+
+    const mainBlueprints = chosenRecipes.map((c,i)=>
+      buildOneMeal(c ? c.role : coverage[i], usedNames, palette, null, c && c.recipe));
+    const snackBlueprints = snackRecipes.map(c=>
+      buildOneMeal('snack', usedNames, palette, snackKcal(), c && c.recipe));
+
+    state.paletteUsed = {};
+    VARIETY_SLOTS.forEach(slot=>{ state.paletteUsed[slot] = palette[slot].length; });
+
+    let mi2 = 0, si = 0;
+    MEALS.forEach((meal)=>{
+      const src = meal.required
+        ? mainBlueprints[mi2++ % mainBlueprints.length]
+        : snackBlueprints[si++ % snackBlueprints.length];
       const prev = state.selections[meal.key] || {};
-      const sel = {protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[], notes: prev.notes || "", dish:""};
-
-      // ---- choose the dish ----
-      let recipe = null;
-      if (style === 'consistent' && lockedRecipe && lockedRecipe.slots.includes(role)){
-        recipe = lockedRecipe;
-      } else {
-        const usable = RECIPES.filter(r => recipeUsable(r, role));
-        if (usable.length){
-          recipe = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
-                         .sort((a,b) => b.s - a.s)[0].r;
-          if (style === 'consistent' && role !== 'snack' && !lockedRecipe) lockedRecipe = recipe;
-        }
-      }
-
-      if (recipe){
-        usedNames.add(recipe.name);
-        sel._recipe = recipe.name;
-
-        const wantTwoVeg = style !== 'consistent' && role !== 'snack';
-        [['protein',1], ['carb',1], ['fat',1], ['veg', wantTwoVeg ? 2 : 1], ['fruit',1], ['sauce',1]]
-          .forEach(([slot, want])=>{
-            for (let i = 0; i < want; i++){
-              const guard = (slot === 'protein' && sel.protein.some(k=>{
-                const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
-              })) ? (f => !isMeat(f)) : null;
-              const food = pickFromRecipe(recipe, slot, role, sel[slot], guard, sel);
-              if (food) sel[slot].push(food.key);
-            }
-          });
-
-        // If the chosen protein alone would need an enormous portion (lean
-        // dairy is the usual culprit — 500g of cottage cheese), bring in a
-        // second protein from the same dish so they split the target.
-        if (sel.protein.length === 1){
-          const only = FOODS.protein.find(f=>f.key===sel.protein[0]);
-          if (only && servingFor('protein', only) > PORTION_CAP.protein){
-            const guard = isMeat(only) ? (f => !isMeat(f)) : null;
-            const partner = pickFromRecipe(recipe, 'protein', role, sel.protein, guard, sel);
-            // better one large portion than two variants of the same thing
-            if (partner && !familyClash(partner, sel)) sel.protein.push(partner.key);
-          }
-        }
-
-        // sauce only where the dish calls for one, and not every single time
-        if (sel.sauce.length && Math.random() > 0.75) sel.sauce = [];
-        if (sel.sauce.length && !sauceAllowed(FOODS.sauce.find(f=>f.key===sel.sauce[0]))){
-          const alt = (recipe.sauce || []).map(k=>FOODS.sauce.find(f=>f.key===k))
-            .filter(f => f && passesPrefs(f) && !isDisliked(f) && sauceAllowed(f));
-          sel.sauce = alt.length ? [alt[Math.floor(Math.random()*alt.length)].key] : [];
-        }
-      } else {
-        // No template fits (heavy dietary filters) — fall back to free assembly
-        const guard = ()=> sel.protein.some(k=>{
-          const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
-        }) ? (f => !isMeat(f)) : null;
-        [['protein', FOODS.protein], ['carb', FOODS.carbs], ['fat', FOODS.fat], ['veg', FOODS.veg]]
-          .forEach(([slot, list])=>{
-            const f = pickFood(list, null, true, slot,
-              x => !familyClash(x, sel)
-                && (slot !== 'protein' || (!(x.powder && !POWDER_OK.includes(role)) && (guard() ? !isMeat(x) : true))));
-            if (f) sel[slot].push(f.key);
-          });
-        const fr = pickFood(FOODS.fruit, null, true, 'fruit');
-        if (fr && (role === 'snack' || mi % 2 === 0)) sel.fruit.push(fr.key);
-      }
-
-      if (recipe) sel.dish = dishTitle(recipe, sel);
-      SLOT_DEFS.forEach(d => { if (!sel[d.slot].length && d.slot !== 'sauce' && d.slot !== 'fruit') sel[d.slot] = [""]; });
-      if (!sel.fruit.length) sel.fruit = [""];
-      state.selections[meal.key] = sel;
+      state.selections[meal.key] = {
+        protein:[...src.protein], carb:[...src.carb], fat:[...src.fat],
+        veg:[...src.veg], fruit:[...src.fruit], sauce:[...src.sauce],
+        notes: prev.notes || "", dish: src.dish, _recipe: src._recipe, _improvised: !!src._improvised
+      };
     });
 
     enforceOnHand();
+    pruneUnservedItems();
     recordOnHandOutcome();
+  }
+
+  /* The portion engine drops anything too small to plate. Those choices are
+     removed from the meal as well, so what you see selected is exactly what
+     you'll be given an amount for. */
+  function pruneUnservedItems(){
+    MEALS.forEach(m=>{
+      const plan = computeMealPlan(m.key);
+      const sel = state.selections[m.key];
+      SLOT_DEFS.forEach(d=>{
+        const kept = [];
+        sel[d.slot].forEach((k, i)=>{
+          if (!k) return;
+          if (plan[d.slot][i] != null) kept.push(k);
+        });
+        sel[d.slot] = kept.length ? kept
+          : (d.slot === 'sauce' || d.slot === 'fruit' ? [] : [""]);
+      });
+    });
+  }
+
+  /* Draw the shopping palette from what the chosen dishes actually use.
+     Every item here is something at least one recipe calls for, so nothing
+     ends up on a plate it doesn't belong on. */
+  function buildPalette(picked){
+    const hasBreakfast = MEALS.some(m=>m.required && m.name === 'BREAKFAST')
+      && !state.breakfastForDinner && !state.breakfastAllDay;
+    const palette = {};
+
+    VARIETY_SLOTS.forEach(slot=>{
+      const want = varietyBudget(slot);
+      const needsBoth = hasBreakfast && slot !== 'veg';
+      const allowance = (needsBoth && want < 2) ? want + 1 : want;
+
+      // every ingredient any chosen dish could use for this slot
+      const wanted = [];
+      picked.forEach(({recipe, role})=>{
+        recipeOptions(recipe, slot).forEach(k=>{
+          let f = listFor(slot).find(x=>x.key===k);
+          if (f && isDisliked(f)) f = substituteFor(slot, k);
+          if (!f || !passesPrefs(f) || isDisliked(f)) return;
+          if (!mealAllowsFood(role, f)) return;
+          if (f.powder && !POWDER_OK.includes(role)) return;
+          if (!wanted.some(w=>w.f.key===f.key)) wanted.push({f, role});
+        });
+      });
+
+      const chosen = [];
+      const add = f => { if (!chosen.some(c=>c.key===f.key)) chosen.push(f); };
+
+      // on-hand and starred foods first, if a dish can take them
+      wanted.filter(w => isMustUse(w.f)).forEach(w=>{
+        if (chosen.length < allowance && !chosen.some(c=>familyClashPair(c,w.f))) add(w.f);
+      });
+      wanted.filter(w => favKeys(slot).includes(w.f.key)).forEach(w=>{
+        if (chosen.length < allowance && !chosen.some(c=>familyClashPair(c,w.f))) add(w.f);
+      });
+
+      // then make sure every dish has at least one option it can use
+      picked.forEach(({recipe, role})=>{
+        const opts = wanted.filter(w =>
+          recipeOptions(recipe, slot).includes(w.f.key) && mealAllowsFood(role, w.f));
+        if (!opts.length) return;
+        if (opts.some(o => chosen.some(c=>c.key===o.f.key))) return;
+        const fresh = opts.filter(o => !chosen.some(c=>familyClashPair(c,o.f)));
+        const from = fresh.length ? fresh : opts;
+        add(from[Math.floor(Math.random()*from.length)].f);
+      });
+
+      // fill any remaining allowance with other things the dishes could use
+      let guard = 0;
+      while (chosen.length < allowance && guard++ < 40){
+        const rest = wanted.filter(w =>
+          !chosen.some(c=>c.key===w.f.key) && !chosen.some(c=>familyClashPair(c,w.f)));
+        if (!rest.length) break;
+        add(rest[Math.floor(Math.random()*rest.length)].f);
+      }
+
+      palette[slot] = chosen;
+    });
+    return palette;
+  }
+
+  /* ---------------------------------------------------------
+     BREAKFAST DISCIPLINE
+     Nobody wants an onion-and-tomato burrito bowl at 7am, and nobody
+     serves cereal at dinner. These lists keep each end of the day
+     recognisable — unless the person deliberately asks otherwise.
+  --------------------------------------------------------- */
+  const BREAKFAST_OK = new Set([
+    'wholeegg','eggwhites','eggliquid','eggwhole6','yolks','turkbacon','bacon','canadian',
+    'chicksaus','italsaus','yogurt0','yogurt2','yogurt5','skyr','cottage1','cottage4','queijo',
+    'kefir','milk','ricotta','creamcheese','creamcheeselight','whey','protshake','smokedsalmon',
+    'cheddar','cheddarred','cheddarff','jack','pepperjack','swisscheese','mozzarella','feta','goatcheese',
+    'quarkcheese','labneh','cheesestick','eggwhitewrap','eggbeater','plantpro','casein',
+    'tofu','tempeh','seitan','tvp','soycurls','edamame','natto','lentils','chickpeas',
+    'peanuts','pumpkinseeds','sunflowerseeds','sesameseeds','pepitas','brazilnuts','pinenuts',
+    'macadamiabutter','pecanbutter','pumpkinbutter','mayolight','avocadooil','oil','canola','grapeseed',
+    'proteinoats','kodiakmix','protwaffle','proteinbar','muesli','oats','crackers','popcorn',
+    'oats','steelcut','oatbran','cofw','granola','protgranola','cereal','protcereal','muesli',
+    'grits','polenta','creamrice','bread','sourdough','ezekiel','protbread','sandthin','bagel',
+    'protbagel','engmuffin','croissant','brioche','waffle','protwaffle','pancakemix','protpancake',
+    'ricecakes','banana','bananamed','bananalg','honey','maple','hashbrown','potato','whitepot',
+    'lowcarbtort6','lowcarbtort8','lowcarbtort10','flourtort6','flourtort8','corntort6','protwrap','lavash',
+    'pb','almondbutter','sunbutter','cashewbutter','pistachiobutter','pbpowder','nutella','pbfit',
+    'butter','ghee','avocado','hassavo','guac','almonds','walnuts','pecans','cashews','chia',
+    'flaxseed','hemphearts','coconutflake','cacaonibs','darkchoc','halfhalf','creme','mascarpone','skyrfat',
+    'spinach','babyspinach','mushrooms','cremini','peppers','roastedpeppers','onion','scallion',
+    'tomatoes','cherrytom','zucchini','kale','arugula','poblano','jalapeno','sweetpotfries',
+  ]);
+
+  /* Things that read as breakfast-only and look odd at dinner */
+  const BREAKFAST_ONLY = new Set([
+    'cereal','protcereal','granola','protgranola','muesli','oats','steelcut','oatbran','cofw',
+    'pancakemix','protpancake','waffle','protwaffle','croissant','turkbacon','bacon','canadian',
+    'grits','maple','honey','nutella','skyrfat',
+  ]);
+
+  function mealAllowsFood(role, food){
+    if (state.breakfastAllDay) return BREAKFAST_OK.has(food.key);  // eggs at every sitting
+    if (state.breakfastForDinner) return true;      // deliberately mixed up
+    if (role === 'snack') return true;              // snacks can be anything
+    if (role === 'breakfast') return BREAKFAST_OK.has(food.key);
+    // One dish covering both breakfast and dinner has to satisfy both ends:
+    // recognisable in the morning, not porridge at night.
+    if (role === 'universal'){
+      return BREAKFAST_OK.has(food.key) && !BREAKFAST_ONLY.has(food.key);
+    }
+    return !BREAKFAST_ONLY.has(food.key);           // lunch and dinner
+  }
+
+  /* Calories a snack actually has to play with — used to keep bulky
+     whole-unit foods out of them. */
+  function snackKcal(){
+    const snack = MEALS.find(m=>!m.required);
+    return snack ? currentTargets().kcal * snack.share : null;
+  }
+
+  const VARIETY_SLOTS = ['protein','carb','fat','veg'];
+  function varietyBudget(slot){
+    const v = (state.variety || {})[slot];
+    return Math.max(1, v != null ? v : 2);
+  }
+
+  /* Would these two foods clash if they shared a plate? */
+  function familyClashPair(a, b){
+    if (!a || !b) return false;
+    const fa = strictFamilyOf(a), fb = strictFamilyOf(b);
+    if (fa && fa === fb) return true;
+    const ga = groupOf(a), gb = groupOf(b);
+    return !!ga && ga === gb;
+  }
+
+  /* One meal, drawn only from the day's ingredient palette */
+  /* Which role each blueprint must satisfy, given how they'll be dealt out */
+  function mainBlueprints_coverage(mainMeals, count){
+    const roleOf = (m, idx) => {
+      if (m.name === 'BREAKFAST') return 'breakfast';
+      return 'dinner';
+    };
+    const out = [];
+    for (let i = 0; i < count; i++){
+      const roles = new Set();
+      for (let j = i; j < mainMeals.length; j += count){
+        roles.add(roleOf(mainMeals[j], j));
+      }
+      out.push(roles.size > 1 ? 'universal'
+             : roles.has('breakfast') ? 'breakfast' : 'dinner');
+    }
+    return out;
+  }
+
+  function buildOneMeal(role, usedNames, palette, budgetKcal, recipe){
+    /* A whole tortilla or bagel can't fit a snack — its smallest possible
+       serving is one unit, and one unit may be the entire budget. */
+    const fitsBudget = (slot, f)=>{
+      if (!budgetKcal) return true;
+      const min = minPortion(slot, f);
+      const g = (f.unit && !f.unit.soft) ? Math.max(f.unit.g * unitStep(f), min) : min;
+      return (f.kcal * g / 100) <= budgetKcal * 0.55;
+    };
+
+    const sel = {protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[], dish:"", _recipe:""};
+    if (recipe) sel._recipe = recipe.name;
+
+    const wantVeg = role === 'snack' ? 0 : Math.min(2, varietyBudget('veg'));
+    [['protein',1], ['carb',1], ['fat',1], ['veg', wantVeg]].forEach(([slot, want])=>{
+      for (let i = 0; i < want; i++){
+        /* Only ingredients this dish actually calls for. A burrito bowl asks
+           for rice or tortillas — never a banana, however much of one the
+           palette happens to hold. */
+        const recipeKeys = recipe ? recipeOptions(recipe, slot) : null;
+        let pool = palette[slot].filter(f =>
+          !sel[slot].includes(f.key)
+          && (!recipeKeys || recipeKeys.includes(f.key))
+          && !familyClash(f, sel)
+          && !(f.powder && !POWDER_OK.includes(role))
+          && mealAllowsFood(role, f)
+          && fitsBudget(slot, f));
+
+        if (slot === 'protein' && sel.protein.some(k=>{
+          const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
+        })) pool = pool.filter(f => !isMeat(f));
+
+        /* Prefer options that plate at a sensible size. Shirataki and poblano
+           are so light that hitting a macro target on them alone runs to a
+           kilo, so they only get picked when nothing better is offered. */
+        if (PORTION_CAP[slot]){
+          const sane = pool.filter(f => servingFor(slot, f) <= PORTION_CAP[slot]);
+          if (sane.length) pool = sane;
+        }
+
+        if (!pool.length && recipeKeys){
+          // the dish wants something the palette can't supply — take it from
+          // the recipe directly and add it to the palette so the shopping
+          // list stays truthful
+          const extra = recipeKeys.map(k=>{
+            let f = listFor(slot).find(x=>x.key===k);
+            if (f && isDisliked(f)) f = substituteFor(slot, k);
+            return f;
+          }).find(f => f && passesPrefs(f) && !isDisliked(f)
+            && !sel[slot].includes(f.key) && !familyClash(f, sel)
+            && mealAllowsFood(role, f) && fitsBudget(slot, f)
+            && !(f.powder && !POWDER_OK.includes(role))
+            && !(slot === 'protein' && isMeat(f) && sel.protein.some(k=>{
+                 const p = FOODS.protein.find(x=>x.key===k); return p && isMeat(p); })));
+          if (extra){
+            if (!palette[slot].some(f=>f.key===extra.key)) palette[slot].push(extra);
+            sel[slot].push(extra.key);
+          }
+          continue;
+        }
+        if (!pool.length) continue;
+        sel[slot].push(pool[Math.floor(Math.random() * pool.length)].key);
+      }
+    });
+
+    // fruit and sauce come from the dish, not the palette
+    const fruitKeys = recipe ? recipeOptions(recipe, 'fruit') : [];
+    if (fruitKeys.length && (role === 'snack' || Math.random() < 0.7)){
+      const opts = fruitKeys.map(k=>FOODS.fruit.find(f=>f.key===k))
+        .filter(f => f && passesPrefs(f) && !isDisliked(f)
+          && !familyClash(f, sel) && fitsBudget('fruit', f) && mealAllowsFood(role, f));
+      if (opts.length) sel.fruit.push(opts[Math.floor(Math.random()*opts.length)].key);
+    }
+    const sauceKeys = recipe ? recipeOptions(recipe, 'sauce') : [];
+    if (sauceKeys.length && role !== 'snack' && Math.random() < 0.7){
+      const opts = sauceKeys.map(k=>FOODS.sauce.find(f=>f.key===k))
+        .filter(f => f && passesPrefs(f) && !isDisliked(f) && sauceAllowed(f)
+          && !familyClash(f, sel) && mealAllowsFood(role, f));
+      if (opts.length) sel.sauce.push(opts[Math.floor(Math.random()*opts.length)].key);
+    }
+
+    // a single lean protein can need an absurd portion — split it
+    if (sel.protein.length === 1){
+      const only = FOODS.protein.find(f=>f.key===sel.protein[0]);
+      if (only && servingFor('protein', only) > PORTION_CAP.protein){
+        const partner = palette.protein.find(f =>
+          f.key !== only.key && !familyClashPair(only, f)
+          && (!recipe || recipeOptions(recipe, 'protein').includes(f.key))
+          && !(isMeat(only) && isMeat(f)) && mealAllowsFood(role, f));
+        if (partner) sel.protein.push(partner.key);
+      }
+    }
+
+    /* SAFETY NET
+       A tight combination — a dish that must work at both breakfast and
+       dinner, a small palette and a dietary filter — can leave a meal with
+       no protein, carb or fat at all. That produced plates of nothing but
+       mushrooms. If a core slot came up empty, fill it from the whole
+       inventory with the time-of-day rule relaxed, preferring foods that
+       still suit the meal. */
+    ['protein','carb','fat'].forEach(slot=>{
+      if (sel[slot].filter(Boolean).length) return;
+      /* Give up constraints in order of least harm: first try the dish's own
+         options, then anything that suits the time of day, and only as a last
+         resort ignore the time-of-day rule. */
+      const base = f =>
+        !familyClash(f, sel)
+        && !(f.powder && !POWDER_OK.includes(role))
+        && fitsBudget(slot, f)
+        && !(slot === 'protein' && isMeat(f) && sel.protein.some(k=>{
+             const p = FOODS.protein.find(x=>x.key===k); return p && isMeat(p); }));
+      const recipeKeys = recipe ? recipeOptions(recipe, slot) : [];
+      const f =
+           pickFood(listFor(slot), null, true, slot, x => base(x) && recipeKeys.includes(x.key) && mealAllowsFood(role, x))
+        || pickFood(listFor(slot), null, true, slot, x => base(x) && mealAllowsFood(role, x))
+        || pickFood(listFor(slot), null, true, slot, base);
+      // the dish no longer describes what's on the plate
+      if (f && !recipeKeys.includes(f.key)) sel._improvised = true;
+      if (f){
+        sel[slot].push(f.key);
+        if (palette[slot] && !palette[slot].some(x=>x.key===f.key)) palette[slot].push(f);
+      }
+    });
+
+    SLOT_DEFS.forEach(d => { if (!sel[d.slot].length && d.slot !== 'sauce' && d.slot !== 'fruit') sel[d.slot] = [""]; });
+    if (!sel.fruit.length) sel.fruit = [""];
+    /* If the dish had to be improvised around a dietary filter, don't keep
+       calling it by its original name — "Protein Pasta Primavera" made with
+       a bagel is a lie. Fall back to a plain description of the plate. */
+    if (recipe) sel.dish = sel._improvised ? plainTitle(sel) : dishTitle(recipe, sel);
+    return sel;
+  }
+
+  /* An honest description when a recipe couldn't be followed */
+  function plainTitle(sel){
+    const nameOf = slot => {
+      const k = sel[slot] && sel[slot].find(Boolean);
+      return k ? shortName(listFor(slot).find(f=>f.key===k)) : '';
+    };
+    const P = nameOf('protein'), C = nameOf('carb'), V = nameOf('veg');
+    const bits = [P, C].filter(Boolean).join(' & ');
+    return tidyTitle(bits + (V ? ` with ${V}` : '') + ' Plate') || 'Custom Plate';
   }
 
   /* Preference-driven picking gets most on-hand food onto the plate, but it
@@ -3268,10 +5171,16 @@
   }
 
   function enforceOnHand(){
-    // On-hand items are a strong preference, not a contract. Forcing every
-    // one into the day produced odd plates (two tortillas in one burrito).
-    // We place what fits naturally and report the rest on the review screen.
-    const want = (state.mustUse || []).slice();
+    /* On-hand items are a strong preference, not a licence to break every
+       other rule. An item is only placed where it genuinely fits — right
+       time of day, no clash with what's already on the plate, no dietary
+       violation. Anything that can't be placed cleanly is reported as
+       "didn't fit" on the review screen instead of being forced in. */
+    const want = (state.mustUse || []).filter(k=>{
+      const sl = slotOf(k);
+      const f = sl && listFor(sl).find(x=>x.key===k);
+      return f && passesPrefs(f) && !isDisliked(f);
+    });
     if (!want.length) return;
 
     const placed = new Set();
@@ -3285,122 +5194,51 @@
     const missing = want.filter(k => !placed.has(k));
     if (!missing.length) return;
 
-    const pool = MEALS.filter(m=>m.required).length ? MEALS.filter(m=>m.required) : MEALS.slice();
-
-    // How many requested items share each family — used to tell a genuine
-    // conflict from a placement we can still shuffle around
-    const famDemand = {};
-    want.forEach(k=>{
-      const sl = slotOf(k);
-      const f = sl && listFor(sl).find(x=>x.key===k);
-      const fm = f && strictFamilyOf(f);
-      if (fm) famDemand[fm] = (famDemand[fm] || 0) + 1;
-    });
-
-    // Track families already committed per meal, so two requested tortillas
-    // land on separate plates rather than stacking on one
-    const mealFamilies = {};
-    pool.forEach(m=>{
-      mealFamilies[m.key] = new Set();
-      SLOT_DEFS.forEach(d=>(state.selections[m.key][d.slot]||[]).forEach(k=>{
-        const f = k && listFor(d.slot).find(x=>x.key===k);
-        const fam = f && strictFamilyOf(f);
-        if (fam) mealFamilies[m.key].add(fam);
-      }));
-    });
-
-    // Track which meals already hold an on-hand meat so we never overwrite one
-    const mealHasOnHandMeat = {};
-    pool.forEach(m=>{
-      mealHasOnHandMeat[m.key] = state.selections[m.key].protein.some(k=>{
-        const f = k && FOODS.protein.find(x=>x.key===k);
-        return f && isMeat(f) && want.includes(k);
-      });
-    });
+    const roleOfMeal = (m, idx) => {
+      if (!m.required) return 'snack';
+      return m.name === 'BREAKFAST' ? 'breakfast' : 'dinner';
+    };
 
     missing.forEach(key=>{
       const slot = slotOf(key);
       if (!slot) return;
       const food = listFor(slot).find(f=>f.key === key);
       if (!food) return;
-      const meaty = slot === 'protein' && isMeat(food);
 
-      // Candidate meals: for a cut of meat, only ones not already holding an
-      // on-hand meat, so two requested meats land on separate plates.
-      const fam = strictFamilyOf(food);
-      const grp = groupOf(food);
-      let candidates = pool.filter(m => !(meaty && mealHasOnHandMeat[m.key]));
-      [fam, grp].filter(Boolean).forEach(tag=>{
-        const free = candidates.filter(m => !mealFamilies[m.key].has(tag));
-        if (free.length) candidates = free;
-      });
-      if (!candidates.length) candidates = pool;
-
-      // Prefer whichever candidate is carrying least in this slot
-      let target = candidates[0], fewest = Infinity;
-      candidates.forEach(m=>{
-        const n = state.selections[m.key][slot].filter(Boolean).length;
-        if (n < fewest){ fewest = n; target = m; }
-      });
-
-      const sel = state.selections[target.key];
-      if (fam) mealFamilies[target.key].add(fam);
-      if (grp) mealFamilies[target.key].add(grp);
-      if (meaty){
-        // replace a meat that isn't itself requested; otherwise just add
-        const idx = sel.protein.findIndex(k=>{
-          const f = k && FOODS.protein.find(x=>x.key===k);
-          return f && isMeat(f) && !want.includes(k);
-        });
-        if (idx >= 0) sel.protein[idx] = key;
-        else {
-          const blank = sel.protein.indexOf("");
-          if (blank >= 0) sel.protein[blank] = key; else sel.protein.push(key);
+      // every meal this could legitimately join, best fit first
+      const options = [];
+      MEALS.forEach((m, idx)=>{
+        const role = roleOfMeal(m, idx);
+        const sel0 = state.selections[m.key];
+        const rec = RECIPES.find(r=>r.name === sel0._recipe);
+        /* The dish has to want it. Veg and fruit are sides so they can join
+           any main meal, but a protein, carb, fat or sauce only goes where
+           the recipe calls for it — otherwise you get cabbage in a trail mix. */
+        const isSide = (slot === 'veg');
+        if (rec && !recipeOptions(rec, slot).includes(key)){
+          if (!isSide || !m.required || !(rec.veg||[]).length) return;
         }
-        mealHasOnHandMeat[target.key] = true;
-        return;
-      }
+        if (!mealAllowsFood(role, food)) return;
+        if (food.powder && !POWDER_OK.includes(role)) return;
+        const sel = sel0;
+        if (familyClash(food, sel)) return;
+        if (slot === 'protein' && isMeat(food) && sel.protein.some(k=>{
+          const f = k && FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
+        })) return;
+        // a snack can't carry a whole bagel
+        if (!m.required){
+          const budget = currentTargets().kcal * m.share;
+          const min = minPortion(slot, food);
+          const g = (food.unit && !food.unit.soft) ? Math.max(food.unit.g * unitStep(food), min) : min;
+          if (food.kcal * g / 100 > budget * 0.55) return;
+        }
+        options.push({m, count: sel[slot].filter(Boolean).length});
+      });
 
+      if (!options.length) return;   // reported as "didn't fit"
+      options.sort((a,b)=>a.count - b.count);
+      const sel = state.selections[options[0].m.key];
       if (sel[slot].includes(key)) return;
-      // if the plate already holds a sibling (another tortilla, another rice),
-      // replace it rather than serving both
-      // If the plate already holds a sibling that was also requested, leave
-      // it alone — two variants of one thing is exactly what we avoid.
-      if (fam){
-        const blockedEverywhere = pool.every(m => mealFamilies[m.key].has(fam));
-        if (blockedEverywhere && pool.length <= (famDemand[fam] || 0) - 1) return;
-      }
-
-      if (fam){
-        let replaced = false;
-        // first choice: overwrite a sibling that wasn't requested
-        SLOT_DEFS.forEach(d=>{
-          if (replaced) return;
-          const arr = sel[d.slot] || [];
-          const at = arr.findIndex(k=>{
-            const o = k && listFor(d.slot).find(f=>f.key===k);
-            return o && strictFamilyOf(o) === fam && !want.includes(k);
-          });
-          if (at >= 0){ arr[at] = key; replaced = true; }
-        });
-        // second choice: a requested sibling that also appears in another
-        // meal, so overwriting this copy still leaves it used somewhere
-        if (!replaced){
-          SLOT_DEFS.forEach(d=>{
-            if (replaced) return;
-            const arr = sel[d.slot] || [];
-            const at = arr.findIndex(k=>{
-              const o = k && listFor(d.slot).find(f=>f.key===k);
-              if (!o || strictFamilyOf(o) !== fam) return false;
-              const elsewhere = MEALS.some(mm =>
-                mm.key !== target.key && (state.selections[mm.key][d.slot]||[]).includes(k));
-              return elsewhere;
-            });
-            if (at >= 0){ arr[at] = key; replaced = true; }
-          });
-        }
-        if (replaced) return;
-      }
       const blank = sel[slot].indexOf("");
       if (blank >= 0) sel[slot][blank] = key;
       else sel[slot].push(key);
@@ -3807,6 +5645,7 @@
     // them. Snapping is re-asserted last so a portion is never left mid-unit;
     // enforceMinimums is then re-run to soak up the rounding.
     capOnHandPortions(grams, sel);
+    capAbsurdPortions(grams, sel);
     snapToUnits(grams, sel);
     enforceMinimums(grams, sel, mealKcal);
     snapToUnits(grams, sel);
@@ -3853,6 +5692,17 @@
   }
 
   /* Never plan more of an ingredient than the person says they have */
+  /* Nobody serves 1.5kg of shirataki. Trim anything past a plausible plate. */
+  function capAbsurdPortions(grams, sel){
+    SLOT_DEFS.forEach(def=>{
+      sel[def.slot].forEach((key, i)=>{
+        if (!key || grams[def.slot][i] == null) return;
+        const cap = HARD_CAP[def.slot];
+        if (cap && grams[def.slot][i] > cap) grams[def.slot][i] = cap;
+      });
+    });
+  }
+
   function capOnHandPortions(grams, sel){
     if (!state.mustQty || !Object.keys(state.mustQty).length) return;
     SLOT_DEFS.forEach(def=>{
@@ -3875,6 +5725,14 @@
         const step = unitStep(food);
         let n = Math.round(raw / step) * step;
         if (n < step) n = step;              // never suggest zero of something chosen
+        /* Rounding up must not push past a stated on-hand quantity — if you
+           only have two tortillas, the plan can't call for three. */
+        const cap = onHandCapFor(key);
+        if (cap != null && n * per > cap){
+          const down = Math.floor((cap / per) / step) * step;
+          n = Math.max(down, 0);
+          if (n <= 0){ grams[def.slot][i] = 0; return; }
+        }
         grams[def.slot][i] = n * per;
       });
     });
@@ -3998,10 +5856,17 @@
     }
 
     items.forEach(it => { if (it.g < it.floor) it.g = it.floor; });
-    // a stated on-hand quantity outranks the minimum portion
+    // ceilings outrank the minimum portion: a stated on-hand quantity, and
+    // the plausibility cap that stops 1.3kg of poblano
     items.forEach(it=>{
-      const cap = onHandCapFor(it.food.key);
-      if (cap != null){ it.cap = cap; if (it.g > cap) it.g = cap; if (it.floor > cap) it.floor = cap; }
+      const stated = onHandCapFor(it.food.key);
+      const plate  = HARD_CAP[it.slot];
+      const cap = (stated != null) ? Math.min(stated, plate || Infinity) : plate;
+      if (cap != null && isFinite(cap)){
+        it.cap = cap;
+        if (it.g > cap) it.g = cap;
+        if (it.floor > cap) it.floor = cap;
+      }
     });
 
     // Rebalance onto the calorie target, never pushing anything back under
@@ -4050,6 +5915,12 @@
           <label>CARB<input type="number" inputmode="numeric" data-ef="${i}|carbs"   value="${c.carbs ?? ''}"   placeholder="0"></label>
           <label>FAT<input type="number" inputmode="numeric" data-ef="${i}|fat"      value="${c.fat ?? ''}"     placeholder="0"></label>
         </div>
+        ${c.per100 ? `<div class="covers-row">
+          <span class="covers-label">AMOUNT</span>
+          <input type="number" class="onhand-qty" data-ef="${i}|grams" value="${c.grams ?? 100}"
+                 inputmode="numeric" min="1" max="5000" aria-label="Grams eaten">
+          <span class="onhand-unit">g</span>
+        </div>` : ''}
         <div class="covers-row">
           <span class="covers-label">THIS WAS MY</span>
           <select data-ef="${i}|covers">
@@ -4074,7 +5945,21 @@
     host.querySelectorAll('[data-ef]').forEach(inp=>{
       const [idx, field] = inp.getAttribute('data-ef').split('|');
       const handler = ()=>{
-        state.eaten[parseInt(idx,10)][field] = inp.value;
+        const row = state.eaten[parseInt(idx,10)];
+        row[field] = inp.value;
+        // a looked-up product knows its per-100g values, so changing the
+        // amount rescales the macros instead of making you redo the maths
+        if (field === 'grams' && row.per100){
+          const g = parseFloat(inp.value);
+          if (g > 0){
+            const f = g / 100;
+            row.kcal    = Math.round(row.per100.kcal * f);
+            row.protein = Math.round(row.per100.protein * f);
+            row.carbs   = Math.round(row.per100.carbs * f);
+            row.fat     = Math.round(row.per100.fat * f);
+            renderEatenPanel();
+          }
+        }
         if (field === 'covers'){ renderMealTimeline(); }
         refreshTargets();
       };
@@ -4160,10 +6045,10 @@
           rows += `
             <div class="slot-row">
               <span class="slot-icon">${i === 0 ? def.icon : '➕'}</span>
-              <select data-meal="${meal.key}" data-slot="${def.slot}" data-index="${i}">
+              <select aria-label="${meal.label} ${def.label} choice" data-meal="${meal.key}" data-slot="${def.slot}" data-index="${i}">
                 ${foodOptions(def.list(), val)}
               </select>
-              ${arr.length > 1 ? `<button class="mini-btn remove" data-remove="${meal.key}|${def.slot}|${i}">✕</button>` : ''}
+              ${arr.length > 1 ? `<button class="mini-btn remove" aria-label="Remove this ${def.label.toLowerCase()}" data-remove="${meal.key}|${def.slot}|${i}">✕</button>` : ''}
             </div>
             <div class="gram-readout" id="gram-${meal.key}-${def.slot}-${i}">${readout}</div>`;
         });
@@ -4299,10 +6184,238 @@
     setBar(document.getElementById('barProtein'), document.getElementById('valProtein'), document.getElementById('numProtein'), totals.protein, tg.protein, 'g');
     setBar(document.getElementById('barCarbs'), document.getElementById('valCarbs'), document.getElementById('numCarbs'), totals.carbs, tg.carbs, 'g');
     setBar(document.getElementById('barFat'), document.getElementById('valFat'), document.getElementById('numFat'), totals.fat, tg.fat, 'g');
+
+    // fibre and sodium sit below the macro bars as plain readouts
+    const micro = microTotals();
+    const fEl = document.getElementById('hudFibre');
+    const sEl = document.getElementById('hudSodium');
+    if (fEl){
+      const target = fibreTarget();
+      fEl.textContent = `FIBRE ${Math.round(micro.fibre)} / ${target}g`;
+      fEl.style.color = micro.fibre >= target ? 'var(--green)' : 'var(--muted)';
+    }
+    if (sEl){
+      const over = micro.sodium > SODIUM_LIMIT;
+      sEl.textContent = `SODIUM ${Math.round(micro.sodium)}mg`;
+      sEl.style.color = over ? 'var(--red)' : 'var(--muted)';
+    }
   }
 
+  /* =========================================================
+     PERSISTENCE
+     Everything is kept in the browser on the device — nothing is uploaded.
+     Wrapped in try/catch because private-browsing modes and some embedded
+     viewers block storage entirely; when that happens the app simply runs
+     without saving rather than breaking.
+  ========================================================= */
+  const SAVE_KEY = 'gfl.state.v1';
+  const SAVE_FIELDS = ['theme','mode','directKcal','directP','directC','directF','goal',
+    'activity','sex','bodyweight','heightIn','age','dayType','exerciseMode','exerciseKcal',
+    'tdee','finalKcal','assignedTierId','selectedTierId','preferences','cravings','mealCount',
+    'favorites','discoveryMode','dislikes','mustUse','mustQty','eatingStyle','selections',
+    'mealPlan','mealWeights','skipBreakfast','breakfastForDinner','breakfastAllDay','uniqueMeals','variety',
+    'eaten','prepServings'];
+
+  let saveTimer = null;
+  function saveState(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      try{
+        const out = {};
+        SAVE_FIELDS.forEach(k => { if (state[k] !== undefined) out[k] = state[k]; });
+        out._savedAt = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(out));
+      }catch(e){ /* storage unavailable — carry on without saving */ }
+    }, 400);
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      SAVE_FIELDS.forEach(k => { if (data[k] !== undefined) state[k] = data[k]; });
+      if (state.mealCount) MEALS = buildMeals(state.mealCount);
+      return !!state.finalKcal;
+    }catch(e){ return false; }
+  }
+
+  function clearSaved(){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  }
+
+  /* Any interaction is worth persisting — cheap, and debounced above */
+  document.addEventListener('change', saveState, true);
+  document.addEventListener('input', saveState, true);
+  document.addEventListener('click', saveState, true);
+
+  /* =========================================================
+     SHOPPING LIST
+     Totals every ingredient across the whole day so you buy once, then
+     multiplies by however many days you're prepping.
+  ========================================================= */
+  function aggregateIngredients(){
+    const totals = {};   // key -> {food, slot, grams}
+    MEALS.forEach(m=>{
+      const plan = computeMealPlan(m.key);
+      SLOT_DEFS.forEach(d=>{
+        state.selections[m.key][d.slot].forEach((k, i)=>{
+          const g = plan[d.slot][i];
+          if (!k || g == null) return;
+          const food = d.list().find(f=>f.key === k);
+          if (!food) return;
+          if (!totals[k]) totals[k] = {food, slot:d.slot, grams:0};
+          totals[k].grams += g;
+        });
+      });
+    });
+    return totals;
+  }
+
+  const SHOP_HEADINGS = {protein:'🍗 PROTEIN', carb:'🍚 CARBS', fat:'🥑 FATS',
+                         veg:'🥦 VEGETABLES', fruit:'🍓 FRUIT', sauce:'🥫 SAUCES'};
+
+  function renderShoppingList(){
+    const host = document.getElementById('shopList');
+    const days = state.prepServings || 1;
+    const totals = aggregateIngredients();
+    const bySlot = {};
+    Object.values(totals).forEach(t=>{ (bySlot[t.slot] = bySlot[t.slot] || []).push(t); });
+
+    const prepNote = document.getElementById('prepNote');
+    if (prepNote){
+      prepNote.innerHTML = days === 1
+        ? 'Quantities are for a single day.'
+        : `Everything below is multiplied by <strong style="color:var(--green)">${days}</strong> — cook once, eat for ${days} days.`;
+    }
+
+    if (!Object.keys(totals).length){
+      host.innerHTML = '<div class="panel"><div class="fav-nores">No ingredients selected yet. Build your meals first.</div></div>';
+      return;
+    }
+
+    host.innerHTML = SLOT_DEFS.map(d=>{
+      const rows = (bySlot[d.slot] || []).sort((a,b)=>b.grams - a.grams);
+      if (!rows.length) return '';
+      return `<div class="panel">
+        <div class="slot-label" style="margin-bottom:10px;">${SHOP_HEADINGS[d.slot] || d.label}</div>
+        ${rows.map(t=>{
+          const g = t.grams * days;
+          const ul = unitLabel(t.food, g);
+          return `<label class="shop-row">
+            <input type="checkbox" class="shop-tick">
+            <span class="shop-name">${t.food.name}</span>
+            <span class="shop-qty">${ul ? ul + ' · ' : ''}${g.toFixed(0)}g</span>
+          </label>`;
+        }).join('')}
+      </div>`;
+    }).join('');
+
+    // seasonings the person typed in are worth carrying to the shop too
+    const notes = MEALS.map(m=>state.selections[m.key].notes).filter(Boolean);
+    if (notes.length){
+      host.innerHTML += `<div class="panel">
+        <div class="slot-label" style="margin-bottom:10px;">🧂 SEASONINGS &amp; EXTRAS</div>
+        <div style="font-size:var(--fs-body); line-height:1.7; color:var(--muted);">${notes.join(' · ')}</div>
+      </div>`;
+    }
+  }
+
+  function shoppingListText(){
+    const days = state.prepServings || 1;
+    const totals = aggregateIngredients();
+    const bySlot = {};
+    Object.values(totals).forEach(t=>{ (bySlot[t.slot] = bySlot[t.slot] || []).push(t); });
+    let out = `SHOPPING LIST — ${days} day${days>1?'s':''}\n`;
+    out += `Daily target ${currentTargets().kcal} kcal\n`;
+    out += `Weights are raw / dry\n\n`;
+    SLOT_DEFS.forEach(d=>{
+      const rows = (bySlot[d.slot] || []).sort((a,b)=>b.grams - a.grams);
+      if (!rows.length) return;
+      out += (SHOP_HEADINGS[d.slot] || d.label).replace(/[^\w\s/&]/g,'').trim() + '\n';
+      rows.forEach(t=>{
+        const g = t.grams * days;
+        const ul = unitLabel(t.food, g);
+        out += `  [ ] ${t.food.name} — ${ul ? ul + ' (' + g.toFixed(0) + 'g)' : g.toFixed(0) + 'g'}\n`;
+      });
+      out += '\n';
+    });
+    const notes = MEALS.map(m=>state.selections[m.key].notes).filter(Boolean);
+    if (notes.length) out += 'SEASONINGS\n  ' + notes.join(', ') + '\n';
+    return out;
+  }
+
+  /* ---- shopping list wiring ---- */
+  const prepGrid = document.getElementById('prepGrid');
+  function renderPrepGrid(){
+    prepGrid.innerHTML = [1,2,3,4,5,6,7].slice(0,4).concat([5,7]).filter((v,i,a)=>a.indexOf(v)===i)
+      .map(n=>`<button class="choice-btn${(state.prepServings||1)===n?' selected':''}" data-prep="${n}"
+        style="min-height:52px; justify-content:center;"><span><strong>${n} ${n===1?'day':'days'}</strong></span></button>`).join('');
+    prepGrid.querySelectorAll('[data-prep]').forEach(b=>b.addEventListener('click',()=>{
+      state.prepServings = parseInt(b.getAttribute('data-prep'),10);
+      renderPrepGrid(); renderShoppingList(); saveState();
+    }));
+  }
+
+  document.getElementById('btnShopping').addEventListener('click', ()=>{
+    renderPrepGrid(); renderShoppingList(); showScreen('screen-shop');
+  });
+
+  document.getElementById('btnCopyList').addEventListener('click', async (e)=>{
+    const btn = e.currentTarget;
+    const txt = shoppingListText();
+    try{
+      await navigator.clipboard.writeText(txt);
+      btn.textContent = '✅ COPIED';
+    }catch(err){
+      // clipboard API needs https and permission — fall back to a selectable box
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.className = 'copy-fallback';
+      btn.parentNode.insertBefore(ta, btn.nextSibling);
+      ta.select();
+      btn.textContent = '👆 SELECT & COPY';
+    }
+    setTimeout(()=>{ btn.textContent = '📋 COPY LIST'; }, 2500);
+  });
+
+  document.getElementById('btnPrintList').addEventListener('click', ()=> window.print());
+
+  /* ---- resume ---- */
+  const resumePanel = document.getElementById('resumePanel');
+  document.getElementById('btnResume').addEventListener('click', ()=>{
+    renderTiers();
+    renderEatenPanel();
+    renderMealTimeline();
+    refreshTargets();
+    showScreen('screen-loadout');
+  });
+  document.getElementById('btnStartOver').addEventListener('click', ()=>{
+    clearSaved();
+    location.reload();
+  });
+
+  document.getElementById('btnStart').addEventListener('click', ()=> showScreen('screen-library'));
+  document.getElementById('attractContinue').addEventListener('click', ()=>{
+    renderTiers(); renderEatenPanel(); renderMealTimeline(); refreshTargets();
+    showScreen('screen-loadout');
+  });
+
   /* init */
-  renderThemePicker();
+  const hadSave = loadState();
+  applyTheme(state.theme || 'cyberpunk');
+  if (hadSave){
+    resumePanel.style.display = '';
+    const cont = document.getElementById('attractContinue');
+    if (cont) cont.style.display = '';
+    try{
+      const when = JSON.parse(localStorage.getItem(SAVE_KEY))._savedAt;
+      const mins = Math.round((Date.now() - when) / 60000);
+      document.getElementById('resumeWhen').textContent =
+        mins < 60 ? `${mins || 1} min ago` :
+        mins < 1440 ? `${Math.round(mins/60)} hr ago` : `${Math.round(mins/1440)} d ago`;
+    }catch(e){}
+  }
+  renderLibrary();
   applyTheme(state.theme);
   renderExerciseOptions();
   showScreen('screen-onboard');
