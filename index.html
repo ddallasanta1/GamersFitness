@@ -991,6 +991,7 @@
         <button class="fav-clear" id="offClear" aria-label="Clear search" style="display:none;">✕</button>
       </div>
       <div id="offResults"></div>
+      <button class="text-link" id="btnOffTest" style="margin-top:0; font-size:11px;">Search not working? Test the connection</button>
       <div id="eatenList"></div>
       <button class="mini-btn add" id="btnAddEaten">+ ADD MANUALLY</button>
     </div>
@@ -4058,6 +4059,55 @@
     }, 350);
   }
 
+  /* ---------------------------------------------------------
+     CONNECTION TEST
+     Whether a browser can reach these endpoints depends on CORS headers
+     the Open Food Facts servers send, which change over time and can't be
+     determined from the code. Rather than guess, this tries each candidate
+     and reports what actually happened, so the app can be pointed at
+     whichever one works.
+  --------------------------------------------------------- */
+  const OFF_CANDIDATES = [
+    {key:'searchalicious', label:'Search-a-licious (text search)',
+     url:'https://search.openfoodfacts.org/search?q=water&page_size=1'},
+    {key:'v2product', label:'Barcode lookup (v2 product)',
+     url:'https://world.openfoodfacts.org/api/v2/product/3017624010701.json?fields=code,product_name'},
+    {key:'v1search', label:'Legacy search (deprecated)',
+     url:'https://world.openfoodfacts.org/cgi/search.pl?search_terms=water&search_simple=1&action=process&json=1&page_size=1'},
+  ];
+
+  async function offTestConnection(){
+    const results = document.getElementById('offResults');
+    results.innerHTML = '<div class="off-status">Testing connections…</div>';
+    const lines = [];
+    for (const c of OFF_CANDIDATES){
+      const started = Date.now();
+      let verdict;
+      try{
+        const ctrl = new AbortController();
+        const bail = setTimeout(()=>ctrl.abort(), 9000);
+        const res = await fetch(c.url, {signal: ctrl.signal});
+        clearTimeout(bail);
+        if (!res.ok){
+          verdict = `<span style="color:var(--amber)">HTTP ${res.status}</span>`;
+        } else {
+          await res.json();
+          verdict = `<span style="color:var(--green)">works</span> (${Date.now()-started}ms)`;
+        }
+      }catch(err){
+        verdict = (err && err.name === 'AbortError')
+          ? '<span style="color:var(--amber)">timed out</span>'
+          : '<span style="color:var(--red)">blocked or unreachable</span>';
+      }
+      lines.push(`<div class="kv"><span>${c.label}</span><span>${verdict}</span></div>`);
+    }
+    results.innerHTML = lines.join('') +
+      `<div class="off-credit">“Blocked or unreachable” almost always means the server
+        didn't send the header a browser needs to allow cross-site requests. That's on
+        their end, not yours — nothing in this app can change it. If one line says
+        <em>works</em>, tell me which and I'll point the search at it.</div>`;
+  }
+
   function offShowFailure(r, results, offerBarcode){
     let msg;
     if (r.netError === 'timeout') msg = 'That search took too long.';
@@ -4126,6 +4176,7 @@
     offClearBtn.style.display = offSearchInput.value ? '' : 'none';
     offSearch(offSearchInput.value);
   });
+  document.getElementById('btnOffTest').addEventListener('click', offTestConnection);
   offClearBtn.addEventListener('click', ()=>{
     offSearchInput.value = '';
     offClearBtn.style.display = 'none';
