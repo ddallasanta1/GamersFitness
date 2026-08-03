@@ -135,6 +135,47 @@
             color:var(--muted); width:38px; height:38px; cursor:pointer; font-size:15px; flex:0 0 auto; }
   .modal-x:active{ color:var(--red); border-color:var(--red); }
   .modal-body{ padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+  /* ---------- Amount editing ---------- */
+  .amt-tap{ display:inline-flex; align-items:center; gap:4px; background:var(--accent-soft);
+            border:1px solid var(--accent-line); border-radius:7px; padding:3px 8px;
+            color:var(--cyan); font-family:var(--font-body); font-size:var(--fs-body);
+            cursor:pointer; min-height:30px; }
+  .amt-tap:active{ background:var(--cyan); color:var(--bg-0); }
+  .amt-tap.set{ border-color:var(--amber); color:var(--amber); }
+  .amt-tap.tiny{ font-size:11px; min-height:0; padding:1px 6px; }
+  .amt-stepper{ display:flex; align-items:center; gap:12px; justify-content:center; margin:10px 0; }
+  .amt-btn{ width:52px; height:52px; border-radius:12px; border:1px solid var(--line);
+            background:var(--panel-2); color:var(--cyan); font-size:24px; line-height:1;
+            cursor:pointer; flex:0 0 auto; }
+  .amt-btn:active{ background:var(--cyan); color:var(--bg-0); }
+  .amt-value{ flex:1; text-align:center; font-family:var(--font-body); font-size:30px;
+              color:var(--text); line-height:1.1; }
+  .amt-value small{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+  .amt-input{ flex:1; text-align:center; background:var(--panel-2); border:1px solid var(--line);
+              border-radius:10px; color:var(--text); padding:12px; font-family:var(--font-body);
+              min-width:0; }
+  .amt-grams{ text-align:center; color:var(--muted); font-family:var(--font-body);
+              font-size:var(--fs-body); }
+  .amt-grams strong{ color:var(--green); }
+
+  /* ---------- Prep days ---------- */
+  .prep-day{ display:block; width:100%; text-align:left; cursor:pointer;
+             font-family:var(--font-body); color:var(--text); }
+  .prep-day:active{ border-color:var(--cyan); }
+  .dish-chips{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 8px; }
+  .dish-chip{ border:1px solid var(--line); border-radius:999px; padding:4px 10px;
+              font-size:11px; line-height:1.4; }
+  .prep-day-go{ font-size:11px; color:var(--muted); letter-spacing:.5px; }
+  .day-strip{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+  .day-chip{ min-width:44px; min-height:44px; border-radius:10px; border:1px solid var(--line);
+             background:var(--panel-2); color:var(--muted); font-family:var(--font-body);
+             font-size:var(--fs-body); cursor:pointer; }
+  .day-chip.on{ border-color:var(--cyan); color:var(--cyan); background:var(--accent-soft); }
+  .pd-row{ display:flex; align-items:center; gap:10px; justify-content:space-between;
+           padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .pd-name{ flex:1; font-family:var(--font-body); font-size:var(--fs-body); }
+  .pd-sub{ font-size:11px; color:var(--muted); margin:-4px 0 4px; }
   .nutri-group{ font-family:var(--font-display); font-size:var(--fs-7); color:var(--muted);
                 letter-spacing:1.5px; margin:16px 0 8px; }
   .nutri-group:first-child{ margin-top:0; }
@@ -337,16 +378,17 @@
   .mustuse-chosen .chip{ border-color:var(--amber)!important; color:var(--amber)!important; background:rgba(255,176,0,0.10)!important; }
   .fav-chosen.mustuse-chosen{ display:block; }
   /* ---- tab tray ---- */
-  .tab-bar{ position:sticky; top:0; z-index:40; display:grid; grid-template-columns:repeat(5,1fr);
-            gap:2px; padding:calc(6px + var(--safe-top)) 6px 6px;
+  .tab-bar{ position:sticky; top:0; z-index:40; display:grid; grid-template-columns:repeat(6,1fr);
+            gap:1px; padding:calc(6px + var(--safe-top)) 4px 6px;
             background:var(--bg-1); border-bottom:1px solid var(--line); }
   .tab-bar[hidden]{ display:none; }
-  .tab{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px;
+  .tab{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 1px;
         min-height:56px; background:transparent; border:0; border-radius:9px;
-        color:var(--muted); cursor:pointer; }
-  .tab .ico{ font-size:17px; line-height:1; }
-  .tab .lbl{ font-family:var(--font-body); font-size:10px; letter-spacing:.3px; line-height:1.2;
-             text-align:center; }
+        color:var(--muted); cursor:pointer; overflow:hidden; }
+  .tab .ico{ font-size:16px; line-height:1; }
+  .tab .lbl{ font-family:var(--font-body); font-size:9px; letter-spacing:0; line-height:1.2;
+             text-align:center; white-space:nowrap; }
+  @media (min-width:420px){ .tab .lbl{ font-size:10px; } .tab .ico{ font-size:17px; } }
   .tab.on{ color:var(--cyan); background:var(--accent-soft); }
   body.tabbed .screen{ padding-top:18px; }
 
@@ -732,6 +774,45 @@
   </div>
 </div>
 
+<div class="modal-wrap" id="modalPrepDay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="prepDayTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="prepDayTitle">DAY 1</span>
+      <button class="modal-x" data-close="modalPrepDay" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="prepDayBody"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalPortion" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="portionTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="portionTitle">AMOUNT</span>
+      <button class="modal-x" data-close="modalPortion" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="portionBody"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalJournalFood" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="jfoodTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="jfoodTitle">ADD FOOD</span>
+      <button class="modal-x" data-close="modalJournalFood" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fav-search-wrap">
+        <input type="text" id="jfoodSearch" class="fav-search" placeholder="🔍  Search the food library"
+               autocomplete="off" aria-label="Search the food library">
+        <button class="fav-clear" id="jfoodClear" aria-label="Clear search" style="display:none;">✕</button>
+      </div>
+      <div id="jfoodPanel"></div>
+      <div id="jfoodList"></div>
+      <button class="mini-btn add" id="jfoodManual" style="margin-top:12px;">✏️ Not in the library — enter it by hand</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-wrap" id="modalRecipePlace" hidden>
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="recipePlaceTitle">
     <div class="modal-head">
@@ -788,6 +869,7 @@
 <nav id="tabBar" class="tab-bar" hidden aria-label="Sections">
   <button class="tab" data-tab="sheet"   aria-label="Character sheet"><span class="ico">🪪</span><span class="lbl" id="tabSheetLbl">Sheet</span></button>
   <button class="tab" data-tab="roadmap" aria-label="Meal prep roadmap"><span class="ico">🗺️</span><span class="lbl">Roadmap</span></button>
+  <button class="tab" data-tab="prep"    aria-label="Prepped days"><span class="ico">🍱</span><span class="lbl">Prep Days</span></button>
   <button class="tab" data-tab="quest"   aria-label="Quest log calendar"><span class="ico">📅</span><span class="lbl">Quest Log</span></button>
   <button class="tab" data-tab="journal" aria-label="Meal journal"><span class="ico">📓</span><span class="lbl">Journal</span></button>
   <button class="tab" data-tab="recipes" aria-label="Recipe book"><span class="ico">📖</span><span class="lbl">Recipes</span></button>
@@ -970,6 +1052,17 @@
   </section>
 
   <!-- QUEST LOG -->
+  <!-- PREP DAYS: the prep laid out day by day -->
+  <section class="screen" id="screen-prep">
+    <div class="eyebrow">MEAL PREP</div>
+    <h1 class="title">Your Prepped Days</h1>
+    <p class="subtitle" id="prepDaysIntro"></p>
+    <div id="prepDayList"></div>
+    <div id="prepDishSummary"></div>
+    <button class="btn-ghost" id="btnPrepReshuffle">🎲 RESHUFFLE THE WHOLE PREP</button>
+    <button class="btn-ghost" id="btnPrepShopping">🧾 SHOPPING LIST FOR THIS PREP</button>
+  </section>
+
   <section class="screen" id="screen-quest">
     <div class="eyebrow">QUEST LOG</div>
     <h1 class="title">Your Calendar</h1>
@@ -1148,8 +1241,20 @@
 
     <div class="panel">
       <label class="field-label">HOW MANY DIFFERENT MEALS DO YOU WANT TO COOK?</label>
-      <div class="choice-grid" id="uniqueGrid" style="grid-template-columns:repeat(3,1fr);"></div>
+      <p class="subtitle" style="font-size:11px; margin:0 0 10px;">
+        Counted across the whole prep, not per day — breakfast, lunch and dinner only.
+      </p>
+      <div class="choice-grid" id="uniqueGrid" style="grid-template-columns:repeat(4,1fr);"></div>
       <p class="subtitle" id="uniqueNote" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
+    </div>
+
+    <div class="panel" id="snackUniquePanel" hidden>
+      <label class="field-label">HOW MANY DIFFERENT SNACKS?</label>
+      <p class="subtitle" style="font-size:11px; margin:0 0 10px;">
+        Snacks are kept apart from your meal count — they have their own rotation.
+      </p>
+      <div class="choice-grid" id="snackUniqueGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+      <p class="subtitle" id="snackUniqueNote" style="font-size:var(--fs-body); margin:12px 0 0;"></p>
     </div>
 
     <div class="panel">
@@ -1246,6 +1351,16 @@
       <button class="mini-btn add" id="btnAddEaten">+ ADD MANUALLY</button>
     </div>
     <div id="customBanner" class="custom-banner" style="display:none;"></div>
+    <div class="panel" id="loadoutDayPanel" hidden>
+      <div class="eaten-head">
+        <span class="eaten-title">🍱 EDITING</span>
+        <span class="eaten-total" id="loadoutDayLbl">Day 1</span>
+      </div>
+      <div class="day-strip" id="loadoutDayStrip"></div>
+      <div class="season-hint">
+        Changing a dish here changes it on every day it's served — that's what makes it a prep.
+      </div>
+    </div>
     <div class="timeline" id="mealTimeline"></div>
     <button class="btn-primary" id="btnShopping">🧾 BUILD SHOPPING LIST</button>
     <p class="subtitle" style="font-size:var(--fs-body); margin-top:14px; opacity:.8;">
@@ -1584,6 +1699,100 @@
     maintain:     "lightly trimmed, since trackers tend to read high",
     gain:         "credited generously to protect your surplus",
   };
+
+  /* ---------------------------------------------------------
+     SEARCH MATCHING
+     Every search box used to do a plain substring test on the food
+     name. That is why searching "egg" offered Eggplant, "oat" offered
+     Goat Cheese and Goat Meat, "pea" offered Pear and Pearl Barley,
+     "ham" offered Nuoc Cham and "bar" offered Barramundi — none of
+     which contain the thing being searched for.
+
+     Match on whole words instead, anchored to the start of a word, so
+     "chick" still finds Chicken but "oat" can no longer find Goat.
+     Plurals count as the same word, compound family names still work
+     ("berries" finds Blueberries), and a short list of known
+     look-alikes is blocked outright.
+  --------------------------------------------------------- */
+  function searchWords(text){
+    let s = String(text == null ? '' : text).toLowerCase();
+    if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return s.split(/[^a-z0-9]+/).filter(Boolean);
+  }
+
+  /* "peas" and "pea", "berries" and "berry" are the same search */
+  function searchSingular(w){
+    if (w.length > 4 && /ies$/.test(w))                     return w.slice(0,-3) + 'y';
+    if (w.length > 4 && /(ses|xes|zes|ches|shes)$/.test(w)) return w.slice(0,-2);
+    if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w))     return w.slice(0,-1);
+    return w;
+  }
+
+  /* Words that start or end like a search term but are a completely
+     different food. Typing the full word still finds them. */
+  const SEARCH_LOOKALIKES = {
+    egg:   ['eggplant','eggplants'],
+    pea:   ['pear','pears','pearl','peach','peaches','peanut','peanuts'],
+    pear:  ['pearl'],
+    bar:   ['barramundi','barley','bartlett'],
+    corn:  ['cornish','acorn'],
+    oat:   ['goat'],
+    nut:   ['nutmeg','nutritional','butternut','donut','doughnut'],
+    ham:   ['hamburger'],
+    bean:  ['beansprout'],
+  };
+
+  /* Foods whose family name lives on the end of a compound word.
+     "berries" should still find Blueberries and "nuts" should still
+     find Walnuts — but this is a fixed list, so "apple" never reaches
+     Pineapple and "egg" never reaches Eggplant. */
+  const SEARCH_FAMILIES = ['berry','melon','nut','fish','pepper','seed','bean',
+                           'pea','corn','milk','cake','bread','noodle','fruit','root'];
+
+  function wordMatchesTerm(word, term){
+    if (word === term) return true;
+    const wS = searchSingular(word), tS = searchSingular(term);
+    if (wS === tS) return true;
+
+    const blocked = SEARCH_LOOKALIKES[term] || SEARCH_LOOKALIKES[tS] || [];
+    if (blocked.includes(word) || blocked.includes(wS)) return false;
+
+    // a deliberate prefix: "chick" -> Chicken, "avo" -> Avocado
+    if (term.length >= 3 && word.startsWith(term)) return true;
+    // a family name on the end of a compound: "berries" -> Blueberries
+    if (SEARCH_FAMILIES.includes(tS) && wS.length > tS.length && wS.endsWith(tS)) return true;
+    return false;
+  }
+
+  /* Every word typed has to land somewhere in the name, so
+     "chicken thigh" finds the thigh and not every bird on the list. */
+  function matchesQuery(text, query){
+    const terms = searchWords(query);
+    if (!terms.length) return true;
+    const words = searchWords(text);
+    if (!words.length) return false;
+    return terms.every(t => words.some(w => wordMatchesTerm(w, t)));
+  }
+
+  /* Last resort only: if the strict pass found nothing at all, fall back
+     to the old loose test rather than leaving someone stranded. This can
+     only ever add results to an empty list. */
+  function looseMatchesQuery(text, query){
+    const q = String(query || '').trim().toLowerCase();
+    return !!q && String(text || '').toLowerCase().includes(q);
+  }
+
+  /* Filter a list of foods by a typed query, strictly, with the loose
+     pass used only when strict comes back empty. */
+  function searchFoods(list, query, extra){
+    const keep = extra || (()=>true);
+    const pool = list.filter(keep);
+    const q = String(query || '').trim();
+    if (!q) return pool;
+    const strict = pool.filter(f => matchesQuery(f.name, q));
+    if (strict.length) return strict;
+    return pool.filter(f => looseMatchesQuery(f.name, q));
+  }
 
   /* DATA: FOOD MATRIX — macro values per 100g.
      tags[] drive dietary-preference filtering: meat, pork, fish, dairy, egg,
@@ -3603,6 +3812,104 @@
        "Toss with nutritional yeast, paprika and salt in a big bowl or a lidded container.",
        "Add the nuts and dried fruit only once the popcorn is completely cool.",
        "Weigh out portions into bags now, not later."]},
+
+    /* ---------- ADDED: a wider bench to prep from ----------
+       A rotation of six or eight dishes across a week needs more than the
+       handful of templates that fitted a single day, or the same few come
+       up every time however good the shuffle is. */
+
+    // ---------- BREAKFAST ----------
+    {name:"Protein Waffles", season:["cinnamon","vanilla"], pattern:"{F} Protein Waffles", form:"Waffles", slots:["breakfast","snack"], crave:["sweet","comfort"],
+     protein:["whey","cottage1","wholeegg","yogurt0"], carb:["protwaffle","waffle","pancakemix","protpancake"], fat:["pb","almondbutter","butter"],
+     fruit:["berries","strawberry","bananamed","blueberrfroz"], veg:[], sauce:[]},
+    {name:"Huevos Rancheros", season:["cumin","chilipwd","cilantro"], pattern:"Huevos Rancheros", form:"Skillet", slots:["breakfast","lunch"], crave:["savory","spicy","comfort"],
+     protein:["wholeegg","blackbeans","queijo","feta"], carb:["corntort6","corntort8","whitecorn"], fat:["avocado","guac","oil"],
+     veg:["tomatoes","onion","peppers","jalapeno"], fruit:[], sauce:["salsa","salsaverde","hotsauce"]},
+    {name:"Breakfast Quesadilla", season:["garlicpwd","blackpepper"], pattern:"{P} Breakfast Quesadilla", form:"Quesadilla", slots:["breakfast","snack"], crave:["savory","comfort"],
+     protein:["wholeegg","cheddar","chicksaus","eggwhites"], carb:["lowcarbtort8","flourtort8","wwtort8","protwrap"], fat:["avocado","butter","oil"],
+     veg:["peppers","onion","spinach","mushrooms"], fruit:[], sauce:["salsa","hotsauce","chipotle"]},
+    {name:"Tofu Scramble", season:["turmeric","garlicpwd","blackpepper"], pattern:"Tofu Scramble with {V}", form:"Skillet", slots:["breakfast"], crave:["savory","comfort"],
+     protein:["tofu","tvp"], carb:["sourdough","ezekiel","potato","hashbrown"], fat:["avocado","oil","avocadooil"],
+     veg:["spinach","peppers","onion","mushrooms","kale"], fruit:[], sauce:["hotsauce","salsa","chilicrisp"]},
+    {name:"Steak & Eggs", season:["blackpepper","rosemary","garlicpwd"], pattern:"{P} & Eggs", form:"Plate", slots:["breakfast","dinner"], crave:["savory","grilled","comfort"],
+     protein:["steak","flatiron","wholeegg","nystrip"], carb:["potato","whitepot","hashbrown","sourdough"], fat:["butter","oil","ghee"],
+     veg:["spinach","mushrooms","cherrytom","asparagus"], fruit:[], sauce:["hotsauce","chimichurri"]},
+    {name:"Banana Nut Butter Toast", season:["cinnamon"], pattern:"{F} & Nut Butter Toast", form:"Toast", slots:["breakfast","snack"], crave:["sweet","nocook","creamy"],
+     protein:["whey","cottage1","yogurt0","skyr"], carb:["protbread","sourdough","ezekiel","ricecakes"], fat:["pb","almondbutter","pbfit","cashewbutter"],
+     fruit:["bananamed","strawberry","berries"], veg:[], sauce:[]},
+
+    // ---------- LUNCH & DINNER ----------
+    {name:"Chicken Tikka Masala", season:["garammasala","turmeric","gingerfresh"], pattern:"Tikka Masala {P}", form:"Curry", slots:["lunch","dinner"], crave:["creamy","spicy","warmbowl","comfort"],
+     protein:["chicken","chickthigh","paneer"], carb:["basmati","rice","naan","jasminebrown"], fat:["heavycream","ghee","coconutmilk"],
+     veg:["onion","tomatoes","peppers","spinach"], fruit:[], sauce:["tikka","curry","mole"]},
+    {name:"Beef Bulgogi", season:["gingerfresh","garlicpwd","ricevinegar"], pattern:"{P} Bulgogi", form:"Bowl", slots:["lunch","dinner"], crave:["savory","sweet","grilled"],
+     protein:["steak","flanksteak","beef93","skirtsteak"], carb:["rice","calrose","sushirice","brownrice"], fat:["sesameoil","sesameseeds"],
+     veg:["onion","carrots","napa","mushrooms","scallion"], fruit:["bartlett","bosc"], sauce:["gochujang","soy","gochugaru"]},
+    {name:"Carnitas Tacos", season:["cumin","limejuice","cilantro","oregano"], pattern:"{P} Tacos", form:"Tacos", slots:["lunch","dinner"], crave:["savory","comfort","spicy"],
+     protein:["porkshould","pork","chicken","chickthigh"], carb:["corntort6","corntort8","whitecorn","flourtort6"], fat:["avocado","guac","sourcream"],
+     veg:["onion","cabbage","romaine","jalapeno","radish"], fruit:["pineapple"], sauce:["salsaverde","salsa","chipotle","hotsauce"]},
+    {name:"Jambalaya", season:["cajunspice","paprika","thyme"], pattern:"{P} Jambalaya", form:"Skillet", slots:["lunch","dinner"], crave:["spicy","savory","comfort","warmbowl"],
+     protein:["andouille","shrimp","chicken","chicksaus"], carb:["rice","parboiled","brownrice","calrose"], fat:["oil","butter"],
+     veg:["peppers","onion","celery","tomatoes","okra"], fruit:[], sauce:["hotsauce","sriracha"]},
+    {name:"Miso Salmon & Rice", season:["gingerfresh","ricevinegar"], pattern:"Miso {P} with {C}", form:"Plate", slots:["lunch","dinner"], crave:["savory","warmbowl","grilled"],
+     protein:["salmon","arcticchar","cod","ahi"], carb:["rice","sushirice","brownrice","calrose"], fat:["sesameoil","avocado","sesameseeds"],
+     veg:["bokchoy","broccolini","edamamepod","snappeas","napa"], fruit:[], sauce:["soy","ponzu","teriyaki"]},
+    {name:"Turkey Taco Salad", season:["tacoseason","cumin","limejuice"], pattern:"{P} Taco Salad", form:"Salad", slots:["lunch","dinner"], crave:["savory","spicy","crunchy","fresh"],
+     protein:["grndturk93","grndturk99","beef93","blackbeans"], carb:["tortchips","lentilchips","rice","corntort6"], fat:["avocado","guac","sourcream"],
+     veg:["romaine","tomatoes","onion","corn","peppers"], fruit:[], sauce:["salsa","chipotleyog","tacoyog","salsaverde"]},
+    {name:"Philly Cheesesteak Bowl", season:["blackpepper","onionpwd","garlicpwd"], pattern:"Cheesesteak Bowl with {C}", form:"Bowl", slots:["lunch","dinner"], crave:["savory","comfort"],
+     protein:["steak","flanksteak","provolone","skirtsteak"], carb:["rice","whitepot","potato","pasta"], fat:["oil","butter"],
+     veg:["peppers","onion","mushrooms"], fruit:[], sauce:["aioli","hotsauce","gravywhite"]},
+    {name:"Chicken Alfredo Bake", season:["italianherb","garlicpwd","blackpepper"], pattern:"{P} Alfredo Bake", form:"Bake", slots:["dinner"], crave:["creamy","comfort","carbheavy"],
+     protein:["chicken","chicktender","mozzarella","ricotta"], carb:["penne","pasta","propasta","macaroni"], fat:["heavycream","butter","oil"],
+     veg:["broccoli","spinach","mushrooms","peas"], fruit:[], sauce:["alfredo","cottagealfredo","marinara"]},
+    {name:"Beef & Barley Soup", season:["thyme","rosemary","blackpepper"], pattern:"{P} & {C} Soup", form:"Soup", slots:["lunch","dinner"], crave:["warmbowl","comfort","savory"],
+     protein:["chuckroast","steak","beef93","brisket"], carb:["barley","farro","orzo","bulgur"], fat:["oil","butter"],
+     veg:["carrots","celery","onion","mushrooms","peas"], fruit:[], sauce:["gravy"]},
+    {name:"Blackened Fish Bowl", season:["cajunspice","paprika","limejuice"], pattern:"Blackened {P} Bowl", form:"Bowl", slots:["lunch","dinner"], crave:["spicy","savory","fresh"],
+     protein:["tilapia","catfish","snapper","cod"], carb:["rice","brownrice","quinoa","calrose"], fat:["avocado","oil","guac"],
+     veg:["cabbage","peppers","corn","romaine","onion"], fruit:["mango"], sauce:["remoulade","chipotle","salsa"]},
+    {name:"Pork Stir-Fry", season:["gingerfresh","garlicpwd","ricevinegar"], pattern:"{P} Stir-Fry with {V}", form:"Stir-Fry", slots:["lunch","dinner"], crave:["savory","warmbowl"],
+     protein:["pork","porkchop","chicken","tofu"], carb:["rice","soba","udon","ricenoodle"], fat:["sesameoil","peanuts","avocadooil"],
+     veg:["broccoli","snowpeas","carrots","peppers","bokchoy"], fruit:[], sauce:["soy","hoisin","oystersauce","sweetchili"]},
+    {name:"Harissa Chicken & Couscous", season:["cumin","parsley","lemonjuice"], pattern:"Harissa {P} with {C}", form:"Plate", slots:["lunch","dinner"], crave:["spicy","savory","warmbowl"],
+     protein:["chicken","chickthigh","lamb","turkey"], carb:["couscous","couscousprl","bulgur","farro"], fat:["oil","tahini","kalamata"],
+     veg:["zucchini","peppers","onion","eggplant","carrots"], fruit:[], sauce:["harissa","zhoug","tzatziki","romesco"]},
+    {name:"Steak Frites", season:["rosemary","blackpepper","seasalt"], pattern:"{P} with {C}", form:"Plate", slots:["dinner"], crave:["savory","grilled","comfort"],
+     protein:["steak","nystrip","flatiron","filet"], carb:["whitepot","sweetpotfries","potato"], fat:["butter","oil","duckfat"],
+     veg:["greenbeans","asparagus","arugula","mushrooms"], fruit:[], sauce:["chimichurri","aioli","gravy","peri"]},
+    {name:"Chicken Pot Pie Bowl", season:["thyme","blackpepper","parsley"], pattern:"{P} Pot Pie Bowl", form:"Bowl", slots:["dinner"], crave:["comfort","creamy","warmbowl"],
+     protein:["chicken","chickthigh","turkey"], carb:["biscuit","whitepot","potato","gnocchi"], fat:["butter","heavycream","oil"],
+     veg:["carrots","peas","celery","onion","mushrooms"], fruit:[], sauce:["gravywhite","gravy"]},
+    {name:"Salmon Salad Bowl", season:["dill","lemonjuice","blackpepper"], pattern:"{P} Salad Bowl", form:"Salad", slots:["lunch","dinner"], crave:["fresh","light","nocook"],
+     protein:["salmon","salmoncan","ahi","smokedsalmon"], carb:["quinoa","farro","sourdough","ricecakes"], fat:["avocado","oil","walnuts"],
+     veg:["arugula","cucumber","cherrytom","greens","radish"], fruit:[], sauce:["greengoddess","balsamic","vinlight","tzatziki"]},
+    {name:"Chili Mac", season:["chilipwd","cumin","onionpwd"], pattern:"{P} Chili Mac", form:"Skillet", slots:["lunch","dinner"], crave:["comfort","spicy","carbheavy"],
+     protein:["beef93","grndturk93","kidneybeans","bison"], carb:["macaroni","pasta","propasta","penne"], fat:["oil","butter"],
+     veg:["onion","peppers","tomatoes","corn"], fruit:[], sauce:["marinara","salsa","hotsauce"]},
+    {name:"Veggie Burger Bowl", season:["paprika","garlicpwd","onionpwd"], pattern:"{P} Burger Bowl", form:"Bowl", slots:["lunch","dinner"], crave:["savory","comfort"],
+     protein:["blackbeans","tofu","tempeh","seitan"], carb:["whitepot","sweetpotfries","quinoa","bread"], fat:["avocado","mayolight","oil"],
+     veg:["romaine","tomatoes","onion","pickles","cucumber"], fruit:[], sauce:["ketchup","mustard","boomboom","thousand"]},
+    {name:"Mongolian Beef", season:["gingerfresh","garlicpwd"], pattern:"Mongolian {P}", form:"Stir-Fry", slots:["lunch","dinner"], crave:["savory","sweet","comfort"],
+     protein:["steak","flanksteak","beef93","skirtsteak"], carb:["rice","calrose","ricenoodle","brownrice"], fat:["sesameoil","peanuts","avocadooil"],
+     veg:["scallion","broccoli","carrots","peppers","onion"], fruit:[], sauce:["soy","hoisin","blackbean"]},
+
+    // ---------- SNACKS ----------
+    {name:"Cottage Cheese & Crackers", season:["everything","blackpepper"], pattern:"Cottage Cheese & {C}", form:"Plate", slots:["snack"], crave:["nocook","crunchy","creamy","savory"],
+     protein:["cottage1","cottage4","quarkcheese","labneh"], carb:["crackers","ricecakes","pretzel","pitachips"], fat:["olives","almonds","kalamata"],
+     veg:["cherrytom","cucumber","peppers","babycarrot"], fruit:[], sauce:["hotsauce"]},
+    {name:"Tuna & Crackers", season:["blackpepper","dill","lemonjuice"], pattern:"{P} & {C}", form:"Plate", slots:["snack","lunch"], crave:["nocook","savory","crunchy","light"],
+     protein:["tunacan","tunapouch","salmoncan","sardines"], carb:["crackers","ricecakes","pitachips","lentilchips"], fat:["mayolight","avocado","olives"],
+     veg:["celery","pickles","cucumber","onion"], fruit:[], sauce:["hotsauce","mustard","sriracha"]},
+    {name:"Chocolate Protein Pudding", season:["cocoapwd","vanilla","cinnamon"], pattern:"Chocolate Protein Pudding", form:"Pudding", slots:["snack","breakfast"], crave:["sweet","creamy","nocook"],
+     protein:["whey","yogurt0","skyr","casein"], carb:["honey","maple","granola","protgranola"], fat:["pb","pbpowder","cacaonibs","darkchoc"],
+     fruit:["berries","bananamed","raspberry","strawberry"], veg:[], sauce:[]},
+    {name:"Egg & Cheese Snack Plate", season:["everything","blackpepper","paprika"], pattern:"Egg & Cheese Plate", form:"Plate", slots:["snack"], crave:["nocook","savory","creamy"],
+     protein:["wholeegg","cheesestick","cheddar","stringcheese"], carb:["crackers","ricecakes","pretzel"], fat:["olives","almonds","avocado"],
+     veg:["cherrytom","cucumber","babycarrot","pickles"], fruit:[], sauce:["hotsauce"]},
+    {name:"Beef Stick & Cheese", season:["blackpepper"], pattern:"{P} & Cheese Snack", form:"Plate", slots:["snack"], crave:["nocook","savory","crunchy"],
+     protein:["beefstick","cheesestick","jerky","turkeyjerky"], carb:["crackers","pretzel","popcorn","lentilchips"], fat:["almonds","cashews","olives"],
+     veg:["babycarrot","cherrytom","pickles"], fruit:[], sauce:["mustard"]},
   ];
 
   /* =========================================================
@@ -4604,7 +4911,11 @@
     journalMeals:0,     // fallback slot count when there's no prep plan
     calDate:null, calMode:'month', calSel:null, journalDate:null,
     recipeQuery:'', recipeFilter:'all', seedRecipe:null,
-    uniqueMeals:null,   // distinct recipes across the day
+    uniqueMeals:null,   // distinct main dishes across the WHOLE prep
+    uniqueSnacks:null,  // distinct snacks across the whole prep, counted apart
+    prep:null,          // {days, mealKeys, snackKeys, meals[], snacks[], schedule[]}
+    activeDay:1,        // which prepped day the loadout screen is editing
+    portionOverrides:{},// mealKey -> slot -> index -> grams the person set by hand
     variety:{protein:2, carb:2, fat:2, veg:3},
     eaten:[],         // day-level manual entries: {name,kcal,protein,carbs,fat,covers}
     eatingStyle:null, // 'consistent' | 'balanced' | 'variety'
@@ -4621,6 +4932,12 @@
     state.mealCount = MEALS.length;
     state.selections = {};
     MEALS.forEach(m => state.selections[m.key] = blankMeal());
+    /* The prep schedules dishes against specific sittings. Change the shape
+       of the day and those slots no longer exist, so the plan has to go
+       rather than linger pointing at meals that aren't there. */
+    state.prep = null;
+    state.portionOverrides = {};
+    state.activeDay = 1;
     reconcileJournalSlots();
   }
 
@@ -4759,6 +5076,41 @@
     return true;
   }
 
+  /* How a dish relates to what was typed.
+       tier 1 — the name says it, or it is the dish's default ingredient:
+                this is a chicken recipe.
+       tier 2 — the ingredient is one of the alternatives further down a
+                slot: the dish can be made with it, but isn't built on it.
+       tier 0 — nothing to do with it.
+     Seasonings count for tier 1: a dish built around garlic is a garlic
+     dish even though garlic is never the headline ingredient. */
+  const RECIPE_SEARCH_SLOTS = ['protein','carb','fat','veg','fruit','sauce'];
+
+  function recipeQueryHit(r, q){
+    if (matchesQuery(r.name, q)) return {tier:1, names:[]};
+
+    let primary = false;
+    const alts = [];
+    RECIPE_SEARCH_SLOTS.forEach(slot=>{
+      (r[slot] || []).forEach((k, i)=>{
+        const f = listFor(slot).find(x=>x.key===k);
+        if (!f || !matchesQuery(f.name, q)) return;
+        if (i === 0) primary = true;
+        else alts.push(shortName(f));
+      });
+    });
+    if (primary) return {tier:1, names:[]};
+
+    // seasonings the dish is built around
+    if ((r.season || []).some(k=>{
+      const f = FOODS.sauce.find(x=>x.key===k);
+      return f && matchesQuery(f.name, q);
+    })) return {tier:1, names:[]};
+
+    if (alts.length) return {tier:2, names:[...new Set(alts)]};
+    return {tier:0, names:[]};
+  }
+
   function renderRecipeBook(){
     const q = (state.recipeQuery || '').trim().toLowerCase();
     const filter = state.recipeFilter || 'all';
@@ -4770,16 +5122,21 @@
       b.addEventListener('click', ()=>{ state.recipeFilter = b.getAttribute('data-rf'); renderRecipeBook(); }));
 
     let list = (filter === 'sauce') ? [] : RECIPES.filter(r=>recipeMatchesFilter(r, filter));
+    /* Searching an ingredient used to return anything that merely allowed it
+       somewhere down its list of alternatives — so "chicken" turned up dishes
+       whose card read "Ground Beef · Tortilla". Dishes actually built on the
+       ingredient come first; ones that can only take it as a swap are held
+       back under their own heading, and say which swap made them match. */
+    let swaps = [];
     if (q){
-      list = list.filter(r=>{
-        if (r.name.toLowerCase().includes(q)) return true;
-        // also match on an ingredient the recipe actually uses
-        return ['protein','carb','fat','veg','sauce'].some(slot=>
-          (r[slot] || []).some(k=>{
-            const f = listFor(slot).find(x=>x.key===k);
-            return f && f.name.toLowerCase().includes(q);
-          }));
+      const built = [], optional = [];
+      list.forEach(r=>{
+        const hit = recipeQueryHit(r, q);
+        if (hit.tier === 1) built.push(r);
+        else if (hit.tier === 2) optional.push({r, names: hit.names});
       });
+      list = built;
+      swaps = optional;
     }
 
     /* Sauces are made in a batch and kept, so they live alongside the dishes
@@ -4788,18 +5145,24 @@
     const sauceHits = (filter === 'sauce' || filter === 'all')
       ? SAUCE_RECIPES.filter(s=>{
           if (!q) return true;
-          return s.name.toLowerCase().includes(q)
-              || s.ingredients.some(x=>x.toLowerCase().includes(q));
+          return matchesQuery(s.name, q)
+              || s.ingredients.some(x=>matchesQuery(x, q));
         })
       : [];
 
-    document.getElementById('recipeCount').innerHTML = (list.length || sauceHits.length)
+    document.getElementById('recipeCount').innerHTML = (list.length || swaps.length || sauceHits.length)
       ? `<strong style="color:var(--green)">${list.length}</strong> of ${RECIPES.length} recipes`
+        + (swaps.length ? ` · <strong style="color:var(--muted)">${swaps.length}</strong> that can take it as a swap` : '')
         + (sauceHits.length ? ` · <strong style="color:var(--amber)">${sauceHits.length}</strong> sauces` : '')
       : `Nothing matches. Try a different word, or clear the filter.`;
 
+    // one array behind both groups so the buttons keep pointing at the right dish
+    const shown = list.concat(swaps.map(s=>s.r));
+    const swapNames = swaps.map(s=>s.names);
+
     const host = document.getElementById('recipeList');
-    host.innerHTML = list.map((r,i)=>{
+    host.innerHTML = shown.map((r,i)=>{
+      const asSwap = i >= list.length ? swapNames[i - list.length] : null;
       const p = recipeProfile(r);
       const ings = ['protein','carb','veg','sauce'].map(slot=>{
         const k = (r[slot] || [])[0];
@@ -4813,9 +5176,12 @@
       if ((r.crave || []).includes('nocook')) tags.push('no cooking');
       if ((r.slots || []).includes('breakfast')) tags.push('breakfast');
       const light = lighterSwaps(r);
-      return `<div class="panel rcard">
+      const head = (asSwap && i === list.length)
+        ? `<div class="sauce-head">CAN BE MADE WITH ${escapeHtml((q || '').toUpperCase())}</div>` : '';
+      return head + `<div class="panel rcard">
         <div class="rname">${escapeHtml(r.name)}</div>
         <div class="rmeta">${escapeHtml(ings.join(' · '))}</div>
+        ${asSwap ? `<div class="rmeta" style="color:var(--muted);">Not built on it — swap in ${escapeHtml(asSwap.join(' or '))}.</div>` : ''}
         <div class="rmeta">~${p.kcal} kcal · ${p.protein}g protein per serving</div>
         <div>${tags.map(t=>`<span class="rtag">${t}</span>`).join('')}</div>
         ${light.saving > 40 ? `<div class="rmeta" style="color:var(--green); margin-top:8px;">
@@ -4849,11 +5215,11 @@
       : '';
 
     host.querySelectorAll('[data-rmake]').forEach(b=>b.addEventListener('click', ()=>{
-      const r = list[parseInt(b.getAttribute('data-rmake'),10)];
+      const r = shown[parseInt(b.getAttribute('data-rmake'),10)];
       if (r) openRecipePlacer(r);
     }));
     host.querySelectorAll('[data-rlight]').forEach(b=>b.addEventListener('click', ()=>{
-      const r = list[parseInt(b.getAttribute('data-rlight'),10)];
+      const r = shown[parseInt(b.getAttribute('data-rlight'),10)];
       if (r) openRecipePlacer(lightenRecipe(r));
     }));
   }
@@ -5026,7 +5392,8 @@
           ${items.length
             ? items.map((it,i)=>`<div class="jrow">
                 <span class="jname">${escapeHtml(it.name)}
-                  <small style="display:block;color:var(--muted);font-size:11px;">P${Math.round(+it.protein||0)} C${Math.round(+it.carbs||0)} F${Math.round(+it.fat||0)}</small>
+                  <small style="display:block;color:var(--muted);font-size:11px;">P${Math.round(+it.protein||0)} C${Math.round(+it.carbs||0)} F${Math.round(+it.fat||0)}${
+                    it._food ? ` · <button class="amt-tap tiny" data-jamtedit="${escapeHtml(sl.name)}|${i}">change amount ✎</button>` : ''}</small>
                 </span>
                 <span class="jkcal">${Math.round(+it.kcal||0)}</span>
                 <button class="mini-btn remove" data-jdel="${escapeHtml(sl.name)}|${i}" aria-label="Remove">✕</button>
@@ -5038,7 +5405,12 @@
       }).join('');
 
     body.querySelectorAll('[data-jadd]').forEach(b=>b.addEventListener('click', ()=>
-      journalAddRow(b.getAttribute('data-jadd'))));
+      openJournalFoodPicker(b.getAttribute('data-jadd'))));
+    // a logged library food keeps its amount editable — tap it to change
+    body.querySelectorAll('[data-jamtedit]').forEach(b=>b.addEventListener('click', ()=>{
+      const [meal, idx] = b.getAttribute('data-jamtedit').split('|');
+      openJournalAmountEditor(meal, parseInt(idx,10));
+    }));
     body.querySelectorAll('[data-jdel]').forEach(b=>b.addEventListener('click', ()=>{
       const [meal, idx] = b.getAttribute('data-jdel').split('|');
       (log.meals[meal] || []).splice(parseInt(idx,10), 1);
@@ -5048,6 +5420,245 @@
       const [mealKey, mealName] = b.getAttribute('data-jplan').split('|');
       journalCopyFromPlan(mealKey, mealName);
     }));
+  }
+
+  /* ---------------------------------------------------------
+     LOGGING FROM THE LIBRARY
+     Typing four macro numbers by hand for a slice of bread you eat every
+     day is busywork. The same inventory the planner draws on is searchable
+     here: pick the food, say how much — in grams, or in slices/eggs/
+     tortillas where the food comes that way — and the numbers follow.
+     Hand entry is still there for anything the library doesn't know.
+  --------------------------------------------------------- */
+  const ALL_FOOD_SLOTS = [
+    {slot:'protein', icon:'🍗', label:'PROTEIN',    list:()=>FOODS.protein},
+    {slot:'carb',    icon:'🍚', label:'CARBS',      list:()=>FOODS.carbs},
+    {slot:'fat',     icon:'🥑', label:'FATS',       list:()=>FOODS.fat},
+    {slot:'veg',     icon:'🥦', label:'VEGETABLES', list:()=>FOODS.veg},
+    {slot:'fruit',   icon:'🍓', label:'FRUIT',      list:()=>FOODS.fruit},
+    {slot:'sauce',   icon:'🥫', label:'SAUCES',     list:()=>FOODS.sauce},
+  ];
+
+  /* Every food in one flat list, tagged with where it came from */
+  let FOOD_INDEX = null;
+  function foodIndex(){
+    if (FOOD_INDEX) return FOOD_INDEX;
+    FOOD_INDEX = [];
+    ALL_FOOD_SLOTS.forEach(d=>{
+      d.list().forEach(f => FOOD_INDEX.push({food:f, slot:d.slot, icon:d.icon, group:d.label}));
+    });
+    return FOOD_INDEX;
+  }
+
+  /* A sensible amount to open on: one unit for unit foods, otherwise the
+     portion the planner would have suggested. */
+  function defaultLogGrams(slot, food){
+    if (food.unit) return food.unit.g * (food.unit.whole ? 1 : 1);
+    const m = minPortion(slot, food);
+    return Math.max(10, Math.round(m / 5) * 5);
+  }
+
+  let jfoodTarget = null;   // {mealName, pick:{food,slot}, grams}
+
+  function openJournalFoodPicker(mealName){
+    jfoodTarget = {mealName, pick:null, grams:0};
+    document.getElementById('jfoodTitle').textContent = 'ADD TO ' + mealName;
+    const box = document.getElementById('jfoodSearch');
+    box.value = '';
+    document.getElementById('jfoodClear').style.display = 'none';
+    document.getElementById('jfoodPanel').innerHTML = '';
+    renderJournalFoodList('');
+    openModal('modalJournalFood');
+    if (window.matchMedia && window.matchMedia('(min-width:640px)').matches && box.focus) box.focus();
+  }
+
+  function renderJournalFoodList(query){
+    const host = document.getElementById('jfoodList');
+    const q = (query || '').trim().toLowerCase();
+    let items = foodIndex();
+    // dietary filters are the person's own, so respect them here too
+    items = items.filter(x => passesPrefs(x.food));
+    if (q){
+      const strict = items.filter(x => matchesQuery(x.food.name, q));
+      // the loose pass only ever rescues an otherwise empty result
+      items = strict.length ? strict : items.filter(x => looseMatchesQuery(x.food.name, q));
+    }
+
+    if (!q){
+      host.innerHTML = `<div class="fav-nores">Start typing to search ${items.length} foods —
+        “chicken”, “bread”, “rice”…</div>`;
+      return;
+    }
+    if (!items.length){
+      host.innerHTML = `<div class="fav-nores">Nothing matches “${escapeHtml(query)}”.
+        You can still enter it by hand below.</div>`;
+      return;
+    }
+
+    // names that start with what was typed come first
+    const rank = name => {
+      const at = name.toLowerCase().indexOf(q);
+      return at < 0 ? 999 : at;   // matched on a word stem, not the literal text
+    };
+    items.sort((a,b)=>
+      rank(a.food.name) - rank(b.food.name) || a.food.name.length - b.food.name.length);
+
+    host.innerHTML = `<div class="fp-group">${items.length} MATCH${items.length===1?'':'ES'}</div>` +
+      items.slice(0, 60).map((x,i)=>`
+        <button class="fp-row" data-jf="${i}">
+          <span class="nm">${x.icon} ${escapeHtml(x.food.name)}</span>
+          <span class="kc">${x.food.kcal} kcal/100g${x.food.unit ? ' · per ' + escapeHtml(x.food.unit.one) : ''}</span>
+        </button>`).join('');
+
+    host.querySelectorAll('[data-jf]').forEach(b=>b.addEventListener('click', ()=>{
+      const x = items[parseInt(b.getAttribute('data-jf'),10)];
+      jfoodTarget.pick = x;
+      jfoodTarget.grams = defaultLogGrams(x.slot, x.food);
+      renderJournalFoodAmount();
+    }));
+  }
+
+  /* Amount step for the chosen food, with the running macros underneath */
+  function renderJournalFoodAmount(){
+    if (!jfoodTarget || !jfoodTarget.pick) return;
+    const {food, slot} = jfoodTarget.pick;
+    const g = jfoodTarget.grams;
+    const unit = food.unit;
+    const units = unit ? g / unit.g : null;
+    const macro = k => food[k] * g / 100;
+    const panel = document.getElementById('jfoodPanel');
+
+    panel.innerHTML = `
+      <div class="panel" style="margin-bottom:14px;">
+        <div style="font-family:var(--font-body); font-size:15px; color:var(--green); margin-bottom:10px;">
+          ${escapeHtml(food.name)}</div>
+
+        ${unit ? `
+          <label class="field-label">HOW MANY ${escapeHtml(unit.many.toUpperCase())}?</label>
+          <div class="amt-stepper">
+            <button class="amt-btn" data-jamt="down" aria-label="Less">−</button>
+            <div class="amt-value"><span>${formatUnits(units)}</span>
+              <small>${escapeHtml(units <= 1 ? unit.one : unit.many)}</small></div>
+            <button class="amt-btn" data-jamt="up" aria-label="More">+</button>
+          </div>
+          <div class="amt-grams">= <strong>${g.toFixed(0)}</strong>g
+            <button class="text-link" id="jfSwitchG" style="display:inline; width:auto; margin:0 0 0 8px; padding:0; font-size:12px;">set grams instead</button>
+          </div>
+        ` : `
+          <label class="field-label">GRAMS</label>
+          <div class="amt-stepper">
+            <button class="amt-btn" data-jamt="down" aria-label="Less">−</button>
+            <input type="number" id="jfGrams" class="amt-input" inputmode="numeric" value="${g.toFixed(0)}" min="0" aria-label="Grams">
+            <button class="amt-btn" data-jamt="up" aria-label="More">+</button>
+          </div>
+        `}
+
+        <div class="kv" style="margin-top:12px;"><span>Calories</span><span>${Math.round(macro('kcal'))} kcal</span></div>
+        <div class="kv"><span>Protein</span><span>${macro('protein').toFixed(1)}g</span></div>
+        <div class="kv"><span>Carbs</span><span>${macro('carbs').toFixed(1)}g</span></div>
+        <div class="kv"><span>Fat</span><span>${macro('fat').toFixed(1)}g</span></div>
+
+        <button class="btn-primary" id="jfAdd" style="margin-top:12px;">ADD TO ${escapeHtml(jfoodTarget.mealName)}</button>
+        <button class="btn-ghost" id="jfBack">← PICK SOMETHING ELSE</button>
+      </div>`;
+
+    const bump = dir=>{
+      if (unit && !jfoodTarget.freeGrams){
+        const s = unitStep(food) * unit.g;
+        jfoodTarget.grams = Math.max(s, jfoodTarget.grams + dir * s);
+      } else {
+        const s = jfoodTarget.grams >= 100 ? 10 : 5;
+        jfoodTarget.grams = Math.max(0, jfoodTarget.grams + dir * s);
+      }
+      renderJournalFoodAmount();
+    };
+    panel.querySelectorAll('[data-jamt]').forEach(b=>b.addEventListener('click', ()=>
+      bump(b.getAttribute('data-jamt') === 'up' ? 1 : -1)));
+
+    const gi = document.getElementById('jfGrams');
+    if (gi) gi.addEventListener('change', ()=>{
+      const v = parseFloat(gi.value);
+      if (isFinite(v) && v >= 0) jfoodTarget.grams = v;
+      renderJournalFoodAmount();
+    });
+    const sw = document.getElementById('jfSwitchG');
+    if (sw) sw.addEventListener('click', ()=>{
+      jfoodTarget.freeGrams = true;
+      jfoodTarget.pick = {food:{...food, unit:null}, slot};
+      renderJournalFoodAmount();
+    });
+
+    document.getElementById('jfBack').addEventListener('click', ()=>{
+      jfoodTarget.pick = null; jfoodTarget.freeGrams = false;
+      panel.innerHTML = '';
+      renderJournalFoodList(document.getElementById('jfoodSearch').value);
+    });
+    const addBtn = document.getElementById('jfAdd');
+    if (jfoodTarget.editIndex != null) addBtn.textContent = 'SAVE THIS AMOUNT';
+    addBtn.addEventListener('click', ()=>{
+      addLibraryFoodToJournal(jfoodTarget.mealName, food, jfoodTarget.grams, jfoodTarget.editIndex);
+      closeModal('modalJournalFood');
+    });
+  }
+
+  function addLibraryFoodToJournal(mealName, food, grams, replaceIndex){
+    const key = state.journalDate || todayKey();
+    const log = dayLog(key);
+    log.meals[mealName] = log.meals[mealName] || [];
+    const mult = grams / 100;
+    const ul = unitLabel(food, grams);
+    const entry = {
+      name: `${food.name} — ${ul ? ul + ' (' + grams.toFixed(0) + 'g)' : grams.toFixed(0) + 'g'}`,
+      kcal: Math.round(food.kcal * mult),
+      protein: +(food.protein * mult).toFixed(1),
+      carbs: +(food.carbs * mult).toFixed(1),
+      fat: +(food.fat * mult).toFixed(1),
+      _food: food.key, _grams: grams,
+    };
+    if (replaceIndex != null && log.meals[mealName][replaceIndex]) log.meals[mealName][replaceIndex] = entry;
+    else log.meals[mealName].push(entry);
+    renderJournal();
+    saveState();
+  }
+
+  /* Search box wiring for the journal food picker */
+  (function wireJournalFoodSearch(){
+    const box = document.getElementById('jfoodSearch');
+    const clear = document.getElementById('jfoodClear');
+    if (!box) return;
+    box.addEventListener('input', ()=>{
+      clear.style.display = box.value ? '' : 'none';
+      if (jfoodTarget) jfoodTarget.pick = null;
+      document.getElementById('jfoodPanel').innerHTML = '';
+      renderJournalFoodList(box.value);
+    });
+    clear.addEventListener('click', ()=>{
+      box.value = ''; clear.style.display = 'none';
+      document.getElementById('jfoodPanel').innerHTML = '';
+      renderJournalFoodList('');
+      if (box.focus) box.focus();
+    });
+    document.getElementById('jfoodManual').addEventListener('click', ()=>{
+      const mealName = jfoodTarget && jfoodTarget.mealName;
+      closeModal('modalJournalFood');
+      if (mealName) journalAddRow(mealName);
+    });
+  })();
+
+  /* Change how much of an already-logged food you actually had */
+  function openJournalAmountEditor(mealName, idx){
+    const log = dayLog(state.journalDate || todayKey());
+    const it = (log.meals[mealName] || [])[idx];
+    if (!it || !it._food) return;
+    const entry = foodIndex().find(x=>x.food.key === it._food);
+    if (!entry) return;
+    jfoodTarget = {mealName, pick:entry, grams: +it._grams || 100, editIndex: idx};
+    document.getElementById('jfoodTitle').textContent = 'CHANGE AMOUNT';
+    document.getElementById('jfoodSearch').value = '';
+    document.getElementById('jfoodClear').style.display = 'none';
+    document.getElementById('jfoodList').innerHTML = '';
+    renderJournalFoodAmount();
+    openModal('modalJournalFood');
   }
 
   /* An empty row the person fills in themselves */
@@ -5081,12 +5692,14 @@
         const f = d.list().find(x=>x.key === k);
         if (!f) return;
         const mult = g / 100;
+        const ul = unitLabel(f, g);
         log.meals[mealName].push({
-          name: `${f.name} — ${g.toFixed(0)}g`,
+          name: `${f.name} — ${ul ? ul + ' (' + g.toFixed(0) + 'g)' : g.toFixed(0) + 'g'}`,
           kcal: Math.round(f.kcal * mult),
           protein: Math.round(f.protein * mult),
           carbs: Math.round(f.carbs * mult),
           fat: Math.round(f.fat * mult),
+          _food: f.key, _grams: g,
         });
         added++;
       });
@@ -5129,6 +5742,207 @@
       log.meals[mealName].splice(idx, 1);
       renderJournal();
     });
+  }
+
+  /* =========================================================
+     PREP DAYS
+     The plan as you'll actually live it: one row per day you're cooking
+     for, each opening the full plate-by-plate breakdown for that day.
+     Dishes repeat across days by design — this is where you see how.
+  ========================================================= */
+  const DISH_COLORS = ['var(--green)','var(--cyan)','var(--amber)','var(--magenta)','#8ab4ff','#ff8a65','#b388ff','#4dd0e1'];
+
+  /* Totals for one day, computed from that day's actual dishes */
+  function prepDayTotals(dayIdx){
+    const out = {kcal:0, protein:0, carbs:0, fat:0};
+    const keep = state.activeDay;
+    applyDayToSelections(dayIdx + 1);
+    MEALS.forEach(m=>{
+      const plan = computeMealPlan(m.key);
+      const sel = state.selections[m.key];
+      SLOT_DEFS.forEach(d=>{
+        (sel[d.slot] || []).forEach((k,i)=>{
+          const g = plan[d.slot][i];
+          if (!k || g == null) return;
+          const f = d.list().find(x=>x.key === k);
+          if (!f) return;
+          out.kcal += f.kcal*g/100; out.protein += f.protein*g/100;
+          out.carbs += f.carbs*g/100; out.fat += f.fat*g/100;
+        });
+      });
+    });
+    applyDayToSelections(keep);
+    return out;
+  }
+
+  /* Which unique dish sits in each sitting on a given day */
+  function prepDayDishes(dayIdx){
+    return MEALS.map(m=>{
+      const ref = dishRefFor(m.key, dayIdx);
+      const dish = dishAt(ref);
+      return {meal:m, ref, dish};
+    });
+  }
+
+  /* A stable colour per unique dish, so you can see the rotation at a glance */
+  function dishColor(ref){
+    if (!ref || !state.prep) return 'var(--green)';
+    const offset = ref.store === 'snacks' ? (state.prep.meals || []).length : 0;
+    return DISH_COLORS[(ref.index + offset) % DISH_COLORS.length];
+  }
+
+  function renderPrepDays(){
+    const host = document.getElementById('prepDayList');
+    const intro = document.getElementById('prepDaysIntro');
+    const summary = document.getElementById('prepDishSummary');
+    if (!host) return;
+
+    if (!prepReady()){
+      intro.textContent = 'No prep built yet.';
+      host.innerHTML = `<div class="panel"><div class="fav-nores">
+        Nothing prepped yet. Head to the Roadmap tab, set how many days you're cooking for
+        and how many different meals you want, and this fills in.</div></div>`;
+      summary.innerHTML = '';
+      return;
+    }
+
+    const p = state.prep;
+    const days = p.schedule.length;
+    const nMeals = p.meals.length, nSnacks = p.snacks.length;
+    intro.innerHTML =
+      `<strong style="color:var(--green)">${nMeals}</strong> different ${nMeals===1?'meal':'meals'}` +
+      (nSnacks ? ` and <strong style="color:var(--green)">${nSnacks}</strong> snack${nSnacks===1?'':'s'}` : '') +
+      `, spread across <strong>${days}</strong> day${days===1?'':'s'}. Tap a day to see it.`;
+
+    host.innerHTML = Array.from({length:days}, (_,d)=>{
+      const t = prepDayTotals(d);
+      const dishes = prepDayDishes(d);
+      const chips = dishes.map(({ref, dish, meal})=>{
+        const label = (dish && dish.dish) || (meal.required ? 'Meal' : 'Snack');
+        return `<span class="dish-chip" style="border-color:${dishColor(ref)}; color:${dishColor(ref)};">${escapeHtml(label)}</span>`;
+      }).join('');
+      return `<button class="panel prep-day" data-prepday-open="${d}">
+        <div class="eaten-head">
+          <span class="eaten-title">DAY ${d+1}</span>
+          <span class="eaten-total">${Math.round(t.kcal)} kcal · P${Math.round(t.protein)}</span>
+        </div>
+        <div class="dish-chips">${chips}</div>
+        <div class="prep-day-go">View this day ›</div>
+      </button>`;
+    }).join('');
+
+    host.querySelectorAll('[data-prepday-open]').forEach(b=>b.addEventListener('click', ()=>
+      openPrepDay(parseInt(b.getAttribute('data-prepday-open'),10))));
+
+    // the shopping side of it: what each unique dish is, and how often it's cooked
+    const uses = {};
+    p.schedule.forEach(row=>{
+      (row.mains || []).forEach(i => uses['meals#'+i] = (uses['meals#'+i]||0)+1);
+      (row.snacks || []).forEach(i => uses['snacks#'+i] = (uses['snacks#'+i]||0)+1);
+    });
+    const line = (dish, ref)=>`<div class="kv">
+        <span style="color:${dishColor(ref)}">${escapeHtml(dish.dish || 'Dish')}</span>
+        <span>×${uses[ref.store+'#'+ref.index] || 0}</span></div>`;
+    summary.innerHTML = `<div class="panel">
+      <div class="slot-label" style="margin-bottom:10px;">🍽️ WHAT YOU'RE COOKING</div>
+      ${p.meals.map((d,i)=>line(d,{store:'meals',index:i})).join('')}
+      ${nSnacks ? `<div class="slot-label" style="margin:14px 0 10px;">🥨 SNACKS</div>` +
+        p.snacks.map((d,i)=>line(d,{store:'snacks',index:i})).join('') : ''}
+      <div class="season-hint" style="margin-top:10px;">
+        Each count is how many servings of that dish the prep needs.
+      </div>
+    </div>`;
+  }
+
+  function openPrepDay(dayIdx){
+    if (!prepReady()) return;
+    writeBackActiveDay();
+    const keep = state.activeDay;
+    applyDayToSelections(dayIdx + 1);
+
+    const tg = currentTargets();
+    const t = prepDayTotals(dayIdx);
+    document.getElementById('prepDayTitle').textContent = `DAY ${dayIdx+1}`;
+
+    const body = document.getElementById('prepDayBody');
+    body.innerHTML = `
+      <div class="panel">
+        <div class="eaten-head">
+          <span class="eaten-title">DAY TOTAL</span>
+          <span class="eaten-total">${Math.round(t.kcal)}${tg.kcal ? ' / ' + tg.kcal : ''} kcal</span>
+        </div>
+        <div class="kv"><span>Protein</span><span>${Math.round(t.protein)}g${tg.protein ? ' / ' + tg.protein + 'g' : ''}</span></div>
+        <div class="kv"><span>Carbs</span><span>${Math.round(t.carbs)}g${tg.carbs ? ' / ' + tg.carbs + 'g' : ''}</span></div>
+        <div class="kv"><span>Fat</span><span>${Math.round(t.fat)}g${tg.fat ? ' / ' + tg.fat + 'g' : ''}</span></div>
+      </div>
+    ` + MEALS.map(meal=>{
+      const ref = dishRefFor(meal.key, dayIdx);
+      const sel = state.selections[meal.key];
+      const plan = computeMealPlan(meal.key);
+      let rows = '';
+      SLOT_DEFS.forEach(def=>{
+        const parts = (sel[def.slot] || []).map((k,i)=>{
+          const g = plan[def.slot][i];
+          if (!k || g == null) return null;
+          const food = def.list().find(f=>f.key === k);
+          if (!food) return null;
+          const ul = unitLabel(food, g);
+          return `<div class="pd-row">
+            <span class="pd-name">${def.icon} ${escapeHtml(food.name)}</span>
+            <button class="amt-tap" data-pd-amt="${meal.key}|${def.slot}|${i}"
+              aria-label="Change the amount of ${escapeHtml(food.name)}">${ul ? ul : g.toFixed(0)+'g'} ✎</button>
+          </div>${ul ? `<div class="pd-sub">${g.toFixed(0)}g</div>` : ''}`;
+        }).filter(Boolean);
+        rows += parts.join('');
+      });
+      const season = (sel.season || []);
+      return `<div class="panel">
+        <div style="font-size:11px; color:var(--cyan); letter-spacing:1px; margin-bottom:4px;">${meal.label}${meal.required ? '' : ' (OPTIONAL)'}</div>
+        ${sel.dish ? `<div style="font-family:var(--font-body); font-size:15px; color:${dishColor(ref)}; margin-bottom:8px;">🍽️ ${escapeHtml(sel.dish)}</div>` : ''}
+        ${rows || '<div class="fav-nores">Nothing planned for this sitting.</div>'}
+        ${season.length ? `<div class="season-hint">🧂 Season with: <strong style="color:var(--amber)">${season.map(escapeHtml).join(' · ')}</strong></div>` : ''}
+        ${sel.notes ? `<div class="season-hint">📝 ${escapeHtml(sel.notes)}</div>` : ''}
+      </div>`;
+    }).join('') + `
+      <button class="btn-ghost" id="pdEditDay">✏️ EDIT THIS DAY</button>
+      <button class="btn-ghost" id="pdLogDay">📓 LOG THIS DAY TO THE JOURNAL</button>`;
+
+    body.querySelectorAll('[data-pd-amt]').forEach(b=>b.addEventListener('click', ()=>{
+      const [mealKey, slot, idx] = b.getAttribute('data-pd-amt').split('|');
+      openPortionEditor(mealKey, slot, parseInt(idx,10), ()=>{
+        openPrepDay(dayIdx); renderPrepDays();
+      });
+    }));
+    document.getElementById('pdEditDay').addEventListener('click', ()=>{
+      closeModal('modalPrepDay');
+      applyDayToSelections(dayIdx + 1);
+      renderEatenPanel(); renderMealTimeline(); refreshTargets();
+      showScreen('screen-loadout');
+    });
+    document.getElementById('pdLogDay').addEventListener('click', ()=>{
+      logPrepDayToJournal(dayIdx);
+      closeModal('modalPrepDay');
+    });
+
+    openModal('modalPrepDay');
+    // the modal reads from the working copy, so leave it where it was found
+    applyDayToSelections(keep);
+  }
+
+  /* Drop a whole prepped day into today's journal in one go */
+  function logPrepDayToJournal(dayIdx){
+    const keep = state.activeDay;
+    applyDayToSelections(dayIdx + 1);
+    const slots = journalSlots() || [];
+    MEALS.forEach((meal, mi)=>{
+      const slotName = (slots[mi] || {}).name || meal.name;
+      journalCopyFromPlan(meal.key, slotName);
+    });
+    applyDayToSelections(keep);
+    state.journalDate = todayKey();
+    renderJournal();
+    goTab('journal');
+    saveState();
   }
 
   /* =========================================================
@@ -5331,6 +6145,7 @@
   const TABS = {
     sheet:   {screen:'screen-tiers'},
     roadmap: {screen:'screen-prefs'},
+    prep:    {screen:'screen-prep'},
     quest:   {screen:'screen-quest'},
     journal: {screen:'screen-journal'},
     recipes: {screen:'screen-recipes'},
@@ -5340,6 +6155,7 @@
     'screen-tiers':'sheet',
     'screen-prefs':'roadmap', 'screen-cravings':'roadmap', 'screen-style':'roadmap',
     'screen-suggest':'roadmap', 'screen-loadout':'roadmap', 'screen-shop':'roadmap',
+    'screen-prep':'prep',
     'screen-quest':'quest', 'screen-journal':'journal', 'screen-recipes':'recipes',
   };
 
@@ -5376,6 +6192,7 @@
       }
       renderPrefs();
     }
+    if (name === 'prep'){ writeBackActiveDay(); renderPrepDays(); }
     if (name === 'quest')   renderCalendar();
     if (name === 'journal') renderJournal();
     if (name === 'recipes') renderRecipeBook();
@@ -5965,12 +6782,14 @@
   document.querySelectorAll('[data-close]').forEach(b=>
     b.addEventListener('click', ()=> closeModal(b.getAttribute('data-close'))));
   // tapping the dimmed area closes too
-  ['modalHow','modalStats','modalSystem','modalRecipePlace','modalFoodPick'].forEach(id=>{
+  const ALL_MODALS = ['modalHow','modalStats','modalSystem','modalRecipePlace','modalFoodPick',
+                      'modalPrepDay','modalPortion','modalJournalFood'];
+  ALL_MODALS.forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', e=>{ if (e.target === el) closeModal(id); });
   });
   document.addEventListener('keydown', e=>{
-    if (e.key === 'Escape'){ ['modalHow','modalStats','modalSystem','modalRecipePlace','modalFoodPick'].forEach(closeModal); }
+    if (e.key === 'Escape'){ ALL_MODALS.forEach(closeModal); }
   });
   document.getElementById('btnHowWorked').addEventListener('click', ()=> openModal('modalHow'));
   document.getElementById('btnFullStats').addEventListener('click', ()=> openModal('modalStats'));
@@ -6137,7 +6956,7 @@
     favPicker.innerHTML = FAV_CATS.map(cat=>{
       const chosen = favKeys(cat.slot);
       let foods = listFor(cat.slot).filter(passesPrefs).filter(f => !isDisliked(f));
-      if (searching) foods = foods.filter(f => f.name.toLowerCase().includes(q));
+      if (searching) foods = searchFoods(foods, q);
       totalMatches += foods.length;
 
       // while searching, hide categories with no hits and open the ones with
@@ -6309,11 +7128,21 @@
     const hits = [];
     ALL_SLOTS.forEach(sl=>{
       listFor(sl).forEach(f=>{
-        if (f.name.toLowerCase().includes(q)
+        if (matchesQuery(f.name, q)
             && !(state.mustUse||[]).includes(f.key)
             && !isDisliked(f) && passesPrefs(f)) hits.push(f);
       });
     });
+    if (!hits.length){
+      // strict pass found nothing — try the loose one before giving up
+      ALL_SLOTS.forEach(sl=>{
+        listFor(sl).forEach(f=>{
+          if (looseMatchesQuery(f.name, q)
+              && !(state.mustUse||[]).includes(f.key)
+              && !isDisliked(f) && passesPrefs(f)) hits.push(f);
+        });
+      });
+    }
     if (!hits.length){
       mustResults.innerHTML = `<div class="fav-nores">Nothing matches “${mustQuery}”. Check whether a dietary filter or a blocked food is hiding it.</div>`;
       return;
@@ -6370,11 +7199,20 @@
     const hits = [];
     ALL_SLOTS.forEach(sl=>{
       listFor(sl).forEach(f=>{
-        if (f.name.toLowerCase().includes(q) && !(state.dislikes||[]).includes(f.key)){
+        if (matchesQuery(f.name, q) && !(state.dislikes||[]).includes(f.key)){
           hits.push({slot:sl, food:f});
         }
       });
     });
+    if (!hits.length){
+      ALL_SLOTS.forEach(sl=>{
+        listFor(sl).forEach(f=>{
+          if (looseMatchesQuery(f.name, q) && !(state.dislikes||[]).includes(f.key)){
+            hits.push({slot:sl, food:f});
+          }
+        });
+      });
+    }
     if (!hits.length){
       dislikeResults.innerHTML = `<div class="fav-nores">Nothing matches “${dislikeQuery}”.</div>`;
       return;
@@ -7024,9 +7862,9 @@
   }
 
   function derivedStyle(){
-    const meals = MEALS.length;
-    const uniq = Math.min(state.uniqueMeals || meals, meals);
-    const mealRatio = meals > 1 ? (uniq - 1) / (meals - 1) : 0;
+    const cap = maxUniqueMeals();
+    const uniq = clampUniqueMeals();
+    const mealRatio = cap > 1 ? (uniq - 1) / (cap - 1) : 0;
     const varRatio = VARIETY_CATS.reduce((a,c)=>
       a + (varietyOf(c.slot) - 1) / (c.max - 1), 0) / VARIETY_CATS.length;
     const score = mealRatio * 0.55 + varRatio * 0.45;
@@ -7088,22 +7926,55 @@
       ? `Your ${tg.kcal} kcal splits into: <strong style="color:var(--green)">${parts.join(' · ')}</strong> kcal.`
       : '';
 
-    // unique meals
-    const meals = MEALS.length;
-    if (!state.uniqueMeals || state.uniqueMeals > meals) state.uniqueMeals = Math.min(meals, 3);
-    uniqueGrid.innerHTML = Array.from({length:meals}, (_,i)=>i+1).map(n=>
-      `<button class="choice-btn${state.uniqueMeals===n?' selected':''}" data-uniq="${n}"
+    /* ---- UNIQUE MEALS ----
+       This is a variety dial for the whole prep, not a per-day schedule.
+       Its ceiling is every main sitting across every day being different. */
+    const mains2 = mainSittings();
+    const capMeals = maxUniqueMeals();
+    state.uniqueMeals = clampUniqueMeals();
+    const u = state.uniqueMeals;
+    uniqueGrid.innerHTML = Array.from({length:capMeals}, (_,i)=>i+1).map(n=>
+      `<button class="choice-btn${u===n?' selected':''}" data-uniq="${n}"
          style="min-height:52px; justify-content:center;"><span><strong>${n}</strong></span></button>`).join('');
     uniqueGrid.querySelectorAll('[data-uniq]').forEach(b=>b.addEventListener('click',()=>{
       state.uniqueMeals = parseInt(b.getAttribute('data-uniq'),10);
       renderStyle();
     }));
-    const u = state.uniqueMeals;
-    const totalSittings = meals * days;
-    uniqueNote.innerHTML = u === meals
-      ? `Every sitting is a different dish — <strong style="color:var(--green)">${u}</strong> recipes to cook.`
-      : `<strong style="color:var(--green)">${u}</strong> recipe${u>1?'s':''} covering ${meals} sittings a day` +
-        (days>1 ? ` — ${totalSittings} servings in total.` : '.');
+    const totalMainServings = mains2 * days;
+    uniqueNote.innerHTML =
+      `<strong style="color:var(--green)">${u}</strong> different ${u===1?'dish':'dishes'} covering ` +
+      `<strong>${totalMainServings}</strong> main sitting${totalMainServings>1?'s':''} ` +
+      (days>1 ? `across ${days} days. ` : `today. `) +
+      (u >= totalMainServings
+        ? 'Nothing repeats — every sitting is its own recipe.'
+        : `Each dish gets cooked about ${(totalMainServings/u).toFixed(1)} time${totalMainServings/u>=2?'s':''} over the prep.`) +
+      (snackSittings() ? ' Snacks are counted separately below.' : '');
+
+    /* ---- UNIQUE SNACKS ----
+       Only asked when the day actually has snacks in it. */
+    const snackPanel = document.getElementById('snackUniquePanel');
+    const snackGrid  = document.getElementById('snackUniqueGrid');
+    const snackNote  = document.getElementById('snackUniqueNote');
+    const capSnacks = maxUniqueSnacks();
+    if (!capSnacks){
+      if (snackPanel) snackPanel.hidden = true;
+    } else if (snackPanel){
+      snackPanel.hidden = false;
+      state.uniqueSnacks = clampUniqueSnacks();
+      const su = state.uniqueSnacks;
+      snackGrid.innerHTML = Array.from({length:capSnacks}, (_,i)=>i+1).map(n=>
+        `<button class="choice-btn${su===n?' selected':''}" data-usnack="${n}"
+           style="min-height:52px; justify-content:center;"><span><strong>${n}</strong></span></button>`).join('');
+      snackGrid.querySelectorAll('[data-usnack]').forEach(b=>b.addEventListener('click',()=>{
+        state.uniqueSnacks = parseInt(b.getAttribute('data-usnack'),10);
+        renderStyle();
+      }));
+      snackNote.innerHTML =
+        `<strong style="color:var(--green)">${su}</strong> different snack${su>1?'s':''} covering ` +
+        `<strong>${capSnacks}</strong> snack slot${capSnacks>1?'s':''}` +
+        (days>1 ? ` across ${days} days.` : ' today.') +
+        ' These don\'t come out of your meal count.';
+    }
 
     // ingredient variety
     varietyRows.innerHTML = VARIETY_CATS.map(c=>{
@@ -7231,14 +8102,6 @@
   }
 
 
-  /* Which slot a food key belongs to */
-  function slotOf(key){
-    for (const sl of ['protein','carb','fat','veg','fruit','sauce']){
-      if (listFor(sl).some(f=>f.key === key)) return sl;
-    }
-    return null;
-  }
-
   function isDisliked(food){
     return !!food && (state.dislikes || []).includes(food.key);
   }
@@ -7301,6 +8164,48 @@
     return food.kcal * servingFor(slot, food) / 100;
   }
 
+  /* ---------------------------------------------------------
+     CAN THIS FOOD CARRY A MEAL?
+     A protein target isn't missed by bad arithmetic, it's missed by the
+     wrong ingredient. Plain kefir is 3.3g protein per 100g, so 45g of
+     protein means 1.4kg of it — past every sane cap, and 560 kcal before
+     anything else reaches the plate. Dry beans and oxtail have the same
+     problem more quietly.
+
+     What matters is what a food charges in calories per gram of protein:
+     chicken breast about 5, salmon 10, cheddar 16, dry pinto beans 17. The
+     ceiling is derived from the person's own numbers rather than fixed, so
+     a bulk at 3000 kcal can afford ribeye and a hard cut at 1800 can't.
+  --------------------------------------------------------- */
+  function proteinCostKcal(food){
+    if (!food || !(food.protein > 0)) return Infinity;
+    return food.kcal / food.protein;
+  }
+
+  /* How much of a meal's calories may go on its protein source */
+  const PROTEIN_KCAL_SHARE = 0.80;
+
+  function proteinCostCeiling(){
+    const tg = currentTargets();
+    if (!tg.protein || !tg.kcal) return Infinity;
+    return (tg.kcal / tg.protein) * PROTEIN_KCAL_SHARE;
+  }
+
+  /* Could this food deliver its share of the day's protein without eating
+     the whole meal? Share cancels out, so one test serves every sitting. */
+  function carriesProtein(food){
+    return proteinCostKcal(food) <= proteinCostCeiling();
+  }
+
+  /* Keep the foods that can carry the meal, unless none can — a vegan on a
+     hard cut may genuinely have nothing efficient left, and a plate of
+     something beats a plate of nothing. */
+  function preferCarriers(pool){
+    if (!pool || pool.length < 2) return pool;
+    const good = pool.filter(carriesProtein);
+    return good.length ? good : pool;
+  }
+
   /* Pick a food: honor prefs, respect favorites/discovery, prefer craving
      matches, keep portions realistic, and avoid repeats when asked.
      hardFilter is absolute — if nothing survives it, nothing is returned. */
@@ -7316,10 +8221,10 @@
     if (!pool.length) pool = avail;
 
     const onHand = pool.filter(isMustUse);
-    if (onHand.length) pool = onHand;
+    if (onHand.length && (onHand.length === pool.length || Math.random() < 0.82)) pool = onHand;
 
     const craved = pool.filter(matchesCraving);
-    if (craved.length) pool = craved;
+    if (craved.length && (craved.length === pool.length || Math.random() < 0.75)) pool = craved;
 
     // aromatics and sweeteners are real ingredients but poor standalone
     // picks — nobody plates 30g of garlic or calls maple syrup their carb
@@ -7336,6 +8241,7 @@
 
     // ...or that would eat most of the meal's calories on its own
     if (slot === 'protein'){
+      pool = preferCarriers(pool);
       const roomy = pool.filter(f => servingKcal(slot, f) <= currentTargets().kcal * 0.30 * 0.75);
       if (roomy.length) pool = roomy;
       // whey is the only powder ever suggested; casein and plant blends stay
@@ -7348,7 +8254,9 @@
       const fresh = pool.filter(f => !usedKeys.has(f.key));
       if (fresh.length) pool = fresh;
     }
-    return pool[Math.floor(Math.random() * pool.length)];
+    const notLast = pool.filter(f => !LAST_DRAW.foods.has(f.key));
+    if (notLast.length) pool = notLast;
+    return randOf(pool);
   }
 
   /* Sauces the person's goal can afford */
@@ -7431,14 +8339,35 @@
   /* An empty placeholder can leave orphaned connectives behind —
      "{S}-Glazed Chicken" with no sauce becomes "-Glazed Chicken". */
   function tidyTitle(str){
-    return str
+    return dedupeWords(str
       .replace(/(^|\s)[-&,]+\s*/g, '$1')       // leading hyphens/ampersands
       .replace(/\s+[-&,]+(\s|$)/g, '$1')        // trailing ones
       .replace(/\b(with|over|on|and)\s+(with|over|on|and)\b/gi, '$1')
       .replace(/\s+(with|over|on|&|and)\s*$/i, '')  // dangling preposition
       .replace(/^\s*(with|over|on|and)\s+/i, '')
       .replace(/\s{2,}/g, ' ')
-      .trim();
+      .trim());
+  }
+
+  /* A pattern like "{P} Eggs" filled with "Egg" reads "Egg Eggs". Drop a
+     word when the one beside it is the same, or the same in the plural. */
+  function dedupeWords(str){
+    const words = str.split(' ');
+    const out = [];
+    const same = (a, b)=>{
+      const x = a.toLowerCase(), y = b.toLowerCase();
+      return x === y || x + 's' === y || y + 's' === x || x + 'es' === y || y + 'es' === x;
+    };
+    words.forEach(w=>{
+      const prev = out[out.length-1];
+      if (prev && same(prev, w)){
+        // keep whichever form is longer, so "Egg Eggs" ends up "Eggs"
+        if (w.length > prev.length) out[out.length-1] = w;
+        return;
+      }
+      out.push(w);
+    });
+    return out.join(' ');
   }
 
   function dishTitle(recipe, sel){
@@ -7553,10 +8482,59 @@
     return true;
   }
 
+  /* ---------------------------------------------------------
+     SHUFFLE RANDOMNESS
+     Scores used to decide the winner outright — highest total took the
+     slot every time. Because an on-hand ingredient is worth +12 and a
+     starred one +2.5, one recipe could out-score the field by a margin no
+     amount of jitter would ever close, so shuffle returned the same dish
+     forever. Scores now set a *probability* instead: a strong recipe comes
+     up often, but never always. The same fix is applied to ingredients.
+  --------------------------------------------------------- */
+
+  /* Draw from {item, s} pairs, treating the score as a preference weight.
+     Scores are shifted positive and put through a power curve — `sharp`
+     high means "usually the best one", low means "genuinely mixed". */
+  function weightedPick(scored, sharp){
+    if (!scored || !scored.length) return null;
+    if (scored.length === 1) return scored[0].item;
+    const k = sharp == null ? 1.6 : sharp;
+    let min = Infinity, max = -Infinity;
+    scored.forEach(x=>{ if (x.s < min) min = x.s; if (x.s > max) max = x.s; });
+    const span = max - min;
+    // everything level — a flat draw is the honest answer
+    if (!(span > 0.0001)) return scored[Math.floor(Math.random()*scored.length)].item;
+    let total = 0;
+    const w = scored.map(x=>{
+      const norm = (x.s - min) / span;            // 0..1
+      const weight = Math.pow(norm, k) + 0.12;    // floor keeps every option live
+      total += weight;
+      return weight;
+    });
+    let r = Math.random() * total;
+    for (let i = 0; i < w.length; i++){ r -= w[i]; if (r <= 0) return scored[i].item; }
+    return scored[scored.length-1].item;
+  }
+
+  /* Plain random choice, used everywhere a list is already filtered */
+  function randOf(arr){
+    return (arr && arr.length) ? arr[Math.floor(Math.random()*arr.length)] : null;
+  }
+
+  /* What the last draw produced. Shuffle deliberately steers away from it,
+     which is the whole point of pressing the button twice. */
+  const LAST_DRAW = {recipes:new Set(), foods:new Set()};
+  function rememberDraw(recipeNames, foodKeys){
+    LAST_DRAW.recipes = new Set(recipeNames);
+    LAST_DRAW.foods = new Set(foodKeys);
+  }
+
   /* Score a recipe: favorites it can use, cravings it matches, and a nudge
      away from whatever was served earlier today. */
   function scoreRecipe(recipe, usedNames){
     let score = Math.random() * 0.8;
+    // whatever came up last time steps aside so a second press changes things
+    if (LAST_DRAW.recipes.has(recipe.name)) score -= 4;
     // on-hand ingredients outrank favourites — they have to be used up
     (state.mustUse || []).forEach(k=>{
       const sl = slotOf(k);
@@ -7608,15 +8586,20 @@
     if (guard) opts = opts.filter(guard);
     if (!opts.length) return null;
 
+    /* On-hand food used to return immediately and favorites replaced the
+       pool outright, so a slot with exactly one starred item served that
+       item on every shuffle for ever. They're strong preferences now, not
+       locks — the rest of the pool stays reachable. */
     const onHand = opts.filter(isMustUse);
-    if (onHand.length) return onHand[Math.floor(Math.random() * onHand.length)];
+    if (onHand.length && (opts.length === onHand.length || Math.random() < 0.82))
+      return randOf(onHand);
 
     const favs = favKeys(slot);
     const faved = opts.filter(f => favs.includes(f.key));
-    if (faved.length) opts = faved;
+    if (faved.length && (faved.length === opts.length || Math.random() < 0.72)) opts = faved;
     else {
       const craved = opts.filter(matchesCraving);
-      if (craved.length) opts = craved;
+      if (craved.length && (craved.length === opts.length || Math.random() < 0.75)) opts = craved;
     }
     // On a deficit, high-protein swaps (Barilla Protein+, edamame pasta,
     // low-carb tortillas) let you eat a full serving and still hit protein,
@@ -7634,76 +8617,258 @@
       if (sane.length) opts = sane;
     }
     if (slot === 'protein'){
+      opts = preferCarriers(opts);
       const roomy = opts.filter(f => servingKcal(slot, f) <= currentTargets().kcal * 0.30 * 0.75);
       if (roomy.length) opts = roomy;
     }
-    return opts[Math.floor(Math.random() * opts.length)];
+    // prefer something other than last shuffle's answer, when there is one
+    const fresh = opts.filter(f => !LAST_DRAW.foods.has(f.key));
+    if (fresh.length) opts = fresh;
+    return randOf(opts);
   }
 
+  /* ---------------------------------------------------------
+     HOW MANY OF EACH DISH, AND WHEN
+     "6 unique meals over 7 days" doesn't mean six sittings a day — it means
+     six recipes shared out over the week. Sittings are grouped by the role
+     they have to play (breakfast / lunch / dinner) and each group is given
+     a share of the unique count, so a group with two dishes alternates day
+     to day and a group with one repeats. Snacks get their own budget and
+     never eat into the meal count.
+  --------------------------------------------------------- */
+  function splitEvenly(total, buckets){
+    const out = Array.from({length:buckets}, ()=>Math.floor(total / buckets));
+    let extra = total - out.reduce((a,b)=>a+b, 0);
+    for (let i = 0; extra > 0; i = (i+1) % buckets){ out[i]++; extra--; }
+    return out;
+  }
+
+  /* Group the day's sittings and say how many distinct dishes each gets.
+     Returns [{indexes:[sitting positions], role, count}] */
+  function dishGroups(sittings, unique, roleFor){
+    const n = sittings.length;
+    if (!n) return [];
+    const groups = [];
+    if (unique >= n){
+      // every sitting keeps its own identity — breakfast stays breakfast
+      const counts = splitEvenly(unique, n);
+      for (let i = 0; i < n; i++){
+        groups.push({indexes:[i], role: roleFor(sittings[i], i), count: Math.max(1, counts[i])});
+      }
+      return groups;
+    }
+    /* Fewer dishes than sittings — some sittings have to share one. Sittings
+       are bundled in order and a bundle spanning breakfast and dinner has to
+       be a dish that reads well at both. */
+    const sizes = splitEvenly(n, unique);
+    let cursor = 0;
+    sizes.forEach(size=>{
+      const indexes = [];
+      for (let k = 0; k < size; k++) indexes.push(cursor++);
+      const roles = new Set(indexes.map(i => roleFor(sittings[i], i)));
+      const role = roles.size > 1
+        ? (roles.has('breakfast') ? 'universal' : 'dinner')
+        : [...roles][0];
+      groups.push({indexes, role, count:1});
+    });
+    return groups;
+  }
+
+  /* A two-meal day runs BREAKFAST then DINNER, so the second sitting isn't
+     always lunch — go by the name the plan gave it, not its position. */
+  const mainRoleFor = (m, idx) => {
+    const n = (m && m.name) || '';
+    if (n === 'BREAKFAST') return 'breakfast';
+    if (n === 'LUNCH') return 'lunch';
+    return 'dinner';
+  };
+
+  /* Choose the recipes, build the dishes, and deal them across the days.
+     Everything the rest of the app reads lives on state.prep. */
   function generateSuggestion(){
     const usedNames = new Set();
-    const meals = MEALS.length;
-    const uniqCount = Math.max(1, Math.min(state.uniqueMeals || meals, meals));
+    const days = Math.max(1, state.prepServings || 1);
 
     const mainMeals  = MEALS.filter(m=>m.required);
     const snackMeals = MEALS.filter(m=>!m.required);
-    const mainCount  = Math.max(1, Math.min(uniqCount, mainMeals.length));
-    const snackCount = snackMeals.length
-      ? Math.max(1, Math.min(uniqCount, snackMeals.length)) : 0;
+
+    const uniqMeals  = clampUniqueMeals();
+    const uniqSnacks = clampUniqueSnacks();
+
+    const mainGroups  = dishGroups(mainMeals,  uniqMeals,  mainRoleFor);
+    const snackGroups = dishGroups(snackMeals, uniqSnacks, ()=>'snack');
 
     /* ---- ORDER MATTERS ----
        Dishes are chosen FIRST, then the shopping palette is drawn from what
        those dishes actually call for. Doing it the other way round produced
        "Banana Protein Pancakes" made of Canadian bacon — the palette had
        ingredients the recipe never wanted, and they got forced in anyway. */
-    const coverage = mainBlueprints_coverage(mainMeals, mainCount);
-    const chosenRecipes = [];
-    coverage.forEach(role=>{
+    const pickRecipe = (role)=>{
       const usable = RECIPES.filter(r => recipeUsable(r, role));
-      if (!usable.length){ chosenRecipes.push(null); return; }
-      const pick = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
-                         .sort((a,b)=>b.s-a.s)[0].r;
-      usedNames.add(pick.name);
-      chosenRecipes.push({recipe:pick, role});
-    });
-    const snackRecipes = [];
-    for (let i = 0; i < snackCount; i++){
-      const usable = RECIPES.filter(r => recipeUsable(r, 'snack'));
-      if (!usable.length){ snackRecipes.push(null); continue; }
-      const pick = usable.map(r => ({r, s: scoreRecipe(r, usedNames)}))
-                         .sort((a,b)=>b.s-a.s)[0].r;
-      usedNames.add(pick.name);
-      snackRecipes.push({recipe:pick, role:'snack'});
-    }
+      if (!usable.length) return null;
+      // fresh dishes first; only reuse a name when the pool is genuinely spent
+      const unused = usable.filter(r => !usedNames.has(r.name));
+      const from = unused.length ? unused : usable;
+      const pick = weightedPick(from.map(r => ({item:r, s: scoreRecipe(r, usedNames)})), 1.8);
+      if (pick) usedNames.add(pick.name);
+      return pick;
+    };
 
-    const allPicked = chosenRecipes.concat(snackRecipes).filter(Boolean);
+    // one recipe per distinct dish, group by group
+    const assignRecipes = groups => groups.map(g=>({
+      group: g,
+      recipes: Array.from({length:g.count}, ()=> pickRecipe(g.role))
+    }));
+    const mainPlan  = assignRecipes(mainGroups);
+    const snackPlan = assignRecipes(snackGroups);
+
+    const allPicked = [];
+    mainPlan.forEach(p => p.recipes.forEach(r => { if (r) allPicked.push({recipe:r, role:p.group.role}); }));
+    snackPlan.forEach(p => p.recipes.forEach(r => { if (r) allPicked.push({recipe:r, role:'snack'}); }));
     const palette = buildPalette(allPicked);
 
-    const mainBlueprints = chosenRecipes.map((c,i)=>
-      buildOneMeal(c ? c.role : coverage[i], usedNames, palette, null, c && c.recipe));
-    const snackBlueprints = snackRecipes.map(c=>
-      buildOneMeal('snack', usedNames, palette, snackKcal(), c && c.recipe));
+    // turn each recipe into a real dish with real ingredients
+    const buildAll = (plan, budget) => plan.map(p=>({
+      group: p.group,
+      dishes: p.recipes.map(r => buildOneMeal(p.group.role, usedNames, palette, budget, r))
+    }));
+    const mainBuilt  = buildAll(mainPlan,  null);
+    const snackBuilt = buildAll(snackPlan, snackKcal());
 
     state.paletteUsed = {};
     VARIETY_SLOTS.forEach(slot=>{ state.paletteUsed[slot] = palette[slot].length; });
 
-    let mi2 = 0, si = 0;
-    MEALS.forEach((meal)=>{
-      const src = meal.required
-        ? mainBlueprints[mi2++ % mainBlueprints.length]
-        : snackBlueprints[si++ % snackBlueprints.length];
-      const prev = state.selections[meal.key] || {};
-      state.selections[meal.key] = {
-        protein:[...src.protein], carb:[...src.carb], fat:[...src.fat],
-        veg:[...src.veg], fruit:[...src.fruit], sauce:[...src.sauce],
-        notes: prev.notes || "", dish: src.dish, _recipe: src._recipe, _improvised: !!src._improvised,
-        season: src.season || []
-      };
-    });
+    /* ---- FLATTEN AND SCHEDULE ----
+       Dishes go into one flat list; the schedule then says which dish each
+       sitting gets on each day. A group holding two dishes alternates, one
+       holding three cycles every third day, and so on. */
+    const meals = [], snacks = [];
+    const schedule = Array.from({length:days}, ()=>({mains:[], snacks:[]}));
+
+    const layOut = (built, sittings, store, lane)=>{
+      built.forEach(b=>{
+        const base = store.length;
+        b.dishes.forEach(d => store.push(d));
+        b.group.indexes.forEach((sittingIdx, offset)=>{
+          for (let d = 0; d < days; d++){
+            // offset staggers shared sittings so they don't all land together
+            const which = b.dishes.length
+              ? (d + offset) % b.dishes.length : 0;
+            schedule[d][lane][sittingIdx] = base + which;
+          }
+        });
+      });
+      // any sitting the grouping missed falls back to the first dish
+      for (let d = 0; d < days; d++){
+        for (let i = 0; i < sittings.length; i++){
+          if (schedule[d][lane][i] == null) schedule[d][lane][i] = 0;
+        }
+      }
+    };
+    layOut(mainBuilt,  mainMeals,  meals,  'mains');
+    layOut(snackBuilt, snackMeals, snacks, 'snacks');
+
+    state.prep = {
+      days,
+      mealKeys:  mainMeals.map(m=>m.key),
+      snackKeys: snackMeals.map(m=>m.key),
+      meals: meals.map(toStoredMeal),
+      snacks: snacks.map(toStoredMeal),
+      schedule
+    };
+    state.activeDay = 1;
+    state.portionOverrides = {};
+    applyDayToSelections(1);
 
     enforceOnHand();
     pruneUnservedItems();
+    writeBackActiveDay();
     recordOnHandOutcome();
+    rememberDraw(
+      [...usedNames],
+      state.prep.meals.concat(state.prep.snacks)
+        .flatMap(d => SLOT_DEFS.flatMap(sd => d[sd.slot] || []))
+        .filter(Boolean)
+    );
+  }
+
+  /* A dish as it's stored on the prep plan — plain data, safe to serialise */
+  function toStoredMeal(src){
+    return {
+      protein:[...src.protein], carb:[...src.carb], fat:[...src.fat],
+      veg:[...src.veg], fruit:[...src.fruit], sauce:[...src.sauce],
+      notes: src.notes || "", dish: src.dish || "",
+      _recipe: src._recipe || "", _improvised: !!src._improvised,
+      season: src.season || []
+    };
+  }
+
+  /* ---------------------------------------------------------
+     ACTIVE DAY
+     The loadout screen edits one day at a time. state.selections is a
+     working copy of that day; edits are written back to the unique dish it
+     came from, so changing Tuesday's lunch changes it everywhere that dish
+     is served rather than quietly forking it.
+  --------------------------------------------------------- */
+  function prepReady(){
+    const p = state.prep;
+    return !!(p && p.schedule && p.schedule.length && (p.meals || []).length);
+  }
+
+  function dayIndex(){
+    if (!prepReady()) return 0;
+    return Math.min(Math.max((state.activeDay || 1) - 1, 0), state.prep.schedule.length - 1);
+  }
+
+  /* Which stored dish is behind a given meal key on a given day */
+  function dishRefFor(mealKey, dayIdx){
+    if (!prepReady()) return null;
+    const p = state.prep;
+    const row = p.schedule[dayIdx] || {};
+    const mi = (p.mealKeys || []).indexOf(mealKey);
+    if (mi >= 0){
+      const idx = (row.mains || [])[mi];
+      if (idx != null && p.meals[idx]) return {store:'meals', index:idx};
+    }
+    const si = (p.snackKeys || []).indexOf(mealKey);
+    if (si >= 0){
+      const idx = (row.snacks || [])[si];
+      if (idx != null && p.snacks[idx]) return {store:'snacks', index:idx};
+    }
+    return null;
+  }
+
+  function dishAt(ref){
+    return ref ? (state.prep[ref.store] || [])[ref.index] : null;
+  }
+
+  function applyDayToSelections(day){
+    if (!prepReady()) return;
+    state.activeDay = Math.min(Math.max(day || 1, 1), state.prep.schedule.length);
+    const di = dayIndex();
+    MEALS.forEach(m=>{
+      const dish = dishAt(dishRefFor(m.key, di));
+      state.selections[m.key] = dish ? toStoredMeal(dish)
+                                     : (state.selections[m.key] || blankMeal());
+    });
+  }
+
+  /* Push the working copy back onto the unique dishes it came from. Where
+     two sittings share a dish only the first one writes, so editing lunch
+     doesn't get clobbered by dinner's untouched copy. */
+  function writeBackActiveDay(){
+    if (!prepReady()) return;
+    const di = dayIndex();
+    const done = new Set();
+    MEALS.forEach(m=>{
+      const ref = dishRefFor(m.key, di);
+      if (!ref) return;
+      const tag = ref.store + ':' + ref.index;
+      if (done.has(tag)) return;
+      done.add(tag);
+      const sel = state.selections[m.key];
+      if (sel) state.prep[ref.store][ref.index] = toStoredMeal(sel);
+    });
   }
 
   /* The portion engine drops anything too small to plate. Those choices are
@@ -7754,32 +8919,48 @@
       const chosen = [];
       const add = f => { if (!chosen.some(c=>c.key===f.key)) chosen.push(f); };
 
+      /* The order `wanted` comes out in is fixed by the recipe definitions,
+         so filling the allowance top-down handed back an identical palette
+         on every shuffle. Draw in a random order instead, and let anything
+         that isn't in last shuffle's palette go first. */
+      let bench = wanted;
+      /* A palette holding nothing but kefir and dry beans dooms every meal
+         drawn from it, so the shopping list is steered to real protein
+         sources before variety is considered. */
+      if (slot === 'protein'){
+        const carriers = wanted.filter(w => carriesProtein(w.f));
+        if (carriers.length) bench = carriers;
+      }
+      const shuffled = bench.slice()
+        .map(w => ({w, r: Math.random() + (LAST_DRAW.foods.has(w.f.key) ? 1 : 0)}))
+        .sort((a,b)=>a.r-b.r).map(x=>x.w);
+
       // on-hand and starred foods first, if a dish can take them
-      wanted.filter(w => isMustUse(w.f)).forEach(w=>{
+      shuffled.filter(w => isMustUse(w.f)).forEach(w=>{
         if (chosen.length < allowance && !chosen.some(c=>familyClashPair(c,w.f))) add(w.f);
       });
-      wanted.filter(w => favKeys(slot).includes(w.f.key)).forEach(w=>{
+      shuffled.filter(w => favKeys(slot).includes(w.f.key)).forEach(w=>{
         if (chosen.length < allowance && !chosen.some(c=>familyClashPair(c,w.f))) add(w.f);
       });
 
       // then make sure every dish has at least one option it can use
       picked.forEach(({recipe, role})=>{
-        const opts = wanted.filter(w =>
+        const opts = shuffled.filter(w =>
           recipeOptions(recipe, slot).includes(w.f.key) && mealAllowsFood(role, w.f));
         if (!opts.length) return;
         if (opts.some(o => chosen.some(c=>c.key===o.f.key))) return;
         const fresh = opts.filter(o => !chosen.some(c=>familyClashPair(c,o.f)));
         const from = fresh.length ? fresh : opts;
-        add(from[Math.floor(Math.random()*from.length)].f);
+        add(randOf(from).f);
       });
 
       // fill any remaining allowance with other things the dishes could use
       let guard = 0;
       while (chosen.length < allowance && guard++ < 40){
-        const rest = wanted.filter(w =>
+        const rest = shuffled.filter(w =>
           !chosen.some(c=>c.key===w.f.key) && !chosen.some(c=>familyClashPair(c,w.f)));
         if (!rest.length) break;
-        add(rest[Math.floor(Math.random()*rest.length)].f);
+        add(randOf(rest).f);
       }
 
       palette[slot] = chosen;
@@ -7842,6 +9023,37 @@
     return snack ? currentTargets().kcal * snack.share : null;
   }
 
+  /* ---------------------------------------------------------
+     UNIQUE DISH BUDGETS
+     "How many meals do you want to make" is a variety dial, not a daily
+     schedule. It counts distinct recipes across the WHOLE prep, so six
+     meals over seven days is six recipes on rotation — not six sittings a
+     day. Snacks are counted separately for the same reason: nobody thinks
+     of an apple and peanut butter as one of their six meals.
+  --------------------------------------------------------- */
+  function mainSittings(){ return MEALS.filter(m=>m.required).length; }
+  function snackSittings(){ return MEALS.filter(m=>!m.required).length; }
+  function prepDays(){ return Math.max(1, state.prepServings || 1); }
+
+  /* The ceiling is every sitting being different; the floor is one dish
+     eaten over and over. */
+  function maxUniqueMeals(){ return Math.max(1, mainSittings() * prepDays()); }
+  function maxUniqueSnacks(){ return Math.max(0, snackSittings() * prepDays()); }
+
+  function clampUniqueMeals(){
+    const cap = maxUniqueMeals();
+    let v = state.uniqueMeals;
+    if (v == null) v = Math.min(cap, Math.max(mainSittings(), 3));
+    return Math.max(1, Math.min(v, cap));
+  }
+  function clampUniqueSnacks(){
+    const cap = maxUniqueSnacks();
+    if (!cap) return 0;
+    let v = state.uniqueSnacks;
+    if (v == null) v = Math.min(cap, 2);
+    return Math.max(1, Math.min(v, cap));
+  }
+
   const VARIETY_SLOTS = ['protein','carb','fat','veg'];
   function varietyBudget(slot){
     const v = (state.variety || {})[slot];
@@ -7858,24 +9070,6 @@
   }
 
   /* One meal, drawn only from the day's ingredient palette */
-  /* Which role each blueprint must satisfy, given how they'll be dealt out */
-  function mainBlueprints_coverage(mainMeals, count){
-    const roleOf = (m, idx) => {
-      if (m.name === 'BREAKFAST') return 'breakfast';
-      return 'dinner';
-    };
-    const out = [];
-    for (let i = 0; i < count; i++){
-      const roles = new Set();
-      for (let j = i; j < mainMeals.length; j += count){
-        roles.add(roleOf(mainMeals[j], j));
-      }
-      out.push(roles.size > 1 ? 'universal'
-             : roles.has('breakfast') ? 'breakfast' : 'dinner');
-    }
-    return out;
-  }
-
   function buildOneMeal(role, usedNames, palette, budgetKcal, recipe){
     /* A whole tortilla or bagel can't fit a snack — its smallest possible
        serving is one unit, and one unit may be the entire budget. */
@@ -7908,6 +9102,23 @@
           const f = FOODS.protein.find(x=>x.key===k); return f && isMeat(f);
         })) pool = pool.filter(f => !isMeat(f));
 
+        /* The first protein on the plate has to be one that can actually
+           reach the target; a second one is free to be an accent. */
+        if (slot === 'protein' && !sel.protein.length){
+          pool = preferCarriers(pool);
+          /* On a tight profile — a hard cut, or a plant-based day where the
+             carb target is high — the difference between seitan and edamame
+             decides whether the target is reachable at all. Lean on the
+             efficient end without ever ruling the rest out. */
+          if (pool.length > 1){
+            const notLast2 = pool.filter(f => !LAST_DRAW.foods.has(f.key));
+            const from = notLast2.length ? notLast2 : pool;
+            const pick = weightedPick(from.map(f =>
+              ({item:f, s: 1 / Math.max(proteinCostKcal(f), 0.5)})), 1.2);
+            if (pick){ sel[slot].push(pick.key); continue; }
+          }
+        }
+
         /* Prefer options that plate at a sensible size. Shirataki and poblano
            are so light that hitting a macro target on them alone runs to a
            kilo, so they only get picked when nothing better is offered. */
@@ -7937,7 +9148,9 @@
           continue;
         }
         if (!pool.length) continue;
-        sel[slot].push(pool[Math.floor(Math.random() * pool.length)].key);
+        const notLast = pool.filter(f => !LAST_DRAW.foods.has(f.key));
+        if (notLast.length && Math.random() < 0.8) pool = notLast;
+        sel[slot].push(randOf(pool).key);
       }
     });
 
@@ -7957,14 +9170,47 @@
       if (opts.length) sel.sauce.push(opts[Math.floor(Math.random()*opts.length)].key);
     }
 
-    // a single lean protein can need an absurd portion — split it
-    if (sel.protein.length === 1){
+    /* A single protein that can't carry the meal — either because it needs
+       an absurd portion or because it charges too much per gram — gets a
+       partner that can, rather than leaving the meal quietly short.
+       Vegan cheese shreds are the extreme case: 1.4g of protein per 100g,
+       so 280 kcal buys one gram of it. Left alone in the slot it makes the
+       target unreachable however the portions are juggled. */
+    const anyCarrier = () => sel.protein.some(k=>{
+      const f = FOODS.protein.find(x=>x.key===k); return f && carriesProtein(f);
+    });
+    if (sel.protein.length && !anyCarrier()){
+      const held = sel.protein.map(k=>FOODS.protein.find(x=>x.key===k)).filter(Boolean);
+      const ok = f =>
+        f && !sel.protein.includes(f.key) && carriesProtein(f)
+        && passesPrefs(f) && !isDisliked(f) && !familyClash(f, sel)
+        && !(f.powder && !POWDER_OK.includes(role))
+        && fitsBudget('protein', f)
+        && !held.some(h => familyClashPair(h, f))
+        && !(held.some(isMeat) && isMeat(f));
+
+      /* Give up as little of the dish as possible: something it already
+         calls for, then anything in the day's shopping palette, and only
+         then the wider inventory. */
+      const recipeKeys = recipe ? recipeOptions(recipe, 'protein') : [];
+      const partner =
+           palette.protein.find(f => ok(f) && recipeKeys.includes(f.key) && mealAllowsFood(role, f))
+        || palette.protein.find(f => ok(f) && mealAllowsFood(role, f))
+        || pickFood(listFor('protein'), null, true, 'protein', f => ok(f) && mealAllowsFood(role, f))
+        || pickFood(listFor('protein'), null, true, 'protein', ok);
+      if (partner){
+        sel.protein.push(partner.key);
+        if (!palette.protein.some(f=>f.key===partner.key)) palette.protein.push(partner);
+        if (!recipeKeys.includes(partner.key)) sel._improvised = true;
+      }
+    } else if (sel.protein.length === 1){
       const only = FOODS.protein.find(f=>f.key===sel.protein[0]);
       if (only && servingFor('protein', only) > PORTION_CAP.protein){
-        const partner = palette.protein.find(f =>
+        const eligible = palette.protein.filter(f =>
           f.key !== only.key && !familyClashPair(only, f)
           && (!recipe || recipeOptions(recipe, 'protein').includes(f.key))
           && !(isMeat(only) && isMeat(f)) && mealAllowsFood(role, f));
+        const partner = eligible.find(carriesProtein) || eligible[0];
         if (partner) sel.protein.push(partner.key);
       }
     }
@@ -8193,6 +9439,88 @@
     `;
   }
 
+  /* ---------------------------------------------------------
+     WHAT THE PREP ACTUALLY CONTAINS
+     Each unique dish, the sitting it was built for, and every day it turns
+     up on. The suggestion screen used to render state.selections, which is
+     only ever one day's working copy — so asking for six meals and being
+     shown three was the plan working correctly and reporting badly.
+  --------------------------------------------------------- */
+  function prepDishUsage(){
+    if (!prepReady()) return null;
+    const p = state.prep;
+    const out = {meals:[], snacks:[]};
+    p.meals.forEach((d,i)  => out.meals.push({dish:d,  index:i, store:'meals',  days:[], mealKey:null, day0:0}));
+    p.snacks.forEach((d,i) => out.snacks.push({dish:d, index:i, store:'snacks', days:[], mealKey:null, day0:0}));
+
+    p.schedule.forEach((row, d)=>{
+      (row.mains || []).forEach((idx, sitting)=>{
+        const rec = out.meals[idx]; if (!rec) return;
+        rec.days.push(d + 1);
+        // remember the first sitting it appears in, so portions are sized
+        // against the budget it was actually built for
+        if (rec.mealKey == null){ rec.mealKey = (p.mealKeys || [])[sitting]; rec.day0 = d; }
+      });
+      (row.snacks || []).forEach((idx, sitting)=>{
+        const rec = out.snacks[idx]; if (!rec) return;
+        rec.days.push(d + 1);
+        if (rec.mealKey == null){ rec.mealKey = (p.snackKeys || [])[sitting]; rec.day0 = d; }
+      });
+    });
+    return out;
+  }
+
+  /* "Days 1, 3, 5 and 7" — or "every day" when it never varies */
+  function servedOnText(days, totalDays){
+    if (!days.length) return 'not scheduled';
+    if (days.length === totalDays) return totalDays === 1 ? 'today' : 'every day';
+    if (days.length === 1) return 'day ' + days[0];
+    return 'days ' + days.slice(0,-1).join(', ') + ' and ' + days[days.length-1];
+  }
+
+  function suggestionCard(rec, ordinal, total, totalDays){
+    const tg = currentTargets();
+    const meal = MEALS.find(m=>m.key === rec.mealKey);
+    if (!meal) return null;
+    const sel = state.selections[rec.mealKey];
+    const plan = computeMealPlan(rec.mealKey);
+
+    let rows = "";
+    SLOT_DEFS.forEach(def=>{
+      const parts = (sel[def.slot] || []).map((k,i)=>{
+        const g = plan[def.slot][i];
+        if (!k || g == null) return null;
+        const food = def.list().find(f=>f.key === k);
+        if (!food) return null;
+        const ul = unitLabel(food, g);
+        const tag = isMustUse(food) ? '🧊 ' : '';
+        return `${tag}${food.name} <span style="color:var(--green)">${ul ? ul : g.toFixed(0)+'g'}</span>${ul ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}`;
+      }).filter(Boolean);
+      if (!parts.length){
+        rows += `<div style="font-size:11px; color:var(--muted); margin-bottom:4px;">${def.icon} — none available</div>`;
+        return;
+      }
+      rows += `<div style="font-size:12px; margin-bottom:4px;">${def.icon} ${parts.join(' &nbsp;+&nbsp; ')}</div>`;
+    });
+
+    const servings = rec.days.length;
+    const card = document.createElement('div');
+    card.className = 'panel';
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:4px;">
+        <span style="font-size:11px; color:var(--cyan); letter-spacing:1px;">
+          ${rec.store === 'snacks' ? 'SNACK' : 'MEAL'} ${ordinal} OF ${total} · ${escapeHtml(meal.name)}</span>
+        <span style="font-size:10px; color:var(--muted); white-space:nowrap;">×${servings}</span>
+      </div>
+      ${sel.dish ? `<div style="font-family:var(--font-body); font-size:15px; color:${dishColor(rec)}; margin-bottom:6px;">🍽️ ${escapeHtml(sel.dish)}</div>` : ''}
+      <div style="font-size:9px; color:var(--muted); margin-bottom:10px;">
+        Served ${servedOnText(rec.days, totalDays)} · ~${Math.round(tg.kcal*meal.share)} kcal per serving</div>
+      ${rows}
+      ${brandHint(rec.mealKey)}
+    `;
+    return card;
+  }
+
   function renderSuggestion(){
     renderOnHandReview();
     const tg = currentTargets();
@@ -8209,44 +9537,79 @@
         ? `<strong style="color:var(--cyan)">Try Something New:</strong> these are foods you didn't pick, chosen for eating like the ones you did. `
         : `<strong style="color:var(--green)">Your Favorites:</strong> built from the foods you starred. `;
     }
+
+    const usage = prepDishUsage();
+    const totalDays = prepReady() ? state.prep.schedule.length : 1;
+    const nM = usage ? usage.meals.length : MEALS.filter(m=>m.required).length;
+    const nS = usage ? usage.snacks.length : MEALS.filter(m=>!m.required).length;
+
     suggestIntro.innerHTML = modeLine + `${STYLE_BLURB[state.eatingStyle] || ''} ` +
       (bits.length ? `Built around ${bits.join(" and ")}. ` : '') +
-      `Portions are sized to your <strong style="color:var(--green)">${tg.kcal} kcal</strong> target, weighed <strong style="color:var(--amber)">raw or dry</strong>.`;
+      `Here is <strong style="color:var(--green)">everything you'd be cooking</strong> — ` +
+      `${nM} meal${nM===1?'':'s'}${nS ? ` and ${nS} snack${nS===1?'':'s'}` : ''}` +
+      (totalDays > 1 ? `, on rotation across ${totalDays} days` : '') +
+      `. Portions are per serving, sized to your <strong style="color:var(--green)">${tg.kcal} kcal</strong> ` +
+      `target and weighed <strong style="color:var(--amber)">raw or dry</strong>.`;
 
     suggestList.innerHTML = "";
-    MEALS.forEach(meal=>{
-      const sel = state.selections[meal.key];
-      let rows = "";
-      const plan = computeMealPlan(meal.key);
-      SLOT_DEFS.forEach(def=>{
-        const parts = sel[def.slot].map((k,i)=>{
-          const g = plan[def.slot][i];
-          if (!k || g == null) return null;
-          const food = def.list().find(f=>f.key === k);
-          if (!food) return null;
-          const ul = unitLabel(food, g);
-          const tag = isMustUse(food) ? '🧊 ' : '';
-          return `${tag}${food.name} <span style="color:var(--green)">${ul ? ul : g.toFixed(0)+'g'}</span>${ul ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}`;
-        }).filter(Boolean);
-        if (!parts.length){
-          rows += `<div style="font-size:11px; color:var(--muted); margin-bottom:4px;">${def.icon} — none available</div>`;
-          return;
-        }
-        rows += `<div style="font-size:12px; margin-bottom:4px;">${def.icon} ${parts.join(' &nbsp;+&nbsp; ')}</div>`;
-      });
 
-      const card = document.createElement('div');
-      card.className = 'panel';
-      card.innerHTML = `
-        <div style="font-size:11px; color:var(--cyan); letter-spacing:1px; margin-bottom:4px;">${meal.label}${meal.required ? '' : ' (OPTIONAL)'}</div>
-        ${sel.dish ? `<div style="font-family:var(--font-body); font-size:15px; color:var(--green); margin-bottom:6px;">🍽️ ${sel.dish}</div>` : ''}
-        <div style="font-size:9px; color:var(--muted); margin-bottom:10px;">~${Math.round(tg.kcal*meal.share)} kcal target</div>
-        ${rows}
-        ${brandHint(meal.key)}
-        <div style="font-size:9px; color:var(--muted); margin-top:8px;">Weights are raw / dry. Season it however you like — add your own on the next screen.</div>
-      `;
-      suggestList.appendChild(card);
-    });
+    /* No prep built (a saved plan from before this existed) — fall back to
+       showing the single day that does exist. */
+    if (!usage){
+      MEALS.forEach(meal=>{
+        const card = suggestionCard(
+          {dish:state.selections[meal.key], mealKey:meal.key, days:[1],
+           store: meal.required ? 'meals' : 'snacks', index:0},
+          1, 1, 1);
+        if (card) suggestList.appendChild(card);
+      });
+      return;
+    }
+
+    /* Cards are rendered from the working copy, so the day each dish was
+       first scheduled on is loaded before its portions are read. Whatever
+       day the person was on is put back at the end. */
+    const keep = state.activeDay;
+
+    const heading = (text, note) => {
+      const h = document.createElement('div');
+      h.className = 'panel';
+      h.style.padding = '12px 14px';
+      h.innerHTML = `<div class="slot-label" style="margin:0;">${text}</div>
+        ${note ? `<div style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.6;">${note}</div>` : ''}`;
+      suggestList.appendChild(h);
+    };
+
+    if (usage.meals.length){
+      heading(`🍽️ ${usage.meals.length} MEAL${usage.meals.length===1?'':'S'} TO COOK`,
+        totalDays > 1
+          ? `Breakfast, lunch and dinner across ${totalDays} days, drawn from these ${usage.meals.length}.`
+          : null);
+      usage.meals.forEach((rec, i)=>{
+        applyDayToSelections(rec.day0 + 1);
+        const card = suggestionCard(rec, i+1, usage.meals.length, totalDays);
+        if (card) suggestList.appendChild(card);
+      });
+    }
+
+    if (usage.snacks.length){
+      heading(`🥨 ${usage.snacks.length} SNACK${usage.snacks.length===1?'':'S'}`,
+        'Counted separately from your meals — these fill the gaps between them.');
+      usage.snacks.forEach((rec, i)=>{
+        applyDayToSelections(rec.day0 + 1);
+        const card = suggestionCard(rec, i+1, usage.snacks.length, totalDays);
+        if (card) suggestList.appendChild(card);
+      });
+    }
+
+    applyDayToSelections(keep);
+
+    const foot = document.createElement('div');
+    foot.className = 'panel';
+    foot.innerHTML = `<div style="font-size:11px; color:var(--muted); line-height:1.7;">
+      Weights are raw / dry. Season however you like — you can adjust every
+      amount, and see the plan laid out day by day, once you take this loadout.</div>`;
+    suggestList.appendChild(foot);
   }
 
   btnShuffle.addEventListener('click', ()=>{
@@ -8324,7 +9687,7 @@
     const q = (query || '').trim().toLowerCase();
 
     let list = def.list().filter(passesPrefs);
-    if (q) list = list.filter(f=>f.name.toLowerCase().includes(q));
+    if (q) list = searchFoods(list, q);
 
     const host = document.getElementById('foodPickList');
     if (!list.length){
@@ -8357,6 +9720,9 @@
     host.querySelectorAll('[data-fp]').forEach(b=>b.addEventListener('click', ()=>{
       const key = b.getAttribute('data-fp');
       state.selections[mealKey][slot][index] = key;
+      // a hand-set amount belonged to the food that was there before
+      setOverride(mealKey, slot, index, null);
+      writeBackActiveDay();
       closeModal('modalFoodPick');
       renderMealTimeline();
       refreshTargets();
@@ -8504,13 +9870,36 @@
      the meal precisely on its calorie target. */
   function computeMealPlan(mealKey){
     const sel = state.selections[mealKey];
-    const bud = mealBudget(mealKey);
     const grams = {protein:{}, carb:{}, fat:{}, veg:{}, fruit:{}, sauce:{}};
+    /* A saved plan can outlive the meal it belonged to — change from "3 + a
+       snack" to plain "3 meals" and snack1 is gone. Hand back an empty plan
+       rather than throwing halfway through a render. */
+    if (!sel) return grams;
+    const bud = mealBudget(mealKey);
     const mealKcal = bud.kcal;
     let usedP = 0, usedC = 0, usedF = 0, usedKcal = 0;
 
-    const live = slot => sel[slot].map((k,i)=>({k,i})).filter(x=>x.k);
+    /* An amount the person set by hand is a fact, not a suggestion. It's
+       taken off the top and left out of the sizing passes, so the rest of
+       the plate scales around it exactly as it would around anything else
+       already spoken for. */
+    const fixed = overridesFor(mealKey);
+    const isFixed = (slot,i) => fixed[slot] && fixed[slot][i] != null;
+
+    const live = slot => sel[slot].map((k,i)=>({k,i}))
+      .filter(x => x.k && !isFixed(slot, x.i));
     const foodOf = (slot,k) => listFor(slot).find(f=>f.key===k);
+
+    SLOT_DEFS.forEach(d=>{
+      sel[d.slot].forEach((k,i)=>{
+        if (!k || !isFixed(d.slot, i)) return;
+        const food = foodOf(d.slot, k); if (!food) return;
+        const g = Math.max(0, fixed[d.slot][i]);
+        grams[d.slot][i] = g;
+        usedP += food.protein*g/100; usedC += food.carbs*g/100;
+        usedF += food.fat*g/100;     usedKcal += food.kcal*g/100;
+      });
+    });
 
     // 1. Sides first — veg, fruit and sauce each take a slice of the meal's
     //    calories. They're never asked to hit a macro target, so nobody ends
@@ -8538,52 +9927,122 @@
       });
     });
 
-    // 2. Protein — sized to hit the protein target, then trimmed only if it
-    //    would eat the entire calorie budget on its own
+    /* 2 & 3. Protein, then carbs and fat.
+       Bread, pasta and oats carry real protein — a 150g serving of pasta is
+       20g of it. Sizing the protein slot against the full target as if they
+       carried none overshot by about a fifth, and the calories that
+       overshoot cost came straight out of the carbs. The two passes feed
+       into each other, so they're run a few times: size protein, see what
+       the carbs and fat actually contribute, size protein again knowing it. */
     const prot = live('protein');
-    if (prot.length){
-      const each = Math.max(bud.protein - usedP, 0) / prot.length;
-      let pKcal = 0;
-      const tmp = [];
-      prot.forEach(({k,i})=>{
-        const food = foodOf('protein',k); if(!food) return;
-        const g = gramsFor(food, 'protein', each);
-        tmp.push({food, i, g});
-        pKcal += food.kcal*g/100;
-      });
-      const room = Math.max(mealKcal - usedKcal, 0);
-      const shrink = (pKcal > room && pKcal > 0) ? room / pKcal : 1;
-      tmp.forEach(({food, i, g})=>{
-        const gg = g * shrink;
-        grams.protein[i] = gg;
-        usedC += food.carbs*gg/100; usedF += food.fat*gg/100; usedKcal += food.kcal*gg/100;
-      });
-    }
-
-    // 3. Carbs and fat — sized against what's left of each macro...
     const carb = live('carb'), fat = live('fat');
-    let flexKcal = 0;
-    const flex = [];
-    if (carb.length){
-      const each = Math.max(bud.carbs - usedC, 0) / carb.length;
-      carb.forEach(({k,i})=>{
-        const food = foodOf('carb',k); if(!food) return;
-        const g = gramsFor(food, 'carbs', each);
-        flex.push({slot:'carb', i, food, g}); flexKcal += food.kcal*g/100;
-      });
-    }
-    if (fat.length){
-      const each = Math.max(bud.fat - usedF, 0) / fat.length;
-      fat.forEach(({k,i})=>{
-        const food = foodOf('fat',k); if(!food) return;
-        const g = gramsFor(food, 'fat', each);
-        flex.push({slot:'fat', i, food, g}); flexKcal += food.kcal*g/100;
-      });
+    const baseP = usedP, baseC = usedC, baseF = usedF, baseKcal = usedKcal;
+
+    let flexProtein = 0;   // protein the carb and fat slots will deliver
+    let flex = [], flexKcal = 0, scale = 1;
+
+    for (let pass = 0; pass < 3; pass++){
+      usedP = baseP; usedC = baseC; usedF = baseF; usedKcal = baseKcal;
+
+      // --- protein, discounting what the rest of the plate already brings
+      if (prot.length){
+        const need = Math.max(bud.protein - usedP - flexProtein, 0);
+        /* Splitting the target equally across the protein slot assumes every
+           item is equally good at supplying it. Put cheddar next to chicken,
+           or vegan cheese next to TVP, and the accent gets asked for a third
+           of the protein — which costs hundreds of calories and delivers
+           almost none, starving the ingredient that could have done the job.
+           Each item's share is weighted by what it charges per gram instead,
+           so the carrier does the carrying and the accent stays an accent. */
+        const wOf = f => { const c = proteinCostKcal(f); return isFinite(c) && c > 0 ? 1/c : 0; };
+        let wTotal = 0;
+        prot.forEach(({k})=>{ const f = foodOf('protein',k); if (f) wTotal += wOf(f); });
+
+        let pKcal = 0;
+        const tmp = [];
+        prot.forEach(({k,i})=>{
+          const food = foodOf('protein',k); if(!food) return;
+          const share = wTotal > 0 ? wOf(food) / wTotal : 1 / prot.length;
+          const g = gramsFor(food, 'protein', need * share);
+          tmp.push({food, i, g});
+          pKcal += food.kcal*g/100;
+        });
+        const room = Math.max(mealKcal - usedKcal, 0);
+        const shrink = (pKcal > room && pKcal > 0) ? room / pKcal : 1;
+        tmp.forEach(({food, i, g})=>{
+          const gg = g * shrink;
+          grams.protein[i] = gg;
+          usedP += food.protein*gg/100;
+          usedC += food.carbs*gg/100; usedF += food.fat*gg/100; usedKcal += food.kcal*gg/100;
+        });
+      }
+
+      // --- carbs and fat, sized against what's left of each macro...
+      flex = []; flexKcal = 0;
+      if (carb.length){
+        const each = Math.max(bud.carbs - usedC, 0) / carb.length;
+        carb.forEach(({k,i})=>{
+          const food = foodOf('carb',k); if(!food) return;
+          const g = gramsFor(food, 'carbs', each);
+          flex.push({slot:'carb', i, food, g}); flexKcal += food.kcal*g/100;
+        });
+      }
+      if (fat.length){
+        const each = Math.max(bud.fat - usedF, 0) / fat.length;
+        fat.forEach(({k,i})=>{
+          const food = foodOf('fat',k); if(!food) return;
+          const g = gramsFor(food, 'fat', each);
+          flex.push({slot:'fat', i, food, g}); flexKcal += food.kcal*g/100;
+        });
+      }
+
+      // ...then scaled together so the meal lands on its calorie target
+      const remain = Math.max(mealKcal - usedKcal, 0);
+      scale = flexKcal > 0 ? remain / flexKcal : 1;
+
+      const nextFlexProtein = flex.reduce((a,x)=> a + x.food.protein * x.g * scale / 100, 0);
+      if (Math.abs(nextFlexProtein - flexProtein) < 0.5){ flexProtein = nextFlexProtein; break; }
+      flexProtein = nextFlexProtein;
     }
 
-    // ...then scaled together so the meal lands on its calorie target
-    const remain = Math.max(mealKcal - usedKcal, 0);
-    const scale = flexKcal > 0 ? remain / flexKcal : 1;
+    /* 3b. Spend the surplus on protein, not on more rice.
+       When a plate falls short on protein there are usually calories going
+       spare — `scale` above 1 means the carbs and fat are being inflated
+       past their own targets purely to fill the calorie budget. That
+       surplus buys more of the protein instead. It's capped at exactly the
+       overspill, so carbs and fat are never pushed below what they were
+       asked for; on a plate that's already on target nothing moves. */
+    if (prot.length && flexKcal > 0){
+      const shortfall = bud.protein - (usedP + flexProtein);
+      const surplus = Math.max(mealKcal - usedKcal, 0) - flexKcal;   // kcal about to inflate carbs
+      if (shortfall > 1 && surplus > 1){
+        let spend = 0;
+        const wOf2 = f => { const c = proteinCostKcal(f); return isFinite(c) && c > 0 ? 1/c : 0; };
+        let wT = 0;
+        prot.forEach(({k})=>{ const f = foodOf('protein',k); if (f) wT += wOf2(f); });
+        prot.forEach(({k,i})=>{
+          const food = foodOf('protein',k);
+          if (!food || grams.protein[i] == null) return;
+          const room = Math.max(surplus - spend, 0);
+          if (room <= 0) return;
+          const share = wT > 0 ? wOf2(food) / wT : 1 / prot.length;
+          let extra = gramsFor(food, 'protein', shortfall * share);
+          const cost = food.kcal * extra / 100;
+          if (cost > room) extra = food.kcal > 0 ? (room / food.kcal) * 100 : 0;
+          const cap = HARD_CAP.protein;
+          if (cap && grams.protein[i] + extra > cap) extra = Math.max(cap - grams.protein[i], 0);
+          if (extra <= 0) return;
+          grams.protein[i] += extra;
+          spend    += food.kcal    * extra / 100;
+          usedP    += food.protein * extra / 100;
+          usedC    += food.carbs   * extra / 100;
+          usedF    += food.fat     * extra / 100;
+          usedKcal += food.kcal    * extra / 100;
+        });
+        scale = flexKcal > 0 ? Math.max(mealKcal - usedKcal, 0) / flexKcal : 1;
+      }
+    }
+
     flex.forEach(({slot, i, g})=>{ grams[slot][i] = g * scale; });
 
     // If a food is on the plate it needs a real portion. Pure macro maths will
@@ -8600,6 +10059,14 @@
     snapToUnits(grams, sel);
     enforceMinimums(grams, sel, mealKcal);
     snapToUnits(grams, sel);
+    /* Snapping and the minimum-portion floor would happily "correct" an
+       amount somebody typed in themselves. Put those back last — if you
+       said one slice of bread, you get one slice of bread. */
+    SLOT_DEFS.forEach(d=>{
+      sel[d.slot].forEach((k,i)=>{
+        if (k && isFixed(d.slot, i)) grams[d.slot][i] = Math.max(0, fixed[d.slot][i]);
+      });
+    });
     // anything dropped for being too small to serve is removed outright
     SLOT_DEFS.forEach(d=>{
       Object.keys(grams[d.slot]).forEach(i=>{
@@ -8607,6 +10074,157 @@
       });
     });
     return grams;
+  }
+
+  /* ---------------------------------------------------------
+     HAND-SET AMOUNTS
+     Two slices of bread is a normal thing to want, and adding a second
+     bread row to say so is silly. Every portion on the plan can be tapped
+     and changed — in units where the food comes in units, in grams where it
+     doesn't — and everything else re-sizes around it.
+     Overrides are keyed by the dish itself rather than the meal slot, so an
+     amount set on Tuesday's lunch holds every day that dish is served.
+  --------------------------------------------------------- */
+  function overrideKeyFor(mealKey){
+    const ref = dishRefFor(mealKey, dayIndex());
+    return ref ? `${ref.store}#${ref.index}` : `meal#${mealKey}`;
+  }
+
+  function overridesFor(mealKey){
+    state.portionOverrides = state.portionOverrides || {};
+    return state.portionOverrides[overrideKeyFor(mealKey)] || {};
+  }
+
+  function setOverride(mealKey, slot, index, grams){
+    state.portionOverrides = state.portionOverrides || {};
+    const k = overrideKeyFor(mealKey);
+    const bag = state.portionOverrides[k] = state.portionOverrides[k] || {};
+    bag[slot] = bag[slot] || {};
+    if (grams == null) delete bag[slot][index];
+    else bag[slot][index] = grams;
+    if (!Object.keys(bag[slot]).length) delete bag[slot];
+    if (!Object.keys(bag).length) delete state.portionOverrides[k];
+  }
+
+  /* Overrides are stored against a position in the list. Removing an item
+     would silently shift every amount after it onto the wrong food. */
+  function clearOverrides(mealKey, slot){
+    const bag = state.portionOverrides && state.portionOverrides[overrideKeyFor(mealKey)];
+    if (bag && slot) delete bag[slot];
+  }
+
+  let portionTarget = null;
+
+  function openPortionEditor(mealKey, slot, index, onDone){
+    const sel = state.selections[mealKey];
+    if (!sel) return;
+    const key = (sel[slot] || [])[index];
+    const def = SLOT_DEFS.find(d=>d.slot === slot);
+    const food = key && def ? def.list().find(f=>f.key === key) : null;
+    if (!food) return;
+
+    const plan = computeMealPlan(mealKey);
+    const current = plan[slot] && plan[slot][index] != null
+      ? plan[slot][index] : minPortion(slot, food);
+
+    portionTarget = {mealKey, slot, index, food, grams:current, onDone};
+    document.getElementById('portionTitle').textContent = 'AMOUNT';
+    renderPortionEditor();
+    openModal('modalPortion');
+  }
+
+  function renderPortionEditor(){
+    if (!portionTarget) return;
+    const {food, grams, mealKey, slot, index} = portionTarget;
+    const host = document.getElementById('portionBody');
+    const unit = food.unit;
+    const step = unit ? unitStep(food) : null;
+    const units = unit ? grams / unit.g : null;
+    const macro = k => (food[k] * grams / 100);
+    const overridden = overridesFor(mealKey)[slot] &&
+                       overridesFor(mealKey)[slot][index] != null;
+
+    host.innerHTML = `
+      <div style="font-family:var(--font-body); font-size:15px; color:var(--green); margin-bottom:4px;">${escapeHtml(food.name)}</div>
+      <div class="season-hint" style="margin-bottom:14px;">
+        ${unit
+          ? `Comes as ${escapeHtml(unit.many)} — about ${unit.g}g each. Change the count and the rest of the meal re-sizes around it.`
+          : 'Set the weight in grams. The rest of the meal re-sizes around it.'}
+      </div>
+
+      ${unit ? `
+        <label class="field-label">HOW MANY ${escapeHtml(unit.many.toUpperCase())}?</label>
+        <div class="amt-stepper">
+          <button class="amt-btn" data-amt="down" aria-label="Less">−</button>
+          <div class="amt-value"><span id="amtUnits">${formatUnits(units)}</span>
+            <small>${escapeHtml(units <= 1 ? unit.one : unit.many)}</small></div>
+          <button class="amt-btn" data-amt="up" aria-label="More">+</button>
+        </div>
+        <div class="amt-grams">= <strong id="amtGrams">${grams.toFixed(0)}</strong>g</div>
+      ` : `
+        <label class="field-label">GRAMS</label>
+        <div class="amt-stepper">
+          <button class="amt-btn" data-amt="down" aria-label="Less">−</button>
+          <input type="number" id="amtInput" class="amt-input" inputmode="numeric"
+                 value="${grams.toFixed(0)}" min="0" aria-label="Grams">
+          <button class="amt-btn" data-amt="up" aria-label="More">+</button>
+        </div>
+      `}
+
+      <div class="panel" style="margin-top:16px;">
+        <div class="kv"><span>Calories</span><span>${Math.round(macro('kcal'))} kcal</span></div>
+        <div class="kv"><span>Protein</span><span>${macro('protein').toFixed(1)}g</span></div>
+        <div class="kv"><span>Carbs</span><span>${macro('carbs').toFixed(1)}g</span></div>
+        <div class="kv"><span>Fat</span><span>${macro('fat').toFixed(1)}g</span></div>
+      </div>
+
+      <button class="btn-primary" id="amtSave" style="margin-top:14px;">SET THIS AMOUNT</button>
+      ${overridden ? '<button class="btn-ghost" id="amtReset">↺ Back to the calculated amount</button>' : ''}
+    `;
+
+    const bump = dir=>{
+      if (unit){
+        const s = step * unit.g;
+        portionTarget.grams = Math.max(s, portionTarget.grams + dir * s);
+      } else {
+        const s = portionTarget.grams >= 100 ? 10 : 5;
+        portionTarget.grams = Math.max(0, portionTarget.grams + dir * s);
+      }
+      renderPortionEditor();
+    };
+    host.querySelectorAll('[data-amt]').forEach(b=>b.addEventListener('click', ()=>
+      bump(b.getAttribute('data-amt') === 'up' ? 1 : -1)));
+
+    const input = document.getElementById('amtInput');
+    if (input) input.addEventListener('change', ()=>{
+      const v = parseFloat(input.value);
+      portionTarget.grams = isFinite(v) && v > 0 ? v : portionTarget.grams;
+      renderPortionEditor();
+    });
+
+    document.getElementById('amtSave').addEventListener('click', ()=>{
+      setOverride(mealKey, slot, index, portionTarget.grams);
+      finishPortionEdit();
+    });
+    const reset = document.getElementById('amtReset');
+    if (reset) reset.addEventListener('click', ()=>{
+      setOverride(mealKey, slot, index, null);
+      finishPortionEdit();
+    });
+  }
+
+  function finishPortionEdit(){
+    const done = portionTarget && portionTarget.onDone;
+    closeModal('modalPortion');
+    portionTarget = null;
+    if (done) done();
+    saveState();
+  }
+
+  function formatUnits(n){
+    const r = Math.round(n * 2) / 2;
+    if (Number.isInteger(r)) return String(r);
+    return r < 1 ? '½' : `${Math.floor(r)}½`;
   }
 
   /* Smallest portion worth putting on a plan, per slot */
@@ -8825,7 +10443,20 @@
       const total = items.reduce((a,it)=>a + it.food.kcal*it.g/100, 0);
       const diff = mealKcal - total;
       if (Math.abs(diff) < 0.5) break;
-      const movable = diff < 0 ? items.filter(it => it.g > it.floor + 1e-9) : items;
+      /* Coming down, carbs, fat and sides give way first. Scaling everything
+         together took protein down with it — the meal landed on its calorie
+         target by quietly surrendering the macro the plan was chosen for. */
+      let movable;
+      if (diff < 0){
+        const above = items.filter(it => it.g > it.floor + 1e-9);
+        const spare = above.filter(it => it.slot !== 'protein');
+        const spareKcal = spare.reduce((a,it)=>a + it.food.kcal*it.g/100, 0);
+        const spareFloor = spare.reduce((a,it)=>a + it.food.kcal*it.floor/100, 0);
+        // only touch protein if the rest genuinely can't absorb the overage
+        movable = (spare.length && spareKcal + diff >= spareFloor) ? spare : above;
+      } else {
+        movable = items;
+      }
       const movKcal = movable.reduce((a,it)=>a + it.food.kcal*it.g/100, 0);
       if (movKcal <= 0) break;
       const scale = (movKcal + diff) / movKcal;
@@ -8977,9 +10608,32 @@
     return `<div class="season-hint">${lines}<div style="margin-top:6px;">Label values vary by brand — check the jar if you want exact numbers.</div></div>`;
   }
 
+  /* The loadout screen edits one prepped day at a time */
+  function renderLoadoutDayStrip(){
+    const panel = document.getElementById('loadoutDayPanel');
+    if (!panel) return;
+    const days = prepReady() ? state.prep.schedule.length : 1;
+    if (!prepReady() || days < 2){ panel.hidden = true; return; }
+    panel.hidden = false;
+    const active = dayIndex() + 1;
+    document.getElementById('loadoutDayLbl').textContent = `Day ${active} of ${days}`;
+    document.getElementById('loadoutDayStrip').innerHTML =
+      Array.from({length:days}, (_,i)=>i+1).map(n=>
+        `<button class="day-chip${n===active?' on':''}" data-loadday="${n}">${n}</button>`).join('');
+    document.getElementById('loadoutDayStrip').querySelectorAll('[data-loadday]').forEach(b=>
+      b.addEventListener('click', ()=>{
+        writeBackActiveDay();
+        applyDayToSelections(parseInt(b.getAttribute('data-loadday'),10));
+        renderMealTimeline();
+        refreshTargets();
+        saveState();
+      }));
+  }
+
   function renderMealTimeline(){
     const tier = currentTier();
     const tg = currentTargets();
+    renderLoadoutDayStrip();
     mealTimeline.innerHTML = "";
 
     const produceNote = document.getElementById('produceNote');
@@ -9000,8 +10654,12 @@
           const food = val ? def.list().find(f=>f.key===val) : null;
           const g = plan[def.slot][i];
           const ulab = (food && g != null) ? unitLabel(food, g) : null;
+          const ov = overridesFor(meal.key)[def.slot];
+          const isSet = !!(ov && ov[i] != null);
           const readout = (food && g != null)
-            ? `→ <span class="val">${ulab ? ulab : g.toFixed(0) + 'g'}</span> ${food.name}${ulab ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}` : "";
+            ? `→ <button class="amt-tap${isSet ? ' set' : ''}" data-amt-edit="${meal.key}|${def.slot}|${i}"
+                 aria-label="Change the amount of ${escapeHtml(food.name)}">${ulab ? ulab : g.toFixed(0) + 'g'} ✎</button>
+               ${food.name}${ulab ? ` <span style="color:var(--muted)">(${g.toFixed(0)}g)</span>` : ''}` : "";
           rows += `
             <div class="slot-row">
               <span class="slot-icon">${i === 0 ? def.icon : '➕'}</span>
@@ -9052,10 +10710,19 @@
     mealTimeline.querySelectorAll('select').forEach(sel=>{
       sel.addEventListener('change', onSlotChange);
     });
+    mealTimeline.querySelectorAll('[data-amt-edit]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const [mealKey, slot, idx] = btn.getAttribute('data-amt-edit').split('|');
+        openPortionEditor(mealKey, slot, parseInt(idx,10), ()=>{
+          renderMealTimeline(); updateHUD();
+        });
+      });
+    });
     mealTimeline.querySelectorAll('[data-add]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const [mealKey, slot] = btn.getAttribute('data-add').split('|');
         state.selections[mealKey][slot].push("");
+        writeBackActiveDay();
         renderMealTimeline();
         updateHUD();
       });
@@ -9064,6 +10731,9 @@
       btn.addEventListener('click', ()=>{
         const [mealKey, slot, idx] = btn.getAttribute('data-remove').split('|');
         state.selections[mealKey][slot].splice(parseInt(idx,10), 1);
+        // amounts are stored by position, so they no longer line up
+        clearOverrides(mealKey, slot);
+        writeBackActiveDay();
         renderMealTimeline();
         updateHUD();
       });
@@ -9071,6 +10741,7 @@
     mealTimeline.querySelectorAll('[data-notes]').forEach(inp=>{
       inp.addEventListener('input', ()=>{
         state.selections[inp.getAttribute('data-notes')].notes = inp.value;
+        writeBackActiveDay();
       });
     });
 
@@ -9182,7 +10853,8 @@
     'activity','sex','bodyweight','heightIn','age','dayType','exerciseMode','exerciseKcal',
     'tdee','finalKcal','assignedTierId','selectedTierId','preferences','cravings','mealCount',
     'favorites','discoveryMode','dislikes','mustUse','mustQty','eatingStyle','selections',
-    'mealPlan','mealWeights','skipBreakfast','breakfastForDinner','breakfastAllDay','uniqueMeals','variety',
+    'mealPlan','mealWeights','skipBreakfast','breakfastForDinner','breakfastAllDay',
+    'uniqueMeals','uniqueSnacks','prep','activeDay','portionOverrides','variety',
     'log','journalMeals','calMode',
     'eaten','prepServings'];
 
@@ -9191,6 +10863,8 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(()=>{
       try{
+        // whatever the loadout screen is showing belongs to a dish, not a day
+        writeBackActiveDay();
         const out = {};
         SAVE_FIELDS.forEach(k => { if (state[k] !== undefined) out[k] = state[k]; });
         out._savedAt = Date.now();
@@ -9210,6 +10884,9 @@
       MEAL_FLAGS.mealWeights = state.mealWeights || {};
       MEALS = buildMeals(state.mealPlan || '3+1');
       state.mealCount = MEALS.length;
+      state.portionOverrides = state.portionOverrides || {};
+      // rebuild the working copy from the saved prep so both stay in step
+      if (prepReady()) applyDayToSelections(state.activeDay || 1);
       return !!(state.finalKcal && state.assignedTierId);
     }catch(e){ return false; }
   }
@@ -9228,30 +10905,51 @@
      Totals every ingredient across the whole day so you buy once, then
      multiplies by however many days you're prepping.
   ========================================================= */
+  /* Every ingredient the prep needs, totalled across every day it's cooked
+     for. Multiplying one day by N was only right when every day was
+     identical — with dishes now rotating, day 3 can want salmon that day 1
+     never touched, so each day is walked for real. */
   function aggregateIngredients(){
     const totals = {};   // key -> {food, slot, grams}
-    MEALS.forEach(m=>{
-      const plan = computeMealPlan(m.key);
-      SLOT_DEFS.forEach(d=>{
-        state.selections[m.key][d.slot].forEach((k, i)=>{
-          const g = plan[d.slot][i];
-          if (!k || g == null) return;
-          const food = d.list().find(f=>f.key === k);
-          if (!food) return;
-          if (!totals[k]) totals[k] = {food, slot:d.slot, grams:0};
-          totals[k].grams += g;
+    const addDay = ()=>{
+      MEALS.forEach(m=>{
+        const plan = computeMealPlan(m.key);
+        SLOT_DEFS.forEach(d=>{
+          (state.selections[m.key][d.slot] || []).forEach((k, i)=>{
+            const g = plan[d.slot][i];
+            if (!k || g == null) return;
+            const food = d.list().find(f=>f.key === k);
+            if (!food) return;
+            if (!totals[k]) totals[k] = {food, slot:d.slot, grams:0};
+            totals[k].grams += g;
+          });
         });
       });
-    });
+    };
+
+    if (!prepReady()){ addDay(); return totals; }
+
+    writeBackActiveDay();
+    const keep = state.activeDay;
+    for (let d = 0; d < state.prep.schedule.length; d++){
+      applyDayToSelections(d + 1);
+      addDay();
+    }
+    applyDayToSelections(keep);
     return totals;
   }
+
+  /* The shopping total already covers every day, so nothing gets multiplied
+     a second time. */
+  function shoppingMultiplier(){ return prepReady() ? 1 : (state.prepServings || 1); }
 
   const SHOP_HEADINGS = {protein:'🍗 PROTEIN', carb:'🍚 CARBS', fat:'🥑 FATS',
                          veg:'🥦 VEGETABLES', fruit:'🍓 FRUIT', sauce:'🥫 SAUCES'};
 
   function renderShoppingList(){
     const host = document.getElementById('shopList');
-    const days = state.prepServings || 1;
+    const days = prepReady() ? state.prep.schedule.length : (state.prepServings || 1);
+    const mult = shoppingMultiplier();
     const totals = aggregateIngredients();
     const bySlot = {};
     Object.values(totals).forEach(t=>{ (bySlot[t.slot] = bySlot[t.slot] || []).push(t); });
@@ -9260,7 +10958,7 @@
     if (prepNote){
       prepNote.innerHTML = days === 1
         ? 'Quantities are for a single day.'
-        : `Everything below is multiplied by <strong style="color:var(--green)">${days}</strong> — cook once, eat for ${days} days.`;
+        : `Totalled across all <strong style="color:var(--green)">${days}</strong> prepped days, dish by dish.`;
     }
 
     if (!Object.keys(totals).length){
@@ -9274,7 +10972,7 @@
       return `<div class="panel">
         <div class="slot-label" style="margin-bottom:10px;">${SHOP_HEADINGS[d.slot] || d.label}</div>
         ${rows.map(t=>{
-          const g = t.grams * days;
+          const g = t.grams * mult;
           const ul = unitLabel(t.food, g);
           return `<label class="shop-row">
             <input type="checkbox" class="shop-tick">
@@ -9296,7 +10994,8 @@
   }
 
   function shoppingListText(){
-    const days = state.prepServings || 1;
+    const days = prepReady() ? state.prep.schedule.length : (state.prepServings || 1);
+    const mult = shoppingMultiplier();
     const totals = aggregateIngredients();
     const bySlot = {};
     Object.values(totals).forEach(t=>{ (bySlot[t.slot] = bySlot[t.slot] || []).push(t); });
@@ -9308,7 +11007,7 @@
       if (!rows.length) return;
       out += (SHOP_HEADINGS[d.slot] || d.label).replace(/[^\w\s/&]/g,'').trim() + '\n';
       rows.forEach(t=>{
-        const g = t.grams * days;
+        const g = t.grams * mult;
         const ul = unitLabel(t.food, g);
         out += `  [ ] ${t.food.name} — ${ul ? ul + ' (' + g.toFixed(0) + 'g)' : g.toFixed(0) + 'g'}\n`;
       });
@@ -9322,6 +11021,19 @@
   /* ---- shopping list wiring ---- */
   const prepGrid = document.getElementById('prepGrid');
   function renderPrepGrid(){
+    /* Once a prep exists the day count belongs to it — the list is totalled
+       from the real schedule, so a second day picker here could only
+       disagree with it. Show what's being cooked for and send changes back
+       to the roadmap, where changing it actually rebuilds the plan. */
+    if (prepReady()){
+      const n = state.prep.schedule.length;
+      prepGrid.innerHTML = `<div style="grid-column:1/-1;">
+        <div class="season-hint" style="margin:0;">
+          Totalled for the <strong style="color:var(--green)">${n} day${n===1?'':'s'}</strong>
+          in your prep. To cook for more or fewer days, change it in the Roadmap and rebuild.
+        </div></div>`;
+      return;
+    }
     prepGrid.innerHTML = [1,2,3,4,5,6,7].slice(0,4).concat([5,7]).filter((v,i,a)=>a.indexOf(v)===i)
       .map(n=>`<button class="choice-btn${(state.prepServings||1)===n?' selected':''}" data-prep="${n}"
         style="min-height:52px; justify-content:center;"><span><strong>${n} ${n===1?'day':'days'}</strong></span></button>`).join('');
@@ -9333,6 +11045,16 @@
 
   document.getElementById('btnShopping').addEventListener('click', ()=>{
     renderPrepGrid(); renderShoppingList(); showScreen('screen-shop');
+  });
+
+  document.getElementById('btnPrepShopping').addEventListener('click', ()=>{
+    renderPrepGrid(); renderShoppingList(); showScreen('screen-shop');
+  });
+
+  document.getElementById('btnPrepReshuffle').addEventListener('click', ()=>{
+    generateSuggestion();
+    renderPrepDays();
+    saveState();
   });
 
   document.getElementById('btnCopyList').addEventListener('click', async (e)=>{
