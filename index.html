@@ -167,6 +167,60 @@
   .dish-chip{ border:1px solid var(--line); border-radius:999px; padding:4px 10px;
               font-size:11px; line-height:1.4; }
   .prep-day-go{ font-size:11px; color:var(--muted); letter-spacing:.5px; }
+
+  /* ---------- Container ledger ----------
+     The prep cooks N servings of each dish; this is how many are still in
+     the fridge. Pips read at a glance, the buttons do the counting. */
+  .ctn-row{ display:flex; align-items:flex-start; gap:10px; justify-content:space-between;
+            padding:10px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .ctn-row:last-of-type{ border-bottom:0; }
+  .ctn-main{ flex:1; min-width:0; }
+  .ctn-name{ display:block; font-family:var(--font-body); font-size:var(--fs-body);
+             overflow:hidden; text-overflow:ellipsis; }
+  .ctn-count{ font-family:var(--font-body); font-size:11px; color:var(--muted); }
+  .ctn-pips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+  .pip{ width:12px; height:12px; border-radius:3px; border:1px solid var(--line);
+        background:var(--panel-2); }
+  .pip.full{ background:currentColor; border-color:currentColor; }
+  .ctn-btns{ display:flex; gap:6px; flex:0 0 auto; }
+  .ctn-btns .mini-btn{ padding:7px 9px; }
+  .ctn-row.spent .ctn-name{ text-decoration:line-through; }
+  .dish-chip.spent{ opacity:.4; text-decoration:line-through; }
+  .dish-chip.ateout{ border-style:dashed; opacity:.6; }
+  .pd-ateout{ font-family:var(--font-body); font-size:var(--fs-body); color:var(--amber);
+              border:1px dashed rgba(255,190,90,.4); border-radius:10px;
+              padding:10px 12px; margin-bottom:8px; }
+  .pd-actions{ display:flex; gap:8px; margin-top:8px; }
+  .pd-actions .mini-btn{ flex:1; margin-top:0; }
+  .swap-note{ font-family:var(--font-body); font-size:11px; color:var(--muted); margin:2px 0 0; }
+
+  /* ---------- Cook plan ---------- */
+  .cook-step{ display:flex; gap:12px; padding:12px 0;
+              border-bottom:1px solid rgba(255,255,255,.05); }
+  .cook-step:last-of-type{ border-bottom:0; }
+  .cook-clock{ flex:0 0 54px; font-family:var(--font-display); font-size:var(--fs-7);
+               color:var(--cyan); letter-spacing:.5px; padding-top:2px; }
+  .cook-main{ flex:1; min-width:0; }
+  .cook-name{ font-family:var(--font-body); font-size:var(--fs-body); line-height:1.4; }
+  .cook-meta{ font-family:var(--font-body); font-size:11px; color:var(--muted); margin-top:3px; }
+  .cook-bar{ height:6px; border-radius:99px; background:var(--panel-2);
+             border:1px solid var(--line); overflow:hidden; margin-top:7px; }
+  .cook-bar span{ display:block; height:100%; border-radius:99px; }
+  .cook-warn{ font-family:var(--font-body); font-size:11px; color:var(--amber);
+              border:1px dashed rgba(255,190,90,.4); border-radius:10px;
+              padding:9px 11px; margin-top:10px; }
+  .gear-tag{ font-family:var(--font-body); font-size:10px; letter-spacing:.5px;
+             border:1px solid var(--line); border-radius:999px; padding:2px 8px;
+             margin-left:6px; white-space:nowrap; }
+  .ctn-bar{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .mini-btn:disabled{ opacity:.3; cursor:default; }
+  .toast{ position:fixed; left:50%; bottom:92px; transform:translate(-50%,10px);
+          background:var(--panel-2); border:1px solid var(--accent-line); color:var(--text);
+          font-family:var(--font-body); font-size:var(--fs-body); padding:10px 16px;
+          border-radius:14px; opacity:0; pointer-events:none; z-index:9999;
+          max-width:88vw; text-align:center;
+          transition:opacity .18s ease, transform .18s ease; }
+  .toast.on{ opacity:1; transform:translate(-50%,0); }
   .day-strip{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
   .day-chip{ min-width:44px; min-height:44px; border-radius:10px; border:1px solid var(--line);
              background:var(--panel-2); color:var(--muted); font-family:var(--font-body);
@@ -711,6 +765,18 @@
   .shop-name{ flex:1; font-family:var(--font-body); font-size:var(--fs-body); line-height:1.4; }
   .shop-qty{ font-family:var(--font-body); font-size:var(--fs-body); color:var(--green); white-space:nowrap; }
   .shop-tick:checked ~ .shop-name, .shop-tick:checked ~ .shop-qty{ opacity:.4; text-decoration:line-through; }
+  .shop-main{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; cursor:pointer; }
+  .shop-have{ display:block; font-size:11px; color:var(--amber); }
+  .shop-row.covered .shop-qty{ color:var(--muted); }
+  .pantry-tap{ flex:0 0 auto; font-family:var(--font-body); font-size:12px; background:transparent;
+               border:1px dashed var(--accent-line); color:var(--cyan); border-radius:8px;
+               padding:6px 9px; min-height:34px; min-width:38px; cursor:pointer; }
+  .pantry-tap.on{ border-style:solid; border-color:rgba(255,190,90,.5); color:var(--amber); }
+  .pantry-row{ display:flex; align-items:center; gap:10px; padding:8px 0;
+               border-bottom:1px solid rgba(255,255,255,.05); }
+  .pantry-row:last-of-type{ border-bottom:0; }
+  .pantry-row .pn{ flex:1; min-width:0; font-family:var(--font-body); font-size:var(--fs-body); }
+  .pantry-row .pq{ font-family:var(--font-body); font-size:var(--fs-body); color:var(--amber); }
   .copy-fallback{ width:100%; height:220px; margin-top:10px; font-size:12px!important; }
 
   /* Printing gives a clean paper list rather than a screenshot of the app */
@@ -718,7 +784,8 @@
     body{ background:#fff!important; color:#000!important; }
     .screen{ display:none!important; }
     #screen-shop{ display:block!important; max-width:none; padding:0; }
-    #hud, .top-strip, .btn-primary, .btn-ghost, #prepGrid, .eyebrow{ display:none!important; }
+    #hud, .top-strip, .btn-primary, .btn-ghost, #prepGrid, .eyebrow,
+    .pantry-tap, #pantryPanel{ display:none!important; }
     .panel{ border:1px solid #ccc; background:#fff!important; break-inside:avoid; margin-bottom:10px; }
     .title, .slot-label, .shop-name, .shop-qty, .subtitle{ color:#000!important; }
     .shop-qty{ font-weight:700; }
@@ -813,6 +880,26 @@
       <button class="modal-x" data-close="modalPrepDay" aria-label="Close">✕</button>
     </div>
     <div class="modal-body" id="prepDayBody"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalCookPlan" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="cookPlanTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="cookPlanTitle">COOK PLAN</span>
+      <button class="modal-x" data-close="modalCookPlan" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="cookPlanBody"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalPantry" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pantryTitle">
+    <div class="modal-head">
+      <span class="modal-title" id="pantryTitle">ALREADY HAVE SOME</span>
+      <button class="modal-x" data-close="modalPantry" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="pantryBody"></div>
   </div>
 </div>
 
@@ -1084,6 +1171,7 @@
     <div id="prepDayList"></div>
     <div id="prepDishSummary"></div>
     <button class="btn-ghost" id="btnPrepReshuffle">🎲 RESHUFFLE THE WHOLE PREP</button>
+    <button class="btn-ghost" id="btnCookPlan">🍳 COOK PLAN — WHAT ORDER TO COOK IN</button>
     <button class="btn-ghost" id="btnPrepShopping">🧾 SHOPPING LIST FOR THIS PREP</button>
   </section>
 
@@ -1345,6 +1433,7 @@
       <div class="choice-grid" id="prepGrid" style="grid-template-columns:repeat(4,1fr);"></div>
     </div>
 
+    <div id="pantryPanel"></div>
     <div id="shopList"></div>
 
     <button class="btn-primary" id="btnCopyList">📋 COPY LIST</button>
@@ -1975,7 +2064,7 @@
       {key:"tempeh",    name:"Tempeh",                     kcal:192, protein:20.3,carbs:7.6, fat:10.8,tags:["soy","legume"], crave:["savory","grilled"]},
       {key:"edamame",   name:"Edamame, shelled",           kcal:121, protein:11.9,carbs:8.9, fat:5.2, tags:["soy","legume"], crave:["fresh","light"]},
       {key:"natto",     name:"Natto",                      kcal:212, protein:17.7,carbs:12.7,fat:11,  tags:["soy","legume"], crave:["savory"]},
-      {key:"tvp",       name:"TVP (dry)",                  kcal:327, protein:52,  carbs:34,  fat:1.2, tags:["soy"], crave:["savory"]},
+      {key:"tvp",       name:"TVP (dry)",                  kcal:327, protein:52,  carbs:34,  fat:1.2, tags:["soy","legume"], crave:["savory"]},
       {key:"seitan",    name:"Seitan",                     kcal:370, protein:75,  carbs:14,  fat:1.9, tags:["gluten"], crave:["savory"]},
       {key:"lentils",   name:"Lentils (dry)",              kcal:353, protein:25.8,carbs:60,  fat:1.1, tags:["legume"], crave:["spicy","warmbowl"]},
       {key:"blackbeans",name:"Black Beans (dry)",          kcal:341, protein:21.6,carbs:62.4,fat:1.4, tags:["legume"], crave:["spicy","warmbowl"]},
@@ -2046,8 +2135,8 @@
       {key:"fontina",    name:"Fontina Cheese",             kcal:389, protein:25.6,carbs:1.6, fat:31,  tags:["dairy"], crave:["savory","creamy","comfort"]},
       {key:"mycoprotein",name:"Mycoprotein (Quorn)",        kcal:105, protein:14.5,carbs:4.5, fat:2.9, tags:["egg"], crave:["savory","light"]},
       {key:"veganground",name:"Plant-Based Ground",         kcal:231, protein:17.6,carbs:8.8, fat:13.2,tags:["soy","legume"], crave:["savory","comfort"]},
-      {key:"tofusilken", name:"Silken Tofu",                kcal:55,  protein:5.6, carbs:2.3, fat:2.7, tags:["soy"], crave:["creamy","light"]},
-      {key:"soymilk",    name:"Soy Milk, unsweetened",      kcal:33,  protein:3.3, carbs:1.3, fat:1.8, tags:["soy"], crave:["creamy","nocook"]},
+      {key:"tofusilken", name:"Silken Tofu",                kcal:55,  protein:5.6, carbs:2.3, fat:2.7, tags:["soy","legume"], crave:["creamy","light"]},
+      {key:"soymilk",    name:"Soy Milk, unsweetened",      kcal:33,  protein:3.3, carbs:1.3, fat:1.8, tags:["soy","legume"], crave:["creamy","nocook"]},
       {key:"hempprot",   powder:true, name:"Hemp Protein Powder", kcal:380, protein:50, carbs:12, fat:11, tags:["supplement"], crave:["nocook"]},
       {key:"gainer",     powder:true, name:"Mass Gainer Powder",  kcal:380, protein:20, carbs:62, fat:5,  tags:["dairy","supplement"], crave:["sweet","nocook"]},
 
@@ -2172,7 +2261,7 @@
       {key:"pancakemix",name:"Pancake Mix (dry)",          kcal:363, protein:9,   carbs:73,  fat:3.5, tags:["gluten"], crave:["sweet","comfort"]},
       {key:"protpancake",name:"Protein Pancake Mix (dry)", kcal:370, protein:35,  carbs:44,  fat:5,   macroFriendly:true, tags:["gluten"], crave:["sweet","comfort"]},
       {key:"protwaffle",name:"Protein Waffle", unit:{whole:true, g:40,one:"waffle",many:"waffles"}, kcal:250, protein:22, carbs:30, fat:5, macroFriendly:true, tags:["gluten"], crave:["sweet","comfort"]},
-      {key:"proteinbar",name:"Protein Bar", unit:{whole:true, g:60,one:"bar",many:"bars"}, kcal:330, protein:33, carbs:38, fat:8, macroFriendly:true, tags:[], crave:["sweet","nocook"]},
+      {key:"proteinbar",name:"Protein Bar", unit:{whole:true, g:60,one:"bar",many:"bars"}, kcal:330, protein:33, carbs:38, fat:8, macroFriendly:true, tags:["dairy"], crave:["sweet","nocook"]},
       {key:"oatbran",   name:"Oat Bran (dry)",             kcal:246, protein:17.3,carbs:66,  fat:7,   tags:[], crave:["warmbowl","creamy"]},
       {key:"cofw",      name:"Cream of Wheat (dry)",       kcal:371, protein:10.6,carbs:78,  fat:1.3, tags:["gluten"], crave:["creamy","comfort","warmbowl"]},
       {key:"basmati",   name:"Basmati Rice (dry)",        kcal:356, protein:8.5, carbs:78,  fat:0.9, tags:[], crave:["comfort","warmbowl","carbheavy"]},
@@ -2324,7 +2413,7 @@
       {key:"creamcheeselight",name:"Light Cream Cheese",    kcal:200, protein:8,  carbs:8,  fat:15,  tags:["dairy"], crave:["creamy"]},
       {key:"burrata",   name:"Burrata",                     kcal:330, protein:14, carbs:2,  fat:30,  tags:["dairy"], crave:["creamy","fresh"]},
       {key:"queso",     name:"Cotija / Queso Fresco",       kcal:299, protein:19, carbs:3,  fat:24,  tags:["dairy"], crave:["savory","creamy"]},
-      {key:"duckfat",   name:"Duck Fat",                    kcal:900, protein:0,  carbs:0,  fat:100, tags:["meat"], crave:["savory","comfort"]},
+      {key:"duckfat",   name:"Duck Fat",                    kcal:900, protein:0,  carbs:0,  fat:100, tags:["meat","poultry"], crave:["savory","comfort"]},
       {key:"darkchoc", name:"Dark Chocolate (85%)",      kcal:598, protein:8,  carbs:46, fat:43,  tags:[], crave:["sweet","nocook"]},
       /* ---- ADDED: dense fats and a couple of lighter counterparts ---- */
       {key:"coconutcream",name:"Coconut Cream",             kcal:330, protein:3.6, carbs:6.7, fat:34,  tags:[], crave:["creamy","comfort"]},
@@ -2337,7 +2426,7 @@
       {key:"crema",      name:"Mexican Crema",              kcal:300, protein:2.5, carbs:4,   fat:30,  tags:["dairy"], crave:["creamy","spicy"]},
       {key:"walnutbutter",name:"Walnut Butter",             kcal:650, protein:15,  carbs:12,  fat:62,  tags:["nuts"], crave:["creamy"]},
       {key:"tapenade",   name:"Olive Tapenade",             kcal:260, protein:1.5, carbs:6,   fat:26,  tags:[], crave:["savory","fresh"]},
-      {key:"chocpb",     name:"Chocolate Peanut Butter",    kcal:550, protein:18,  carbs:22,  fat:44,  tags:["nuts"], crave:["sweet","creamy","treat"]},
+      {key:"chocpb",     name:"Chocolate Peanut Butter",    kcal:550, protein:18,  carbs:22,  fat:44,  tags:["nuts","legume"], crave:["sweet","creamy","treat"]},
       {key:"sourcreamlt",name:"Light Sour Cream",           kcal:135, protein:3.5, carbs:7,   fat:9,   tags:["dairy"], crave:["creamy","spicy"]},
       {key:"marcona",    name:"Marcona Almonds",            kcal:620, protein:19,  carbs:15,  fat:55,  tags:["nuts"], crave:["crunchy","savory","nocook"]},
       {key:"evapmilk",   name:"Evaporated Milk",            kcal:135, protein:6.8, carbs:10,  fat:7.6, tags:["dairy"], crave:["creamy"]},
@@ -2463,7 +2552,7 @@
       {key:"broccolirabe",name:"Broccoli Rabe",             kcal:22,  protein:3.2, carbs:2.9, fat:0.5, tags:[], crave:["savory","warmbowl"]},
       {key:"savoy",      name:"Savoy Cabbage",              kcal:27,  protein:2,   carbs:6.1, fat:0.1, tags:[], crave:["fresh","crunchy"]},
       {key:"microgreens",name:"Microgreens",                kcal:32,  protein:2.7, carbs:4.5, fat:0.4, tags:[], crave:["fresh","light","nocook"]},
-      {key:"mixveg",     name:"Frozen Mixed Vegetables",    kcal:65,  protein:3.3, carbs:13,  fat:0.4, tags:[], crave:["comfort","warmbowl"]},
+      {key:"mixveg",     name:"Frozen Mixed Vegetables",    kcal:65,  protein:3.3, carbs:13,  fat:0.4, tags:["legume"], crave:["comfort","warmbowl"]},
       {key:"stirfryveg", name:"Frozen Stir-Fry Blend",      kcal:35,  protein:2,   carbs:7,   fat:0.2, tags:[], crave:["warmbowl","savory"]},
       {key:"coleslawmix",name:"Coleslaw Mix",               kcal:25,  protein:1.3, carbs:5.8, fat:0.1, tags:[], crave:["crunchy","fresh","nocook"]},
       {key:"peasfroz",   name:"Frozen Peas",                kcal:78,  protein:5.2, carbs:13.6,fat:0.4, tags:["legume"], crave:["comfort","warmbowl"]},
@@ -2638,7 +2727,7 @@
       {key:"buffalowing",name:"Garlic Parmesan Sauce",kcal:400, protein:4,  carbs:5,   fat:41,  serving:25, level:"rich",     tags:["dairy"], crave:["savory","creamy","comfort"], pairs:[], brands:["Buffalo Wild Wings Garlic Parm — ~130 kcal / 2 tbsp","Ken's Garlic Parmesan — ~140 kcal / 2 tbsp"]},
       {key:"thousand",  name:"Thousand Island",       kcal:390, protein:1,  carbs:16,  fat:36,  serving:30, level:"rich",     tags:["egg","nightshade"], crave:["creamy","comfort"], pairs:[], brands:["Ken's Thousand Island — ~120 kcal / 2 tbsp","Primal Kitchen Special Sauce — ~110 kcal / 2 tbsp"]},
       {key:"greekdress",name:"Greek Dressing",        kcal:270, protein:0.5,carbs:5,   fat:28,  serving:30, level:"standard", tags:[], crave:["fresh","savory"], pairs:[], brands:["Ken's Greek — ~110 kcal / 2 tbsp","Cardini's Greek — ~100 kcal / 2 tbsp"]},
-      {key:"gravy",     name:"Turkey / Brown Gravy",  kcal:45,  protein:1.5,carbs:6,   fat:1.5, serving:60, level:"light",    tags:["gluten"], crave:["savory","comfort","warmbowl"], pairs:["whitepot","potato","bread"], brands:["Heinz Home Style Gravy — ~25 kcal / ¼ cup","Trader Joe's Turkey Gravy — ~30 kcal / ¼ cup"]},
+      {key:"gravy",     name:"Turkey / Brown Gravy",  kcal:45,  protein:1.5,carbs:6,   fat:1.5, serving:60, level:"light",    tags:["gluten","meat","poultry"], crave:["savory","comfort","warmbowl"], pairs:["whitepot","potato","bread"], brands:["Heinz Home Style Gravy — ~25 kcal / ¼ cup","Trader Joe's Turkey Gravy — ~30 kcal / ¼ cup"]},
       {key:"applesaucecond",name:"Cranberry Sauce",   kcal:151, protein:0.1,carbs:39,  fat:0.1, serving:35, level:"standard", tags:[], crave:["sweet","comfort"], pairs:[], brands:["Ocean Spray Whole Berry — ~50 kcal / 2 tbsp","365 Organic Cranberry Sauce — ~45 kcal / 2 tbsp"]},
       {key:"cocktail",  name:"Cocktail Sauce",        kcal:130, protein:1,  carbs:31,  fat:0.3, serving:30,  level:"light",    tags:["nightshade"], crave:["fresh","spicy"], pairs:[], brands:["Heinz Cocktail Sauce — ~30 kcal / 2 tbsp","Old Bay Cocktail Sauce — ~30 kcal / 2 tbsp"]},
 
@@ -2697,7 +2786,7 @@
       {key:"subdressing",name:"Sub Oil & Vinegar",         kcal:420, protein:0,   carbs:3,   fat:46,  serving:15,  level:"rich",     tags:[], crave:["savory","fresh"], pairs:["hoagie","kaiser","ciabatta","baguette","lavash"]},
       {key:"dijon",      name:"Dijon Mustard",             kcal:100, protein:5,   carbs:5,   fat:6,   serving:15,  level:"light",    tags:[], crave:["savory"], pairs:["bread","marblerye","ryebread","pretzelbun","hoagie"]},
       {key:"horseradishcr",name:"Horseradish Cream",       kcal:190, protein:2,   carbs:8,   fat:17,  serving:20,  level:"standard", tags:["dairy"], crave:["creamy","savory"], pairs:["hoagie","kaiser","marblerye","ryebread","baguette"]},
-      {key:"aujus",      name:"Au Jus",                    kcal:20,  protein:1.5, carbs:2,   fat:0.5, serving:80,  level:"light",    tags:[], crave:["savory","warmbowl"], pairs:["hoagie","baguette","kaiser","ciabatta"]},
+      {key:"aujus",      name:"Au Jus",                    kcal:20,  protein:1.5, carbs:2,   fat:0.5, serving:80,  level:"light",    tags:["meat"], crave:["savory","warmbowl"], pairs:["hoagie","baguette","kaiser","ciabatta"]},
       {key:"chilisauce", name:"Chili Sauce (bottled)",     kcal:105, protein:1.5, carbs:25,  fat:0.3, serving:30,  level:"standard", tags:["nightshade"], crave:["savory","spicy"], pairs:["burgerbun","hotdogbun","potatobun","whitebread"]},
     ],
 
@@ -3745,7 +3834,7 @@
      protein:["whey","yogurt0","skyr"], carb:["oats"], fat:["chia","pb","almondbutter","flaxseed"],
      fruit:["bananamed","berries","strawberry","applesauce"], veg:[], sauce:[]},
     {name:"Scrambled Eggs & Toast", pattern:"Scrambled {P} with {V} & {C} Toast", form:"Toast", slots:["breakfast"], crave:["savory","comfort"],
-     protein:["wholeegg","eggwhites"], protein2:["cheddar","turkbacon"], carb:["protbread","bread","sourdough","ezekiel","engmuffin"], fat:["butter","avocado","oil"],
+     protein:["wholeegg","eggwhites"], carb:["protbread","bread","sourdough","ezekiel","engmuffin"], fat:["butter","avocado","oil"],
      veg:["spinach","mushrooms","tomatoes","peppers","scallion"], fruit:["navel","berries"], sauce:["hotsauce","salsa","ketchup"]},
     {name:"Breakfast Burrito", pattern:"{P} & {V} Breakfast Burrito", form:"Burrito", slots:["breakfast"], crave:["savory","spicy","comfort"],
      protein:["wholeegg","eggwhites","turkbacon","grndturk93","cheddar"], carb:["lowcarbtort10","flourtort10","corntort6"], fat:["avocado","oil"],
@@ -4968,7 +5057,7 @@
        "There is nothing else in a BLT. The whole thing is about the quality of four ingredients."]},
     {name:"French Dip", season:["thyme","blackpepper","garlicpwd"], pattern:"{P} French Dip", form:"Sub", slots:["lunch","dinner"], crave:["savory","warmbowl","comfort"],
      core:["sauce"],
-     protein:["roastbeef","chuckroast","brisket"], carb:["hoagie","baguette","kaiser","ciabatta"], fat:["butter","oil","provoslice"],
+     protein:["roastbeef","chuckroast","brisket","provoslice"], carb:["hoagie","baguette","kaiser","ciabatta"], fat:["butter","oil"],
      veg:["onion","grillonion","mushrooms"], fruit:[], sauce:["aujus","horseradishcr","gravy","dijon"],
      steps:[
        "The jus is the dish. Deglaze the roasting pan with stock, reduce it hard, and taste it as a soup before it ever meets bread.",
@@ -4979,7 +5068,7 @@
        "Serve the jus hot in a cup alongside. Cold jus is a sad thing."]},
     {name:"Cuban Sandwich", season:["cumin","oregano","blackpepper"], pattern:"Cuban Sandwich", form:"Sandwich", slots:["lunch","dinner"], crave:["savory","comfort"],
      core:["sauce"],
-     protein:["porkshould","porchetta","ham","pork"], carb:["ciabatta","hoagie","baguette","kaiser"], fat:["butter","oil","swissslice"],
+     protein:["porkshould","porchetta","ham","pork","swissslice"], carb:["ciabatta","hoagie","baguette","kaiser"], fat:["butter","oil"],
      veg:["dillspears","pickles"], fruit:[], sauce:["dijon","mustard","aujus"],
      steps:[
        "Mustard on both cut faces, and only mustard. Mayonnaise on a Cuban is a different sandwich.",
@@ -7097,6 +7186,9 @@
         <div class="rmeta">${escapeHtml(ings.join(' · '))}</div>
         ${asSwap ? `<div class="rmeta" style="color:var(--muted);">Not built on it — swap in ${escapeHtml(asSwap.join(' or '))}.</div>` : ''}
         <div class="rmeta">~${p.kcal} kcal · ${p.protein}g protein at ${escapeHtml((GOAL_SHORT[quoteGoal] || 'maintenance').toLowerCase())} portions</div>
+        ${(()=>{ const ct = cookTime(r, 1); return ct ? `<div class="rmeta">
+          ${GEAR[ct.gear].icon} ${mins(ct.active)} hands-on${ct.total > ct.active
+            ? ` · ${mins(ct.total)} start to finish` : ''}</div>` : ''; })()}
         <div>${GOAL_ORDER.filter(g=>fits.includes(g)).map(g=>
             `<span class="rtag goal${g === myGoal ? ' mine' : ''}">${escapeHtml(GOAL_SHORT[g])}</span>`).join('')}</div>
         <div>${tags.map(t=>`<span class="rtag">${t}</span>`).join('')}</div>
@@ -7728,6 +7820,408 @@
     return DISH_COLORS[(ref.index + offset) % DISH_COLORS.length];
   }
 
+  /* =========================================================
+     COOK TIMES
+     Recipes carry a `form` — Skillet, Tray, Slow Cooker — which already
+     says most of what there is to say about how long a dish takes and what
+     it occupies. Rather than hand-timing 239 recipes, timings are seeded
+     from the form and a recipe can override with its own `time`.
+
+     Two numbers, not one. Total is wall clock; active is hands-on. A tray
+     bake and a stir-fry can both be "30 minutes" while being nothing alike
+     to cook, and it's the hands-on number that decides whether a Sunday
+     afternoon is enough.
+
+     `stage` is cook order: 1 starts first because it runs longest without
+     you, 4 is assembled last because it goes soggy or cold.
+  ========================================================= */
+  const GEAR = {
+    oven:   {icon:'🔥', name:'oven'},
+    stove:  {icon:'🍳', name:'hob'},
+    slow:   {icon:'🐢', name:'slow cooker'},
+    fryer:  {icon:'♨️', name:'air fryer'},
+    none:   {icon:'🔪', name:'no heat'},
+    chill:  {icon:'❄️', name:'fridge'},
+  };
+
+  /* active, total, gear, stage */
+  const FORM_COOK = {
+    'Slow Cooker':{a:15,t:300,g:'slow', s:1},
+    'Roast':      {a:15,t:75, g:'oven', s:1},
+    'Stew':       {a:20,t:70, g:'stove',s:1},
+    'Chili':      {a:20,t:60, g:'stove',s:1},
+    'Pudding':    {a:5, t:245,g:'chill',s:1},
+    'Jar':        {a:5, t:245,g:'chill',s:1},
+    'Bites':      {a:10,t:70, g:'chill',s:1},
+    'Bake':       {a:15,t:50, g:'oven', s:2},
+    'Tray':       {a:15,t:45, g:'oven', s:2},
+    'Meal Prep':  {a:25,t:50, g:'oven', s:2},
+    'Muffins':    {a:15,t:35, g:'oven', s:2},
+    'Skewers':    {a:15,t:30, g:'oven', s:2},
+    'Soup':       {a:20,t:45, g:'stove',s:2},
+    'Curry':      {a:20,t:40, g:'stove',s:2},
+    'Treat':      {a:10,t:40, g:'oven', s:2},
+    'Air Fryer':  {a:8, t:25, g:'fryer',s:2},
+    'Pasta':      {a:15,t:30, g:'stove',s:3},
+    'Noodles':    {a:12,t:25, g:'stove',s:3},
+    'Hash':       {a:15,t:30, g:'stove',s:3},
+    'Skillet':    {a:15,t:25, g:'stove',s:3},
+    'Stir-Fry':   {a:15,t:20, g:'stove',s:3},
+    'Fajitas':    {a:15,t:25, g:'stove',s:3},
+    'Tacos':      {a:15,t:25, g:'stove',s:3},
+    'Burrito':    {a:15,t:25, g:'stove',s:3},
+    'Burger':     {a:12,t:22, g:'stove',s:3},
+    'Pancakes':   {a:12,t:22, g:'stove',s:3},
+    'Waffles':    {a:12,t:22, g:'stove',s:3},
+    'Plate':      {a:15,t:25, g:'stove',s:3},
+    'Bowl':       {a:15,t:25, g:'stove',s:3},
+    'Quesadilla': {a:8, t:14, g:'stove',s:3},
+    'Melt':       {a:8, t:14, g:'stove',s:3},
+    'Oats':       {a:5, t:12, g:'stove',s:4},
+    'Toast':      {a:5, t:8,  g:'stove',s:4},
+    'Bagel':      {a:4, t:7,  g:'stove',s:4},
+    'Salad':      {a:10,t:10, g:'none', s:4},
+    'Sandwich':   {a:8, t:8,  g:'none', s:4},
+    'Sub':        {a:8, t:8,  g:'none', s:4},
+    'Wrap':       {a:7, t:7,  g:'none', s:4},
+    'Wraps':      {a:7, t:7,  g:'none', s:4},
+    'Roll':       {a:7, t:7,  g:'none', s:4},
+    'Roll-Ups':   {a:6, t:6,  g:'none', s:4},
+    'Board':      {a:10,t:10, g:'none', s:4},
+    'Parfait':    {a:5, t:5,  g:'none', s:4},
+    'Cup':        {a:5, t:5,  g:'none', s:4},
+    'Snack':      {a:5, t:5,  g:'none', s:4},
+    'Shake':      {a:3, t:3,  g:'none', s:4},
+    'Drink':      {a:3, t:3,  g:'none', s:4},
+    'Frozen':     {a:5, t:5,  g:'none', s:4},
+  };
+  const COOK_FALLBACK = {a:12, t:20, g:'stove', s:3};
+
+  /* Cooking four portions is not four times the work, but it is not the
+     same work either — more chopping, more batches in the pan. The hands-on
+     part grows; the oven does not care how full it is. */
+  function cookTime(recipe, servings){
+    if (!recipe) return null;
+    /* A recipe already tagged "no cooking" should never be handed a hob and
+       fifteen minutes because its form happens to be Plate or Bowl. The
+       tag is more specific than the form, so it wins. */
+    const nocook = (recipe.crave || []).includes('nocook');
+    const base = (recipe.time && recipe.time.a) ? recipe.time
+               : nocook ? {a:6, t:6, g:'none', s:4}
+               : (FORM_COOK[recipe.form] || COOK_FALLBACK);
+    const n = Math.max(1, servings || 1);
+    const extra = Math.round(base.a * 0.3 * (n - 1));
+    return {
+      active: base.a + extra,
+      total:  base.t + extra,
+      gear:   base.g,
+      stage:  base.s,
+      form:   recipe.form || '',
+    };
+  }
+
+  function mins(n){
+    n = Math.round(n);
+    if (n < 60) return n + 'm';
+    const h = Math.floor(n / 60), m = n % 60;
+    return m ? h + 'h ' + m + 'm' : h + 'h';
+  }
+
+  function clockAt(n){
+    n = Math.round(n);
+    return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+  }
+
+  /* =========================================================
+     COOK PLAN
+     Prep screens usually hand you a pile of recipes and let you work out
+     the order. The order is the hard part: start the slow cooker last and
+     you eat at midnight. Dishes are sorted by how long they run without
+     you, then laid on a clock where the unattended stretches overlap with
+     the next dish's hands-on time — which is what actually happens in a
+     kitchen, and why "three 30-minute recipes" is not 90 minutes.
+  ========================================================= */
+  function cookPlan(){
+    if (!prepReady()) return null;
+    const usage = prepDishUsage();
+    if (!usage) return null;
+
+    const jobs = [];
+    [].concat(usage.meals, usage.snacks).forEach(rec=>{
+      const servings = rec.days.length;
+      if (!servings) return;
+      const recipe = RECIPES.find(r => r.name === (rec.dish || {})._recipe);
+      const t = cookTime(recipe, servings);
+      if (!t) return;
+      jobs.push({
+        name: (rec.dish && rec.dish.dish) || (recipe && recipe.name) || 'Dish',
+        recipe, servings, ref:{store:rec.store, index:rec.index}, ...t,
+      });
+    });
+    if (!jobs.length) return null;
+
+    // longest unattended first, so its dead time covers everything after it
+    jobs.sort((a,b)=> (a.stage - b.stage) || (b.total - a.total) || (b.active - a.active));
+
+    let cursor = 0;
+    jobs.forEach(j=>{ j.start = cursor; j.end = cursor + j.total; cursor += j.active; });
+
+    const handsOn = jobs.reduce((n,j)=> n + j.active, 0);
+    const wallClock = jobs.reduce((n,j)=> Math.max(n, j.end), 0);
+
+    /* Two things wanting the oven at the same moment is the single most
+       common way a prep plan falls apart in a real kitchen. */
+    const clashes = [];
+    ['oven','slow','fryer'].forEach(g=>{
+      const on = jobs.filter(j=>j.gear === g);
+      for (let i = 0; i < on.length; i++)
+        for (let k = i + 1; k < on.length; k++)
+          if (on[i].start < on[k].end && on[k].start < on[i].end)
+            clashes.push({gear:g, a:on[i].name, b:on[k].name});
+    });
+
+    return {jobs, handsOn, wallClock, clashes,
+            servings: jobs.reduce((n,j)=> n + j.servings, 0)};
+  }
+
+  function renderCookPlan(){
+    const host = document.getElementById('cookPlanBody');
+    const plan = cookPlan();
+    if (!plan){
+      host.innerHTML = `<div class="panel"><div class="fav-nores">
+        Build a prep first and the cook order shows up here.</div></div>`;
+      return;
+    }
+
+    const seen = {};
+    const gearLine = plan.jobs.reduce((acc,j)=>{
+      seen[j.gear] = (seen[j.gear] || 0) + 1; return acc; }, null);
+    const gearSummary = Object.keys(seen).filter(g=>g !== 'none')
+      .map(g=>`${GEAR[g].icon} ${GEAR[g].name}`).join(' · ');
+
+    host.innerHTML = `<div class="panel">
+      <div class="eaten-head">
+        <span class="eaten-title">⏱️ THE WHOLE SESSION</span>
+        <span class="eaten-total">${mins(plan.wallClock)}</span>
+      </div>
+      <div class="kv"><span>Hands-on</span><span style="color:var(--green)">${mins(plan.handsOn)}</span></div>
+      ${plan.wallClock > plan.handsOn
+        ? `<div class="kv"><span>Waiting around</span><span>${mins(plan.wallClock - plan.handsOn)}</span></div>`
+        : `<div class="kv"><span>Waiting around</span><span style="color:var(--green)">none — every gap is filled</span></div>`}
+      <div class="kv"><span>Dishes</span><span>${plan.jobs.length} · ${plan.servings} servings</span></div>
+      ${gearSummary ? `<div class="kv"><span>You'll need</span><span>${gearSummary}</span></div>` : ''}
+      <div class="season-hint" style="margin-top:10px;">
+        Times assume you're cooking every serving at once. The clock runs from the
+        moment you start — later dishes are timed to be done while earlier ones sit.
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="slot-label" style="margin-bottom:6px;">🍳 IN THIS ORDER</div>
+      ${plan.jobs.map((j, i)=>{
+        const col = dishColor(j.ref);
+        const activePct = Math.max(4, Math.round(j.active / Math.max(1, j.total) * 100));
+        return `<div class="cook-step">
+          <div class="cook-clock">${clockAt(j.start)}</div>
+          <div class="cook-main">
+            <div class="cook-name" style="color:${col}">${i+1}. ${escapeHtml(j.name)}
+              <span class="gear-tag">${GEAR[j.gear].icon} ${escapeHtml(j.form || GEAR[j.gear].name)}</span></div>
+            <div class="cook-meta">${j.servings} serving${j.servings === 1 ? '' : 's'} ·
+              <strong style="color:var(--green)">${mins(j.active)} hands-on</strong>
+              ${j.total > j.active ? ` · ${mins(j.total - j.active)} unattended · done by ${clockAt(j.end)}` : ''}</div>
+            <div class="cook-bar"><span style="width:${activePct}%; background:${col};"></span></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${plan.clashes.length ? `<div class="panel">
+      <div class="slot-label" style="margin-bottom:6px;">⚠️ ONE KITCHEN, TWO DISHES</div>
+      ${plan.clashes.map(c=>`<div class="cook-warn">
+        <strong>${escapeHtml(c.a)}</strong> and <strong>${escapeHtml(c.b)}</strong>
+        both want the ${GEAR[c.gear].name} at the same time. Run them together if the
+        temperatures are close, or push the second one back by
+        ${escapeHtml(GEAR[c.gear].name === 'oven' ? 'the first one\'s bake time' : 'a cycle')}.
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div class="panel">
+      <div class="slot-label" style="margin-bottom:6px;">📖 METHODS IN ORDER</div>
+      ${plan.jobs.map((j, i)=> (j.recipe && j.recipe.steps && j.recipe.steps.length)
+        ? `<details class="rsteps"><summary>${i+1}. ${escapeHtml(j.name)} — ${j.recipe.steps.length} steps</summary>
+             <ol>${j.recipe.steps.map(st=>`<li>${escapeHtml(st)}</li>`).join('')}</ol>
+           </details>`
+        : `<div class="cook-meta">${i+1}. ${escapeHtml(j.name)} — no written method; it's an assembly job.</div>`
+      ).join('')}
+    </div>`;
+  }
+
+  /* =========================================================
+     CONTAINER LEDGER
+     A prep cooks a fixed number of servings of each dish — four of the
+     Greek chicken, two of the oats — and the useful question mid-week is
+     not "what is the plan" but "what is still in the fridge". The count of
+     servings the schedule calls for is derived, not stored, so it stays
+     right if the schedule changes; only the number eaten is kept. It lives
+     on state.prep, so building a new prep starts the ledger clean.
+  ========================================================= */
+  function dishTag(ref){ return ref.store + '|' + ref.index; }
+
+  /* "1 serving" / "4 servings" — the ledger says these numbers a lot */
+  function servingWord(n){ return n === 1 ? 'serving' : 'servings'; }
+
+  /* Servings the prep cooks: every sitting on every day that points here */
+  function dishCooked(ref){
+    if (!prepReady() || !ref) return 0;
+    const lane = ref.store === 'snacks' ? 'snacks' : 'mains';
+    return state.prep.schedule.reduce((n, row)=>
+      n + (row[lane] || []).filter(i => i === ref.index).length, 0);
+  }
+
+  function dishEaten(ref){
+    if (!ref) return 0;
+    const led = (state.prep && state.prep.eaten) || {};
+    return Math.max(0, Math.min(+led[dishTag(ref)] || 0, dishCooked(ref)));
+  }
+
+  function dishLeft(ref){ return Math.max(0, dishCooked(ref) - dishEaten(ref)); }
+
+  function setDishEaten(ref, n){
+    if (!prepReady() || !ref) return;
+    state.prep.eaten = state.prep.eaten || {};
+    state.prep.eaten[dishTag(ref)] = Math.max(0, Math.min(n, dishCooked(ref)));
+    saveState();
+  }
+
+  function takeContainer(ref, delta){ setDishEaten(ref, dishEaten(ref) + (delta || 1)); }
+
+  function containerTotals(){
+    const out = {cooked:0, left:0};
+    if (!prepReady()) return out;
+    [['meals', state.prep.meals], ['snacks', state.prep.snacks]].forEach(([store, arr])=>{
+      (arr || []).forEach((_, index)=>{
+        const ref = {store, index};
+        out.cooked += dishCooked(ref);
+        out.left   += dishLeft(ref);
+      });
+    });
+    return out;
+  }
+
+  /* One serving, logged and taken off the ledger in a single tap. This is
+     the whole point of prepping: it was weighed once when it was cooked, so
+     eating it should not mean weighing it again. */
+  function eatOneServing(dayIdx, mealKey){
+    const ref = dishRefFor(mealKey, dayIdx);
+    if (!ref || !dishLeft(ref)) return;
+    const keep = state.activeDay;
+    applyDayToSelections(dayIdx + 1);
+    const mi = MEALS.findIndex(m => m.key === mealKey);
+    const slots = journalSlots() || [];
+    const slotName = (slots[mi] || {}).name || (MEALS[mi] ? MEALS[mi].name : 'MEAL');
+    const dish = dishAt(ref);
+    state.journalDate = todayKey();
+    journalCopyFromPlan(mealKey, slotName);
+    applyDayToSelections(keep);
+    takeContainer(ref, 1);
+    renderJournal();
+    const name = (dish && dish.dish) || 'Serving';
+    const short = name.length > 30 ? name.slice(0, 29).trim() + '…' : name;
+    const rest = dishLeft(ref);
+    toast('🍱 ' + short + ' logged — ' +
+          (rest ? rest + ' left' : 'that was the last one'));
+    saveState();
+  }
+
+  /* =========================================================
+     REAL-TIME FLEXIBILITY
+     A prep is cooked before the week happens, and the week does not
+     cooperate. Two things go wrong: the days come in a different order than
+     planned, and some days you don't eat the prep at all. Neither should
+     mean rebuilding the plan.
+  ========================================================= */
+
+  /* Move day A's food to day B and B's to A. The rest/training kind stays
+     with the calendar day rather than travelling with the food — training
+     is a fact about the day, and the portions resize to match, which is the
+     whole point of being able to move a dish onto a training day. */
+  function swapPrepDays(a, b){
+    if (!prepReady() || a === b) return false;
+    const sch = state.prep.schedule;
+    if (!sch[a] || !sch[b]) return false;
+    writeBackActiveDay();
+    const tmpM = sch[a].mains,  tmpS = sch[a].snacks;
+    sch[a].mains  = sch[b].mains;  sch[a].snacks  = sch[b].snacks;
+    sch[b].mains  = tmpM;          sch[b].snacks  = tmpS;
+    applyDayToSelections(state.activeDay || 1);
+    saveState();
+    return true;
+  }
+
+  /* Sittings replaced by a restaurant, a work lunch, or a bag of chips.
+     Marked rather than deleted: the serving is still in the fridge, so the
+     ledger must not count it as eaten, and the plan now stretches further
+     than it was built for. */
+  function ateOutTag(dayIdx, mealKey){ return dayIdx + '|' + mealKey; }
+
+  function isAteOut(dayIdx, mealKey){
+    return !!(((state.prep || {}).ateOut) || {})[ateOutTag(dayIdx, mealKey)];
+  }
+
+  function setAteOut(dayIdx, mealKey, on){
+    if (!prepReady()) return;
+    state.prep.ateOut = state.prep.ateOut || {};
+    if (on) state.prep.ateOut[ateOutTag(dayIdx, mealKey)] = true;
+    else delete state.prep.ateOut[ateOutTag(dayIdx, mealKey)];
+    saveState();
+  }
+
+  /* Only marks that still point at a real day count — a reshuffle builds a
+     fresh state.prep, but a day count that shrank would strand them. */
+  function ateOutCount(){
+    if (!prepReady()) return 0;
+    const days = state.prep.schedule.length;
+    return Object.keys(state.prep.ateOut || {}).filter(k=>{
+      const d = parseInt(k.split('|')[0], 10);
+      return d >= 0 && d < days;
+    }).length;
+  }
+
+  /* Send a sitting to the journal as a blank row to fill in. The prep stays
+     untouched — that's the point. */
+  function logAteOut(dayIdx, mealKey){
+    setAteOut(dayIdx, mealKey, true);
+    const mi = MEALS.findIndex(m => m.key === mealKey);
+    const slots = journalSlots() || [];
+    const slotName = (slots[mi] || {}).name || (MEALS[mi] ? MEALS[mi].name : 'MEAL');
+    state.journalDate = todayKey();
+    closeModal('modalPrepDay');
+    renderPrepDays();
+    goTab('journal');
+    renderJournal();
+    journalAddRow(slotName);
+    toast('🍔 Serving kept in the fridge — log what you actually ate');
+    saveState();
+  }
+
+  /* A short self-dismissing confirmation. Logging a serving changes a
+     screen you are not currently looking at, so something has to say so. */
+  function toast(msg){
+    let el = document.getElementById('gflToast');
+    if (!el){
+      el = document.createElement('div');
+      el.id = 'gflToast';
+      el.className = 'toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    // reflow so the transition replays when toasting twice in a row
+    void el.offsetWidth;
+    el.classList.add('on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>{ el.classList.remove('on'); }, 2400);
+  }
+
   function renderPrepDays(){
     const host = document.getElementById('prepDayList');
     const intro = document.getElementById('prepDaysIntro');
@@ -7757,13 +8251,23 @@
         : '') +
       `. Tap a day to see it.`;
 
+    const introTot = containerTotals();
+    if (introTot.cooked && introTot.left < introTot.cooked){
+      intro.innerHTML += introTot.left
+        ? ` <strong style="color:var(--amber)">${introTot.left} of ${introTot.cooked} ${servingWord(introTot.cooked)} still in the fridge.</strong>`
+        : ` <strong style="color:var(--amber)">Everything cooked has been eaten.</strong>`;
+    }
+
     host.innerHTML = Array.from({length:days}, (_,d)=>{
       const t = prepDayTotals(d);
       const dishes = prepDayDishes(d);
       const kind = dayKindAt(d);
       const chips = dishes.map(({ref, dish, meal})=>{
-        const label = (dish && dish.dish) || (meal.required ? 'Meal' : 'Snack');
-        return `<span class="dish-chip" style="border-color:${dishColor(ref)}; color:${dishColor(ref)};">${escapeHtml(label)}</span>`;
+        const out = isAteOut(d, meal.key);
+        const label = out ? '🍔 ate out' : ((dish && dish.dish) || (meal.required ? 'Meal' : 'Snack'));
+        const cls = out ? ' ateout' : (ref && !dishLeft(ref) ? ' spent' : '');
+        const col = out ? 'var(--amber)' : dishColor(ref);
+        return `<span class="dish-chip${cls}" style="border-color:${col}; color:${col};">${escapeHtml(label)}</span>`;
       }).join('');
       return `<button class="panel prep-day" data-prepday-open="${d}">
         <div class="eaten-head">
@@ -7779,24 +8283,73 @@
     host.querySelectorAll('[data-prepday-open]').forEach(b=>b.addEventListener('click', ()=>
       openPrepDay(parseInt(b.getAttribute('data-prepday-open'),10))));
 
-    // the shopping side of it: what each unique dish is, and how often it's cooked
-    const uses = {};
-    p.schedule.forEach(row=>{
-      (row.mains || []).forEach(i => uses['meals#'+i] = (uses['meals#'+i]||0)+1);
-      (row.snacks || []).forEach(i => uses['snacks#'+i] = (uses['snacks#'+i]||0)+1);
-    });
-    const line = (dish, ref)=>`<div class="kv">
-        <span style="color:${dishColor(ref)}">${escapeHtml(dish.dish || 'Dish')}</span>
-        <span>×${uses[ref.store+'#'+ref.index] || 0}</span></div>`;
+    /* What you cooked and what is left of it. The count used to be a flat
+       "×4" — how many servings the prep needs — which stops being the
+       useful number the moment you start eating them. */
+    const tot = containerTotals();
+    const line = (dish, ref)=>{
+      const cooked = dishCooked(ref), left = dishLeft(ref), col = dishColor(ref);
+      const name = dish.dish || (ref.store === 'snacks' ? 'Snack' : 'Dish');
+      const pips = Array.from({length:cooked}, (_,i)=>
+        `<span class="pip${i < left ? ' full' : ''}"></span>`).join('');
+      return `<div class="ctn-row${left ? '' : ' spent'}">
+        <div class="ctn-main">
+          <span class="ctn-name" style="color:${left ? col : 'var(--muted)'}">${escapeHtml(name)}</span>
+          <span class="ctn-count">${left
+            ? `<strong style="color:${col}">${left}</strong> of ${cooked} left`
+            : (cooked === 1 ? 'eaten' : `all ${cooked} eaten`)}</span>
+          <div class="ctn-pips" style="color:${col}">${pips}</div>
+        </div>
+        <div class="ctn-btns">
+          <button class="mini-btn" data-ctn-undo="${dishTag(ref)}"
+            aria-label="Put a serving of ${escapeHtml(name)} back"${dishEaten(ref) ? '' : ' disabled'}>↩</button>
+          <button class="mini-btn" data-ctn-take="${dishTag(ref)}"
+            aria-label="Mark a serving of ${escapeHtml(name)} as eaten"${left ? '' : ' disabled'}>ATE ONE</button>
+        </div>
+      </div>`;
+    };
     summary.innerHTML = `<div class="panel">
-      <div class="slot-label" style="margin-bottom:10px;">🍽️ WHAT YOU'RE COOKING</div>
+      <div class="ctn-bar" style="margin-bottom:10px;">
+        <span class="slot-label" style="margin:0;">🍱 WHAT'S LEFT IN THE FRIDGE</span>
+        <span class="eaten-total" style="color:${tot.left ? 'var(--green)' : 'var(--amber)'}">${tot.left} / ${tot.cooked}</span>
+      </div>
       ${p.meals.map((d,i)=>line(d,{store:'meals',index:i})).join('')}
       ${nSnacks ? `<div class="slot-label" style="margin:14px 0 10px;">🥨 SNACKS</div>` +
         p.snacks.map((d,i)=>line(d,{store:'snacks',index:i})).join('') : ''}
       <div class="season-hint" style="margin-top:10px;">
-        Each count is how many servings of that dish the prep needs.
+        ${tot.left
+          ? `Tap <strong>ATE ONE</strong> as you work through the fridge — or open a day and log
+             the serving straight to the journal. ${tot.left === 1 ? 'One serving' : tot.left + ' servings'}
+             still to eat.`
+          : `Everything you cooked is eaten. Time to reshuffle and cook again.`}
       </div>
+      ${ateOutCount() ? `<div class="season-hint" style="margin-top:8px; color:var(--amber);">
+        🍔 You ate out ${ateOutCount() === 1 ? 'once' : ateOutCount() + ' times'}, so
+        ${ateOutCount() === 1 ? 'that serving is' : `those ${ateOutCount()} servings are`}
+        still in the fridge — this prep stretches
+        ${ateOutCount() === 1 ? 'a meal' : ateOutCount() + ' meals'} further than it was built for.
+      </div>` : ''}
+      ${tot.left < tot.cooked
+        ? `<button class="mini-btn add" id="ctnReset">↺ RESET THE LEDGER — I'VE COOKED AGAIN</button>`
+        : ''}
     </div>`;
+
+    const bump = (attr, delta)=> summary.querySelectorAll('[' + attr + ']').forEach(b=>
+      b.addEventListener('click', ()=>{
+        const [store, index] = b.getAttribute(attr).split('|');
+        takeContainer({store, index: parseInt(index, 10)}, delta);
+        renderPrepDays();
+      }));
+    bump('data-ctn-take',  1);
+    bump('data-ctn-undo', -1);
+
+    const reset = document.getElementById('ctnReset');
+    if (reset) reset.addEventListener('click', ()=>{
+      state.prep.eaten = {};
+      saveState();
+      renderPrepDays();
+      toast('↺ Ledger reset — everything back in the fridge');
+    });
   }
 
   function openPrepDay(dayIdx){
@@ -7843,14 +8396,36 @@
         rows += parts.join('');
       });
       const season = (sel.season || []);
+      const left = dishLeft(ref), cooked = dishCooked(ref);
+      const ateOut = isAteOut(dayIdx, meal.key);
       return `<div class="panel">
         <div style="font-size:11px; color:var(--cyan); letter-spacing:1px; margin-bottom:4px;">${meal.label}${meal.required ? '' : ' (OPTIONAL)'}</div>
         ${sel.dish ? `<div style="font-family:var(--font-body); font-size:15px; color:${dishColor(ref)}; margin-bottom:8px;">🍽️ ${escapeHtml(sel.dish)}</div>` : ''}
+        ${cooked ? `<div class="ctn-count" style="margin-bottom:8px;">🍱 ${left
+          ? `<strong style="color:${dishColor(ref)}">${left}</strong> of ${cooked} ${servingWord(cooked)} left`
+          : `${cooked === 1 ? 'This serving is' : `All ${cooked} servings are`} eaten`}</div>` : ''}
         ${rows || '<div class="fav-nores">Nothing planned for this sitting.</div>'}
         ${season.length ? `<div class="season-hint">🧂 Season with: <strong style="color:var(--amber)">${season.map(escapeHtml).join(' · ')}</strong></div>` : ''}
         ${sel.notes ? `<div class="season-hint">📝 ${escapeHtml(sel.notes)}</div>` : ''}
+        ${ateOut ? `<div class="pd-ateout">🍔 You ate out for this one — the serving is still in the fridge.</div>
+          <button class="mini-btn add" data-pd-unout="${meal.key}">↩ NO, I ATE THE PREP</button>`
+        : `<div class="pd-actions">
+            ${left ? `<button class="mini-btn" data-pd-ate="${meal.key}">✅ ATE THIS</button>` : ''}
+            <button class="mini-btn" data-pd-out="${meal.key}">🍔 ATE OUT</button>
+          </div>`}
       </div>`;
-    }).join('') + `
+    }).join('') + (state.prep.schedule.length > 1 ? `
+      <div class="panel">
+        <div class="slot-label" style="margin-bottom:6px;">🔀 SWAP THIS DAY'S FOOD WITH</div>
+        <div class="day-strip">${state.prep.schedule.map((row, i)=> i === dayIdx ? '' :
+          `<button class="day-chip${hasSplit() && row.kind === 'train' ? ' train' : ''}"
+            data-pd-swap="${i}" aria-label="Swap day ${dayIdx+1} with day ${i+1}">${i+1}` +
+          (hasSplit() ? `<span class="kd">${DAY_KIND_ICON[row.kind || 'rest']}</span>` : '') +
+          `</button>`).join('')}</div>
+        <p class="swap-note">The food moves; the day stays ${hasSplit()
+          ? 'a training or rest day, and the portions resize to match'
+          : 'where it is'}. Nothing needs re-shopping.</p>
+      </div>` : '') + `
       <button class="btn-ghost" id="pdEditDay">✏️ EDIT THIS DAY</button>
       <button class="btn-ghost" id="pdLogDay">📓 LOG THIS DAY TO THE JOURNAL</button>`;
 
@@ -7859,6 +8434,25 @@
       openPortionEditor(mealKey, slot, parseInt(idx,10), ()=>{
         openPrepDay(dayIdx); renderPrepDays();
       });
+    }));
+    body.querySelectorAll('[data-pd-ate]').forEach(b=>b.addEventListener('click', ()=>{
+      eatOneServing(dayIdx, b.getAttribute('data-pd-ate'));
+      openPrepDay(dayIdx);
+      renderPrepDays();
+    }));
+    body.querySelectorAll('[data-pd-out]').forEach(b=>b.addEventListener('click', ()=>
+      logAteOut(dayIdx, b.getAttribute('data-pd-out'))));
+    body.querySelectorAll('[data-pd-unout]').forEach(b=>b.addEventListener('click', ()=>{
+      setAteOut(dayIdx, b.getAttribute('data-pd-unout'), false);
+      openPrepDay(dayIdx);
+      renderPrepDays();
+    }));
+    body.querySelectorAll('[data-pd-swap]').forEach(b=>b.addEventListener('click', ()=>{
+      const other = parseInt(b.getAttribute('data-pd-swap'), 10);
+      if (!swapPrepDays(dayIdx, other)) return;
+      openPrepDay(dayIdx);
+      renderPrepDays();
+      toast('🔀 Day ' + (dayIdx+1) + ' and day ' + (other+1) + ' swapped');
     }));
     document.getElementById('pdEditDay').addEventListener('click', ()=>{
       closeModal('modalPrepDay');
@@ -8951,7 +9545,8 @@
     b.addEventListener('click', ()=> closeModal(b.getAttribute('data-close'))));
   // tapping the dimmed area closes too
   const ALL_MODALS = ['modalHow','modalStats','modalSystem','modalRecipePlace','modalFoodPick',
-                      'modalPrepDay','modalPortion','modalJournalFood'];
+                      'modalPrepDay','modalPortion','modalJournalFood','modalPantry',
+                      'modalCookPlan'];
   ALL_MODALS.forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', e=>{ if (e.target === el) closeModal(id); });
@@ -11378,9 +11973,25 @@
        serving is one unit, and one unit may be the entire budget. */
     const fitsBudget = (slot, f)=>{
       if (!budgetKcal) return true;
+      const room = budgetKcal * 0.55;
       const min = minPortion(slot, f);
-      const g = (f.unit && !f.unit.soft) ? Math.max(f.unit.g * unitStep(f), min) : min;
-      return (f.kcal * g / 100) <= budgetKcal * 0.55;
+      /* A whole tortilla, bun or bagel can't be cut down — one unit is the
+         smallest thing anybody can serve, so if that doesn't fit, nothing
+         about this food ever will. */
+      if (f.unit && !f.unit.soft)
+        return (f.kcal * Math.max(f.unit.g * unitStep(f), min) / 100) <= room;
+      /* Protein is the protected macro, and the meal-scale floor was what
+         kept it off small plates. Measured against the 140 kcal centrepiece
+         minimum — or even the 80 kcal one — a 141 kcal snack could not afford
+         a single protein in the inventory, so the sitting went out with none
+         at all, still carrying the name of the protein it had just filtered
+         away. A protein can be portioned down, so judge it on the smallest
+         serving worth plating instead.
+         The other slots keep the meal-scale floor on purpose: a small snack
+         that spends its calories on a carb is a snack that stops carrying
+         protein, which is the failure this exists to prevent. */
+      const floor = slot === 'protein' ? (MIN_GRAMS[slot] || 0) : min;
+      return (f.kcal * floor / 100) <= room;
     };
 
     const sel = {protein:[], carb:[], fat:[], veg:[], fruit:[], sauce:[], dish:"", _recipe:""};
@@ -11548,17 +12159,27 @@
       /* Give up constraints in order of least harm: first try the dish's own
          options, then anything that suits the time of day, and only as a last
          resort ignore the time-of-day rule. */
-      const base = f =>
+      const core = f =>
         !familyClash(f, sel)
         && !(f.powder && !POWDER_OK.includes(role))
-        && fitsBudget(slot, f)
         && !(slot === 'protein' && isMeat(f) && sel.protein.some(k=>{
              const p = FOODS.protein.find(x=>x.key===k); return p && isMeat(p); }));
+      const base = f => core(f) && fitsBudget(slot, f);
       const recipeKeys = recipe ? recipeOptions(recipe, slot) : [];
       const f =
            pickFood(listFor(slot), null, true, slot, x => base(x) && recipeKeys.includes(x.key) && mealAllowsFood(role, x))
         || pickFood(listFor(slot), null, true, slot, x => base(x) && mealAllowsFood(role, x))
-        || pickFood(listFor(slot), null, true, slot, base);
+        || pickFood(listFor(slot), null, true, slot, base)
+        /* Last resort, protein only. A sitting too small for anything to
+           clear the budget test still gets a protein source: the portion
+           engine floors and rescales whatever lands here, so the outcome is
+           a small serving, which beats an empty slot and a dish named after
+           a missing food. Unit foods stay out — they cannot be made smaller,
+           and the other slots would only crowd out the protein. */
+        || (slot === 'protein'
+              ? pickFood(listFor(slot), null, true, slot,
+                  x => core(x) && !(x.unit && !x.unit.soft))
+              : null);
       // the dish no longer describes what's on the plate
       if (f && !recipeKeys.includes(f.key)) sel._improvised = true;
       if (f){
@@ -13309,7 +13930,7 @@
     'mealPlan','mealWeights','skipBreakfast','breakfastForDinner','breakfastAllDay',
     'uniqueMeals','uniqueSnacks','prep','activeDay','portionOverrides','variety',
     'log','journalMeals','calMode',
-    'eaten','prepServings'];
+    'eaten','prepServings','pantry','cupboard'];
 
   let saveTimer = null;
   function saveState(){
@@ -13471,6 +14092,150 @@
     return out;
   }
 
+  /* =========================================================
+     PANTRY
+     The shopping list is built from the plan, which knows nothing about the
+     half bag of rice already in the cupboard. So it says "buy 1200g rice"
+     every week and you either overbuy or do the subtraction in your head.
+     The pantry is what you own, in grams, kept between preps: the list
+     subtracts it and asks you to buy only the difference.
+
+     Seasonings are their own thing — they're bought as a jar and used to
+     taste, so owning one is a yes/no rather than a weight. Those live in
+     the cupboard, which is why paprika stops reappearing every week.
+  ========================================================= */
+  function pantryGrams(key){
+    const g = +((state.pantry || {})[key]);
+    return isFinite(g) && g > 0 ? g : 0;
+  }
+
+  function setPantryGrams(key, grams){
+    state.pantry = state.pantry || {};
+    const g = Math.max(0, Math.round(+grams || 0));
+    if (g > 0) state.pantry[key] = g; else delete state.pantry[key];
+    saveState();
+  }
+
+  function pantryItems(){
+    /* Keys are resolved against the live food lists, so a food removed from
+       the database in a later version drops out rather than rendering as a
+       blank row with a weight next to it. */
+    return Object.keys(state.pantry || {}).map(key=>{
+      const hit = foodIndex().find(x => x.food.key === key);
+      return hit ? {key, food:hit.food, grams: pantryGrams(key)} : null;
+    }).filter(Boolean).sort((a,b)=> a.food.name.localeCompare(b.food.name));
+  }
+
+  function hasCupboard(name){ return !!((state.cupboard || {})[name]); }
+
+  function setCupboard(name, on){
+    state.cupboard = state.cupboard || {};
+    if (on) state.cupboard[name] = true; else delete state.cupboard[name];
+    saveState();
+  }
+
+  /* What the list needs, what you own, and what's actually left to buy */
+  function shopLine(food, needGrams){
+    const have = pantryGrams(food.key);
+    const buy = Math.max(0, needGrams - have);
+    return {need:needGrams, have, buy, covered: buy < 1};
+  }
+
+  /* Cooking the prep eats into the pantry. Explicit rather than automatic:
+     the app can't tell when you actually stood at the stove, and silently
+     zeroing someone's inventory is worse than asking. */
+  function deductPrepFromPantry(){
+    const mult = shoppingMultiplier();
+    let touched = 0;
+    Object.values(aggregateIngredients()).forEach(t=>{
+      const have = pantryGrams(t.food.key);
+      if (!have) return;
+      setPantryGrams(t.food.key, have - t.grams * mult);
+      touched++;
+    });
+    return touched;
+  }
+
+  /* ---- pantry editor ---- */
+  let pantryTarget = null;
+
+  function openPantryEditor(food, needGrams){
+    pantryTarget = {food, need: needGrams};
+    document.getElementById('pantryTitle').textContent = 'ALREADY HAVE SOME?';
+    const have = pantryGrams(food.key);
+    const ul = unitLabel(food, needGrams);
+    document.getElementById('pantryBody').innerHTML = `
+      <div class="panel">
+        <div style="font-family:var(--font-body); font-size:15px; margin-bottom:6px;">${escapeHtml(food.name)}</div>
+        <div class="ctn-count" style="margin-bottom:12px;">This prep needs
+          <strong style="color:var(--green)">${needGrams.toFixed(0)}g</strong>${ul ? ' · ' + ul : ''}.</div>
+        <label class="field-label">HOW MUCH DO YOU ALREADY HAVE? (GRAMS)</label>
+        <input type="number" id="pantryInput" inputmode="numeric" min="0" max="100000"
+          value="${have || ''}" placeholder="0">
+        <p class="subtitle" style="font-size:11px; margin:10px 0 0;">
+          Rough is fine — it only changes how much the list tells you to buy.</p>
+        <button class="btn-primary" id="pantrySave" style="margin-top:12px;">SAVE</button>
+        <button class="btn-ghost" id="pantryAll">I HAVE ENOUGH FOR THE WHOLE LIST</button>
+        ${have ? `<button class="btn-ghost" id="pantryNone">I'VE RUN OUT — REMOVE IT</button>` : ''}
+      </div>`;
+
+    const done = ()=>{
+      closeModal('modalPantry');
+      renderShoppingList();
+    };
+    document.getElementById('pantrySave').addEventListener('click', ()=>{
+      setPantryGrams(food.key, document.getElementById('pantryInput').value);
+      done();
+    });
+    document.getElementById('pantryAll').addEventListener('click', ()=>{
+      setPantryGrams(food.key, Math.ceil(needGrams));
+      done();
+    });
+    const none = document.getElementById('pantryNone');
+    if (none) none.addEventListener('click', ()=>{ setPantryGrams(food.key, 0); done(); });
+    openModal('modalPantry');
+  }
+
+  function renderPantryPanel(){
+    const host = document.getElementById('pantryPanel');
+    if (!host) return;
+    const items = pantryItems();
+    const cup = Object.keys(state.cupboard || {});
+    if (!items.length && !cup.length){ host.innerHTML = ''; return; }
+
+    host.innerHTML = `<div class="panel">
+      <div class="eaten-head">
+        <span class="eaten-title">🏠 YOUR PANTRY</span>
+        <span class="eaten-total">${items.length + cup.length} item${items.length + cup.length === 1 ? '' : 's'}</span>
+      </div>
+      ${items.map(it=>`<div class="pantry-row">
+        <span class="pn">${escapeHtml(it.food.name)}</span>
+        <span class="pq">${it.grams}g</span>
+        <button class="mini-btn remove" data-pantry-del="${escapeHtml(it.key)}"
+          aria-label="Remove ${escapeHtml(it.food.name)} from the pantry">✕</button>
+      </div>`).join('')}
+      ${cup.length ? `<div class="season-hint" style="margin-top:10px;">
+        🧂 In the cupboard: <strong style="color:var(--amber)">${cup.map(escapeHtml).join(' · ')}</strong>
+      </div>` : ''}
+      ${items.length ? `<button class="mini-btn add" id="pantryCooked">🍳 I'VE COOKED THIS PREP — TAKE IT OUT OF THE PANTRY</button>` : ''}
+      <div class="season-hint" style="margin-top:10px;">
+        Kept between preps. The list below only asks you to buy the difference.
+      </div>
+    </div>`;
+
+    host.querySelectorAll('[data-pantry-del]').forEach(b=>b.addEventListener('click', ()=>{
+      setPantryGrams(b.getAttribute('data-pantry-del'), 0);
+      renderShoppingList();
+    }));
+    const cooked = document.getElementById('pantryCooked');
+    if (cooked) cooked.addEventListener('click', ()=>{
+      const n = deductPrepFromPantry();
+      renderShoppingList();
+      toast(n ? '🍳 Pantry updated — ' + n + ' item' + (n === 1 ? '' : 's') + ' used up'
+              : '🍳 Nothing in the pantry this prep uses');
+    });
+  }
+
   function renderShoppingList(){
     const host = document.getElementById('shopList');
     const days = prepReady() ? state.prep.schedule.length : (state.prepServings || 1);
@@ -13495,6 +14260,9 @@
       return;
     }
 
+    renderPantryPanel();
+
+    let covered = 0;
     host.innerHTML = SLOT_DEFS.map(d=>{
       const rows = (bySlot[d.slot] || []).sort((a,b)=>b.grams - a.grams);
       if (!rows.length) return '';
@@ -13502,12 +14270,22 @@
         <div class="slot-label" style="margin-bottom:10px;">${SHOP_HEADINGS[d.slot] || d.label}</div>
         ${rows.map(t=>{
           const g = t.grams * mult;
-          const ul = unitLabel(t.food, g);
-          return `<label class="shop-row">
-            <input type="checkbox" class="shop-tick">
-            <span class="shop-name">${t.food.name}</span>
-            <span class="shop-qty">${ul ? ul + ' · ' : ''}${g.toFixed(0)}g</span>
-          </label>`;
+          const L = shopLine(t.food, g);
+          if (L.covered) covered++;
+          const ul = unitLabel(t.food, L.buy || g);
+          return `<div class="shop-row${L.covered ? ' covered' : ''}">
+            <label class="shop-main">
+              <input type="checkbox" class="shop-tick"${L.covered ? ' checked' : ''}>
+              <span class="shop-name">${t.food.name}${L.have
+                ? `<span class="shop-have">${L.covered
+                    ? `already have ${L.have}g — needs ${g.toFixed(0)}g`
+                    : `have ${L.have}g of ${g.toFixed(0)}g`}</span>` : ''}</span>
+              <span class="shop-qty">${L.covered ? 'covered'
+                : `${ul ? ul + ' · ' : ''}${L.buy.toFixed(0)}g`}</span>
+            </label>
+            <button class="pantry-tap${L.have ? ' on' : ''}" data-pantry-set="${escapeHtml(t.food.key)}|${g.toFixed(1)}"
+              aria-label="Say how much ${escapeHtml(t.food.name)} you already have">🏠</button>
+          </div>`;
         }).join('')}
       </div>`;
     }).join('');
@@ -13516,15 +14294,39 @@
     // these are bought as a jar and used to taste.
     const seasonings = shoppingSeasonings();
     if (seasonings.length){
+      /* Ticking a seasoning is remembered. A jar of paprika lasts months,
+         so being told to buy it every week is just noise. */
       host.innerHTML += `<div class="panel">
         <div class="slot-label" style="margin-bottom:10px;">🧂 SEASONINGS &amp; EXTRAS</div>
-        ${seasonings.map(n=>`<label class="shop-row">
-            <input type="checkbox" class="shop-tick">
-            <span class="shop-name">${escapeHtml(n)}</span>
-            <span class="shop-qty">to taste</span>
-          </label>`).join('')}
+        ${seasonings.map(n=>`<div class="shop-row${hasCupboard(n) ? ' covered' : ''}">
+            <label class="shop-main">
+              <input type="checkbox" class="shop-tick" data-cupboard="${escapeHtml(n)}"${hasCupboard(n) ? ' checked' : ''}>
+              <span class="shop-name">${escapeHtml(n)}</span>
+              <span class="shop-qty">${hasCupboard(n) ? 'in the cupboard' : 'to taste'}</span>
+            </label>
+          </div>`).join('')}
+        <div class="season-hint" style="margin-top:10px;">
+          Tick what you already own — it stays ticked next time you shop.
+        </div>
       </div>`;
     }
+
+    if (covered){
+      host.innerHTML += `<div class="panel"><div class="season-hint" style="margin:0; color:var(--green);">
+        🏠 ${covered} item${covered === 1 ? '' : 's'} already covered by your pantry — nothing to buy for
+        ${covered === 1 ? 'it' : 'them'}.
+      </div></div>`;
+    }
+
+    host.querySelectorAll('[data-pantry-set]').forEach(b=>b.addEventListener('click', ()=>{
+      const [key, need] = b.getAttribute('data-pantry-set').split('|');
+      const hit = foodIndex().find(x => x.food.key === key);
+      if (hit) openPantryEditor(hit.food, parseFloat(need));
+    }));
+    host.querySelectorAll('[data-cupboard]').forEach(b=>b.addEventListener('change', ()=>{
+      setCupboard(b.getAttribute('data-cupboard'), b.checked);
+      renderShoppingList();
+    }));
   }
 
   function shoppingListText(){
@@ -13545,19 +14347,26 @@
     SLOT_DEFS.forEach(d=>{
       const rows = (bySlot[d.slot] || []).sort((a,b)=>b.grams - a.grams);
       if (!rows.length) return;
+      /* Anything the pantry already covers is left off the list entirely —
+         a shopping list you have to mentally filter is not a shopping list. */
+      const buying = rows.map(t=>({t, L: shopLine(t.food, t.grams * mult)}))
+                         .filter(x => !x.L.covered);
+      if (!buying.length) return;
       out += (SHOP_HEADINGS[d.slot] || d.label).replace(/[^\w\s/&]/g,'').trim() + '\n';
-      rows.forEach(t=>{
-        const g = t.grams * mult;
-        const ul = unitLabel(t.food, g);
-        out += `  [ ] ${t.food.name} — ${ul ? ul + ' (' + g.toFixed(0) + 'g)' : g.toFixed(0) + 'g'}\n`;
+      buying.forEach(({t, L})=>{
+        const ul = unitLabel(t.food, L.buy);
+        out += `  [ ] ${t.food.name} — ${ul ? ul + ' (' + L.buy.toFixed(0) + 'g)' : L.buy.toFixed(0) + 'g'}` +
+               (L.have ? ` (have ${L.have}g of ${(t.grams * mult).toFixed(0)}g)` : '') + '\n';
       });
       out += '\n';
     });
-    const seasonings = shoppingSeasonings();
+    const seasonings = shoppingSeasonings().filter(n => !hasCupboard(n));
     if (seasonings.length){
       out += 'SEASONINGS\n';
       seasonings.forEach(n=>{ out += `  [ ] ${n} — to taste\n`; });
     }
+    const pantryCovered = pantryItems().length;
+    if (pantryCovered) out += `\nAlready in the pantry: ${pantryItems().map(i=>i.food.name + ' ' + i.grams + 'g').join(', ')}\n`;
     return out;
   }
 
@@ -13592,6 +14401,11 @@
 
   document.getElementById('btnPrepShopping').addEventListener('click', ()=>{
     renderPrepGrid(); renderShoppingList(); showScreen('screen-shop');
+  });
+
+  document.getElementById('btnCookPlan').addEventListener('click', ()=>{
+    renderCookPlan();
+    openModal('modalCookPlan');
   });
 
   document.getElementById('btnPrepReshuffle').addEventListener('click', ()=>{
